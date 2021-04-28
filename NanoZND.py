@@ -11,6 +11,7 @@ import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox as tm
+from tkinter import filedialog
 import csv
 
 
@@ -92,6 +93,13 @@ class NanoZND(object):
         data = self.GetAnalyserData()
         b = []
         b.append(batch)
+        filename = filedialog.askopenfilename(initialdir = "/",
+                                          title = "Update or create a file",
+                                          filetypes = (("csv files",
+                                                        "*.csv*"),
+                                                       ("all files",
+                                                        "*.*")))
+        print(filename)
         file_to_output = open("C:/Users/Brian/python-dev/data_from_NanoNVA.csv", mode='a', newline='')
         csv_writer = csv.writer(file_to_output, delimiter=',')
         try:
