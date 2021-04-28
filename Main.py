@@ -32,23 +32,23 @@ import pyvisa as visa
 import time
 
 
-import PI
+
 import SecurityManager
 from SecurityManager import User
 import BatchManager
 from BatchManager import Batch
-import InstrumentManager
 import ProbeManager
 from ProbeManager import Probe
 from ProbeManager import ProbeManager
 import NanoZND
 import ODMPlus
+import UserLogin as UL
+
 
 
 
 # create instances
 SM = SecurityManager.SecurityManager()
-IM = InstrumentManager.InstrumentationManager()
 BM = BatchManager.BatchManager()
 PM = ProbeManager()
 NanoZND = NanoZND.NanoZND()
@@ -74,7 +74,6 @@ class WindowController(tk.Tk):
     def __init__(self, *args, **kwargs):
 
         tk.Tk.__init__(self, *args, **kwargs)
-
         self.title(PTT_Version)
         # get window width and height
         ws = self.winfo_screenwidth()
@@ -94,15 +93,10 @@ class WindowController(tk.Tk):
 
         self.frames = {}
 
-        for F in (LogInWindow,
-                  SessionSelectWindow,
-                  NewSessionWindow,
-                  ContinueSessionWindow,
+        for F in (UL.UserLogin,
+                  
                   ConnectionWindow,
-                  AdminWindow,
-                  AddUserWindow,
-                  EditUserWindow,
-                  ChangePasswordWindow,
+                 
                   TestProgramWindow):
 
             frame = F(container, self)
@@ -111,8 +105,12 @@ class WindowController(tk.Tk):
 
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame(LogInWindow)
-       
+        self.show_frame(UL.UserLogin)
+        cont = UL.UserLogin._login_confirmed()
+        print(cont)
+        # if UL.UserLogin._login_confirmed(self):
+        #     print("Got login confirmed")
+        #     self.show_frame(SessionSelectWindow)
        
 
     def show_frame(self, newFrame):
@@ -319,7 +317,7 @@ class TestProgramWindow(tk.Frame):
                             # serial_results = IM.GetPatientParamerts()
                             try:
                                 
-                                serial_results = IM.ReadPortODM()
+                                serial_results = ODM.ReadPortODM()
                             # print(serial_results)
                             # self.SD_data.set(serial_results[0])
                             # self.FTc_data.set(serial_results[1])

@@ -98,6 +98,8 @@ class SecurityManager(object):
         userlist = self.SMDB.getUserList()
         return userlist
         
+
+        
     
 class SecManDB(object):
     '''This class handles all of the opening and closing of the CSV'''
