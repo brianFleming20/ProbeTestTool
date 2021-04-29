@@ -9,6 +9,7 @@ import csv
 import os
 from time import gmtime, strftime
 
+
 class BatchManager(object):
     
 
@@ -244,7 +245,7 @@ class Batch(object):
         self.batchNumber = batchNumber
         self.probesProgrammed = 0
         self.probeType = ''
-        
+       
 
 
 

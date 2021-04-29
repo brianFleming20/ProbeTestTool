@@ -29,8 +29,11 @@ class ODMData(object):
         # ======================
         # Set up port connection
         #=======================
-        
-        serial_port = self.AccessSerialControl(port)
+        try:
+            serial_port = self.AccessSerialControl(port)
+        except:
+            print("Tounble getting ODM port")
+            return None
         
         # ===========================
         # Access the ODM via the port

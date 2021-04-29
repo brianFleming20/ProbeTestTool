@@ -27,7 +27,7 @@ class NanoZND(object):
         self.analyser_port = ""
         self.analyser_status = False
         self.port_info = None
-        self.file_location = "/PTT/"
+        self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
     
     
     def ReadAnalyserData(self):
@@ -88,19 +88,20 @@ class NanoZND(object):
     def FrequecyStop(self):
         pass
     
+    def GetFileLocation(self):
+        return self.file_location
+    
+    def SetFileLocation(self, file):
+        self.file_location = file
+        
+    
     # Collect the data points and send to a .csv file
     def CVSOutPut(self, batch):
         data = self.GetAnalyserData()
         b = []
         b.append(batch)
-        filename = filedialog.askopenfilename(initialdir = "/",
-                                          title = "Update or create a file",
-                                          filetypes = (("csv files",
-                                                        "*.csv*"),
-                                                       ("all files",
-                                                        "*.*")))
-        print(filename)
-        file_to_output = open("C:/Users/Brian/python-dev/data_from_NanoNVA.csv", mode='a', newline='')
+        
+        file_to_output = open(self.file_location, mode='a', newline='')
         csv_writer = csv.writer(file_to_output, delimiter=',')
         try:
             

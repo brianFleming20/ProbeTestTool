@@ -28,27 +28,30 @@ import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox as tm
+from tkinter import filedialog
 import pyvisa as visa
 import time
 
 
-
+import PI
 import SecurityManager
 from SecurityManager import User
 import BatchManager
 from BatchManager import Batch
+import InstrumentManager
 import ProbeManager
 from ProbeManager import Probe
 from ProbeManager import ProbeManager
 import NanoZND
 import ODMPlus
 import UserLogin as UL
-
+import Sessions as SE
 
 
 
 # create instances
 SM = SecurityManager.SecurityManager()
+IM = InstrumentManager.InstrumentationManager()
 BM = BatchManager.BatchManager()
 PM = ProbeManager()
 NanoZND = NanoZND.NanoZND()
@@ -74,6 +77,7 @@ class WindowController(tk.Tk):
     def __init__(self, *args, **kwargs):
 
         tk.Tk.__init__(self, *args, **kwargs)
+        
         self.title(PTT_Version)
         # get window width and height
         ws = self.winfo_screenwidth()
@@ -93,10 +97,14 @@ class WindowController(tk.Tk):
 
         self.frames = {}
 
-        for F in (UL.UserLogin,
-                  
+        for F in (UL.LogInWindow,
+                  SE.SessionSelectWindow,
+                  SE.NewSessionWindow,
+                  SE.ContinueSessionWindow,
                   ConnectionWindow,
-                 
+                  UL.AdminWindow,
+                  AddUserWindow,
+                  EditUserWindow,
                   TestProgramWindow):
 
             frame = F(container, self)
@@ -105,12 +113,8 @@ class WindowController(tk.Tk):
 
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame(UL.UserLogin)
-        cont = UL.UserLogin._login_confirmed()
-        print(cont)
-        # if UL.UserLogin._login_confirmed(self):
-        #     print("Got login confirmed")
-        #     self.show_frame(SessionSelectWindow)
+        self.show_frame(UL.LogInWindow)
+       
        
 
     def show_frame(self, newFrame):
@@ -236,7 +240,7 @@ class TestProgramWindow(tk.Frame):
             # Check to see if the analyser port is connected
             if NanoZND.GetAnalyserStatus():
                 # Get the analyser to generate data points and return them
-                NanoZND.ReadAnalyserData()
+                
                 analyser_data = NanoZND.GetAnalyserData()
                 # Print the analyser data points selected by 
                 print(analyser_data[3:10])
@@ -317,7 +321,7 @@ class TestProgramWindow(tk.Frame):
                             # serial_results = IM.GetPatientParamerts()
                             try:
                                 
-                                serial_results = ODM.ReadPortODM()
+                                serial_results = IM.ReadPortODM()
                             # print(serial_results)
                             # self.SD_data.set(serial_results[0])
                             # self.FTc_data.set(serial_results[1])
@@ -723,13 +727,14 @@ class ConnectionWindow(tk.Frame):
         self.Monitor = StringVar()
         self.comPort = StringVar()
         self.AnalyserUSB = StringVar()
+        self.file = StringVar()
         self.connectedToCom = False
         self.connectedToAnalyser = False
         self.odm_connection = False
         self.AnalyserUSB.set('COM4')
         self.comPort.set('COM3')
         self.Monitor.set('COM5')
-
+        self.file.set(NanoZND.GetFileLocation())
         # create the window and frame
         tk.Frame.__init__(self, parent)
 
@@ -737,28 +742,29 @@ class ConnectionWindow(tk.Frame):
         self.label_1 = ttk.Label(self, text="ODM monitor port")
         self.label_2 = ttk.Label(self, text="Probe Interface Port")
         self.label_3 = ttk.Label(self, text="Analyser port")
-
+        self.label_4 = ttk.Label(self, text="NanoZND file storage location")
         self.entry_1 = ttk.Entry(self, textvariable=self.Monitor,)
         self.entry_2 = ttk.Entry(self, textvariable=self.comPort, )
         self.entry_3 = ttk.Entry(self, textvariable=self.AnalyserUSB, )
+        self.entry_4 = ttk.Entry(self, textvariable=self.file)
         
-        # self.entry_1.insert(END, self.Monitor.get())
-        # self.entry_2.insert(END, self.comPort.get())
-        # self.entry_3.insert(END, self.AnalyserUSB.get())
+      
 
         self.label_1.place(relx=0.275, rely=0.2, anchor=CENTER)
         self.label_2.place(relx=0.275, rely=0.4, anchor=CENTER)
-        self.label_3.place(relx=0.31, rely=0.3,anchor=CENTER)
+        self.label_3.place(relx=0.275, rely=0.3,anchor=CENTER)
+        self.label_4.place(relx=0.25, rely=0.55, anchor=CENTER)
         self.entry_1.place(relx=0.5, rely=0.2, anchor=CENTER)
         self.entry_2.place(relx=0.5, rely=0.4, anchor=CENTER)
         self.entry_3.place(relx=0.5, rely=0.3, anchor=CENTER)
-        # self.rb1 = ttk.Radiobutton(
-        #     self, text='Serial', variable=self.isSerial, value='true')
-        # self.rb1.place(relx=0.45, rely=0.5, anchor=CENTER)
-        # self.rb2 = ttk.Radiobutton(
-        #     self, text='Extended', variable=self.isSerial, value='false')
-        # self.rb2.place(relx=0.46, rely=0.55, anchor=CENTER)
-
+        self.entry_4.place(relx=0.42, rely=0.55, width=250, anchor="w")
+       
+        self.browseBtn = ttk.Button(
+            self, text="Browse", command=lambda: self._browse_btn_clicked(controller))
+        self.browseBtn.grid(row=2, column=1)
+        self.browseBtn.place(relx=0.8, rely=0.55, anchor=CENTER)
+        self.bind('<Return>', self._connect_btn_clicked)
+        
         self.connectBtn = ttk.Button(
             self, text="Connect", command=lambda: self._connect_btn_clicked(controller))
         self.connectBtn.grid(row=2, column=1)
@@ -772,7 +778,14 @@ class ConnectionWindow(tk.Frame):
         self.entry_1.focus_set()
         
       
-          
+    def _browse_btn_clicked(self, controller):
+        filename = filedialog.askopenfilenames(initialdir = "/",title = "Select file",
+                                               filetypes = ((".csv files","*.csv"),
+                                                            ("all files","*.*")))     
+        NanoZND.SetFileLocation(filename)
+        self.file = NanoZND.GetFileLocation()
+        print(self.file)
+        
             
 
     def _connect_btn_clicked(self, controller):
@@ -783,6 +796,7 @@ class ConnectionWindow(tk.Frame):
         
         try:
             NanoZND.SetAnalyserPort(usb)
+            NanoZND.ReadAnalyserData()
             self.connectedToAnalyser = True
         except:
             self.connectedToAnalyser = False

@@ -31,75 +31,18 @@ from tkinter import ttk
 import tkinter.messagebox as tm
 import SecurityManager
 from SecurityManager import User
-import Sessions as SE
 import BatchManager
-
+import Sessions
 
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
 
 def ignore():
     return 'break'
-w = 800  # window width
-h = 600  # window height
-LARGE_FONT = ("Verdana", 14)
-BTN_WIDTH = 30
-class WindowControllerUsers(tk.Tk):
-    
-    def __init__(self, *args, **kwargs):
-
-        tk.Tk.__init__(self, *args, **kwargs)
-
-        # get window width and height
-        ws = self.winfo_screenwidth()
-        hs = self.winfo_screenheight()
-        # calculate x and y coordinates for the window
-        x = (ws/2) - (w/2)
-        y = (hs/2) - (h/2)
-        # set the dimensions of the screen and where it is placed
-        self.geometry('%dx%d+%d+%d' % (w, h, x, y))
-
-        container = tk.Frame(self)
-
-        container.pack(side="top", fill="both", expand=True)
-
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
-
-        self.frames = {}
-
-        for F in (UserLogin,
-                  SE.SessionSelectWindow,
-                  AdminWindow,
-                  EditUserWindow,
-                  ChangePasswordWindow,
-                  AddUserWindow
-                  ):
-
-            frame = F(container, self)
-
-            self.frames[F] = frame
-
-            frame.grid(row=0, column=0, sticky="nsew")
-
-        self.show_frame(UserLogin)
-       
-       
-
-    def show_frame(self, newFrame):
-
-        frame = self.frames[newFrame]
-        frame.tkraise()
-
-        # Does the frame have a refresh method, if so call it.
-        if hasattr(newFrame, 'refresh_window') and callable(getattr(newFrame, 'refresh_window')):
-            self.frames[newFrame].refresh_window()
 
 
 
-class UserLogin(tk.Frame):
-    
-    
+class LogInWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.currentUser = StringVar()
@@ -130,8 +73,7 @@ class UserLogin(tk.Frame):
 
     def _login_btn_clicked(self, controller):
         self.logbtn.config(command=ignore)
-        self.login_complete = False
-
+        from Sessions import SessionSelectWindow
         # create a user object from the users input
         username = self.entry_1.get()
         password = self.entry_2.get()
@@ -140,20 +82,24 @@ class UserLogin(tk.Frame):
         self.entry_2.delete(0, 'end')
         # check to see if the details are valid
         if SM.logIn(user):
-            controller.show_frame(SE.SessionSelectWindow)
+            controller.show_frame(SessionSelectWindow)
         else:
             tm.showerror("Login error", "Incorrect username or password")
         self.logbtn.config(command=lambda: self._login_btn_clicked(controller))
         
-    def _login_confirmed(self):
+        
+    def _login_complete(self):
+        self.login_complete = True
+        print("login success!")
+        
+    def Collect_login(self):
         return self.login_complete
-    
-    
-    
-    
+
 class AdminWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.admin_complete = False
+        
 
         self.AW_addUsrBtn = ttk.Button(
             self, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
@@ -164,13 +110,22 @@ class AdminWindow(tk.Frame):
         self.AW_editUsrBtn.place(relx=0.5, rely=0.5, anchor=CENTER)
 
         self.AW_adminLogoutBtn = ttk.Button(
-            self, text='Done', command=lambda: controller.show_frame())
+            self, text='Done', command=lambda: self._admin_complete())
         self.AW_adminLogoutBtn.place(relx=0.7, rely=0.5, anchor=CENTER)
+            
+    def _admin_complete(self):
+        self.admin_complete = True
+
+    def AdminComplete(self):
+        return self.admin_complete
+    
+    
+      
         
 class EditUserWindow(tk.Frame):
-    def __init__(self, parent, controller):
+    def __init__(self, controller):
         
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self)
 
         self.Label1 = ttk.Label(self, text='Choose a user to edit')
         self.Label1.place(relx=0.5, rely=0.1, anchor=CENTER)
@@ -196,7 +151,29 @@ class EditUserWindow(tk.Frame):
         lstid = self.userListBox.curselection()
         lstUsr = self.userListBox.get(lstid[0])
         SM.editingUser = SM.GetUserObject(lstUsr)
-        controller.show_frame(ChangePasswordWindow)
+        self.newPassword = StringVar()
+
+        self.CPWl1 = ttk.Label(self, text='Enter a new password')
+        self.CPWl1.place(relx=0.35, rely=0.3, anchor=CENTER)
+
+        self.CPWe1 = ttk.Entry(self, textvariable=self.newPassword)
+        self.CPWe1.place(relx=0.65, rely=0.3, anchor=CENTER)
+
+        self.confm_btn = ttk.Button(
+            self, text='Confirm', command=lambda: self.change_btn_clicked(controller))
+        self.confm_btn.place(relx=0.5, rely=0.6, anchor=CENTER)
+        
+    def change_btn_clicked(self, controller):
+        SM.editingUser.password = self.newPassword.get()
+        SM.updatePassword(SM.editingUser)
+        tm.showinfo('Changed password', 'Password change successful')
+        controller.show_frame(EditUserWindow)
+
+    def confm_btn_clicked(self, controller):
+        SM.editingUser.password = self.newPassword.get()
+        SM.updatePassword(SM.editingUser)
+        tm.showinfo('Changed password', 'Password change successful')
+        controller.show_frame(EditUserWindow)
 
     def _delUsr_btn_clicked(self, controller):
         self.delUsr_btn.config(command=ignore)
@@ -326,38 +303,7 @@ class AddUserWindow(tk.Frame):
         self.newpassword.set("")
         
         
-class SessionSelectWindow(tk.Frame):
-    def __init__(self, parent, controller):
-        # create a choose session window
-        tk.Frame.__init__(self, parent)
 
-        self.SSW_b1 = ttk.Button(self, text='Start a new session', command=lambda: controller.show_frame(
-            SE.NewSessionWindow), width=BTN_WIDTH)
-        self.SSW_b1.place(relx=0.3, rely=0.3, anchor=CENTER)
-
-        self.SSW_b2 = ttk.Button(self, text='Continue a previous session',
-                                 command=lambda: controller.show_frame(SE.ContinueSessionWindow), width=BTN_WIDTH)
-        self.SSW_b2.place(relx=0.7, rely=0.3, anchor=CENTER)
-
-        self.SSW_b3 = ttk.Button(self, text='Log Out', command=lambda: controller.show_frame(
-            UserLogin), width=BTN_WIDTH)
-        self.SSW_b3.place(relx=0.3, rely=0.6, anchor=CENTER)
-
-        self.SSW_b4 = ttk.Button(self, text='Edit Users', command=lambda: controller.show_frame(
-            AdminWindow), width=BTN_WIDTH)
-        self.SSW_b4.place(relx=0.7, rely=0.6, anchor=CENTER)
-
-        exitBtn = ttk.Button(
-            self, text='Exit', command=lambda: controller.destroy, width=BTN_WIDTH)
-        exitBtn.place(relx=0.5, rely=0.8, anchor=CENTER)
-
-    def refresh_window(self):
-        if SM.loggedInUser.admin == False:
-            self.SSW_b4.config(state=DISABLED)
-        else:
-            self.SSW_b4.config(state=NORMAL)
-
-        if len(BM.GetAvailableBatches()) == 0:
-            self.SSW_b2.config(state=DISABLED)
-        else:
-            self.SSW_b2.config(state=NORMAL)
+            
+            
+        

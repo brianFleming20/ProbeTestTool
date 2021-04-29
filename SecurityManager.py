@@ -17,6 +17,8 @@ set a user to be logged in or out
 '''
 import pickle
 
+
+
 class SecurityManager(object):
     """
     Handles all interaction with the User functionality. Such as: log in/out, add or delete user. Makes use of SecManDB to interact with the pickle file where user data is stored
@@ -98,7 +100,6 @@ class SecurityManager(object):
         userlist = self.SMDB.getUserList()
         return userlist
         
-
         
     
 class SecManDB(object):
@@ -184,6 +185,7 @@ class User(object):
         self.password = password
         self.admin = admin
 
+    
  
 #SM = SecurityManager()
          
