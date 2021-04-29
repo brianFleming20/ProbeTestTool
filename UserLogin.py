@@ -46,7 +46,6 @@ class LogInWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.currentUser = StringVar()
-        self.login_complete = False
         
 
         self.label_1 = ttk.Label(self, text="Username")
@@ -88,18 +87,12 @@ class LogInWindow(tk.Frame):
         self.logbtn.config(command=lambda: self._login_btn_clicked(controller))
         
         
-    def _login_complete(self):
-        self.login_complete = True
-        print("login success!")
-        
-    def Collect_login(self):
-        return self.login_complete
+
 
 class AdminWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.admin_complete = False
-        
+        from Sessions import SessionSelectWindow
 
         self.AW_addUsrBtn = ttk.Button(
             self, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
@@ -110,15 +103,10 @@ class AdminWindow(tk.Frame):
         self.AW_editUsrBtn.place(relx=0.5, rely=0.5, anchor=CENTER)
 
         self.AW_adminLogoutBtn = ttk.Button(
-            self, text='Done', command=lambda: self._admin_complete())
+            self, text='Done', command=lambda: controller.show_frame(SessionSelectWindow))
         self.AW_adminLogoutBtn.place(relx=0.7, rely=0.5, anchor=CENTER)
             
-    def _admin_complete(self):
-        self.admin_complete = True
-
-    def AdminComplete(self):
-        return self.admin_complete
-    
+   
     
       
         

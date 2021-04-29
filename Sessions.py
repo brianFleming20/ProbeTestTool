@@ -25,7 +25,7 @@ class SessionSelectWindow(tk.Frame):
         # create a choose session window
         tk.Frame.__init__(self, parent)
         from UserLogin import LogInWindow, AdminWindow
-
+        
         self.SSW_b1 = ttk.Button(self, text='Start a new session', command=lambda: controller.show_frame(
             NewSessionWindow), width=BTN_WIDTH)
         self.SSW_b1.place(relx=0.3, rely=0.3, anchor=CENTER)
