@@ -32,10 +32,12 @@ import tkinter.messagebox as tm
 import SecurityManager
 from SecurityManager import User
 import BatchManager
-import Sessions
+import Sessions as SE
+
 
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
+
 
 def ignore():
     return 'break'
@@ -66,13 +68,11 @@ class LogInWindow(tk.Frame):
         self.logbtn.place(relx=0.5, rely=0.6 ,anchor=CENTER)
         self.bind('<Return>', lambda: self._login_btn_clicked(controller))
         
-        
-
         self.entry_1.focus_set()
 
     def _login_btn_clicked(self, controller):
         self.logbtn.config(command=ignore)
-        from Sessions import SessionSelectWindow
+        
         # create a user object from the users input
         username = self.entry_1.get()
         password = self.entry_2.get()
@@ -81,7 +81,7 @@ class LogInWindow(tk.Frame):
         self.entry_2.delete(0, 'end')
         # check to see if the details are valid
         if SM.logIn(user):
-            controller.show_frame(SessionSelectWindow)
+            controller.show_frame(SE.SessionSelectWindow)
         else:
             tm.showerror("Login error", "Incorrect username or password")
         self.logbtn.config(command=lambda: self._login_btn_clicked(controller))
@@ -92,7 +92,6 @@ class LogInWindow(tk.Frame):
 class AdminWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        from Sessions import SessionSelectWindow
 
         self.AW_addUsrBtn = ttk.Button(
             self, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
@@ -103,7 +102,7 @@ class AdminWindow(tk.Frame):
         self.AW_editUsrBtn.place(relx=0.5, rely=0.5, anchor=CENTER)
 
         self.AW_adminLogoutBtn = ttk.Button(
-            self, text='Done', command=lambda: controller.show_frame(SessionSelectWindow))
+            self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))
         self.AW_adminLogoutBtn.place(relx=0.7, rely=0.5, anchor=CENTER)
             
    

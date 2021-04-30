@@ -34,7 +34,7 @@ import BatchManager
 from BatchManager import Batch
 import SecurityManager
 from SecurityManager import User
-import UserLogin
+import UserLogin as UL
 import DeviceConnect as DC
 
 
@@ -52,7 +52,7 @@ class SessionSelectWindow(tk.Frame):
     def __init__(self, parent, controller):
         # create a choose session window
         tk.Frame.__init__(self, parent)
-        from UserLogin import LogInWindow, AdminWindow
+        
         
         self.SSW_b1 = ttk.Button(self, text='Start a new session', command=lambda: controller.show_frame(
             NewSessionWindow), width=BTN_WIDTH)
@@ -63,20 +63,22 @@ class SessionSelectWindow(tk.Frame):
         self.SSW_b2.place(relx=0.7, rely=0.3, anchor=CENTER)
 
         self.SSW_b3 = ttk.Button(self, text='Log Out', command=lambda: controller.show_frame(
-            LogInWindow), width=BTN_WIDTH)
+            UL.LogInWindow), width=BTN_WIDTH)
         self.SSW_b3.place(relx=0.3, rely=0.6, anchor=CENTER)
 
         self.SSW_b4 = ttk.Button(self, text='Edit Users', command=lambda: controller.show_frame(
-            AdminWindow), width=BTN_WIDTH)
+            UL.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(relx=0.7, rely=0.6, anchor=CENTER)
 
         exitBtn = ttk.Button(
-            self, text='Exit', command=lambda: controller.show_frame(LogInWindow), width=BTN_WIDTH)
+            self, text='Exit', command=lambda: controller.show_frame(UL.LogInWindow), width=BTN_WIDTH)
         exitBtn.place(relx=0.5, rely=0.8, anchor=CENTER)
 
     def refresh_window(self):
-        admin_user = SM.get_user_admin_status()
-        print("user admin {}".format(admin_user))
+       
+        is_admin = SM.get_user_admin_status()
+        print("user admin status {}\n".format(is_admin))
+        
         if SM.loggedInUser.admin == False:
             self.SSW_b4.config(state=DISABLED)
         else:
@@ -140,7 +142,7 @@ class NewSessionWindow(tk.Frame):
 
     def confm_btn_clicked(self, controller):
         # create batch object
-        from Main import ConnectionWindow
+      
         newBatch = Batch(self.batchNumber.get())
         newBatch.probeType = self.probeType.get()
 
@@ -152,7 +154,7 @@ class NewSessionWindow(tk.Frame):
             else:
                 BM.currentBatch = newBatch
                 self.NSWE1.delete(0, 'end')
-                controller.show_frame(ConnectionWindow)
+                controller.show_frame(DC.ConnectionWindow)
 
 
 class ContinueSessionWindow(tk.Frame):
