@@ -30,6 +30,7 @@ class SecurityManager(object):
         self.loggedInUser = False
         self.editingUser = False
         self.SMDB = SecManDB()
+        self.current_user_status = False
 
     
     def logIn(self, user):
@@ -44,13 +45,20 @@ class SecurityManager(object):
             print('user not found in dict')
         '''
         nuser = self.SMDB.getUser(user.name)
+        print("Name {}\n".format(nuser.admin))
         if nuser == False: #is the username a valid username?
             return False
         else:
             if nuser.password == user.password: #is the password correct?
                 self.loggedInUser = nuser
+                self.current_user_status = nuser.admin
                 return True
 
+    def get_user_admin_status(self):
+        return self.current_user_status
+        
+    
+    
     def logOut(self):
         '''
         tick
@@ -185,7 +193,6 @@ class User(object):
         self.password = password
         self.admin = admin
 
-    
  
 #SM = SecurityManager()
          

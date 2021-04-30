@@ -1,3 +1,30 @@
+'''
+Created on 3 May 2017
+
+@author: jackw
+@amended by Brian F
+
+Naming convention
+- Variables = no spaces, capitals for every word except the first : thisIsAVariable
+- Local functions = prefixed with _, _ for spaces, no capitals : _a_local_function
+
+Dependencies
+-NI VISA Backend
+-Non standard python modules
+    pyvisa
+    pyserial
+
+
+to do:
+-complete button on TPW doesn't work
+-TPW freezes if a probe is inserted
+-add SQ probe to list
+
+#         s = ttk.Separator(self.root, orient=VERTICAL)
+#         s.grid(row=0, column=1, sticky=(N,S))
+
+'''
+
 
 import tkinter as tk
 from tkinter import *
@@ -6,8 +33,9 @@ import tkinter.messagebox as tm
 import BatchManager
 from BatchManager import Batch
 import SecurityManager
-
+from SecurityManager import User
 import UserLogin
+import DeviceConnect as DC
 
 
 BM = BatchManager.BatchManager()
@@ -43,10 +71,12 @@ class SessionSelectWindow(tk.Frame):
         self.SSW_b4.place(relx=0.7, rely=0.6, anchor=CENTER)
 
         exitBtn = ttk.Button(
-            self, text='Exit', command=lambda: controller.destroy, width=BTN_WIDTH)
+            self, text='Exit', command=lambda: controller.show_frame(LogInWindow), width=BTN_WIDTH)
         exitBtn.place(relx=0.5, rely=0.8, anchor=CENTER)
 
     def refresh_window(self):
+        admin_user = SM.get_user_admin_status()
+        print("user admin {}".format(admin_user))
         if SM.loggedInUser.admin == False:
             self.SSW_b4.config(state=DISABLED)
         else:
@@ -161,12 +191,12 @@ class ContinueSessionWindow(tk.Frame):
             self.sessionListBox.insert(END, item)
 
     def continue_btn_clicked(self, controller):
-        from Main import ConnectionWindow
+     
         lstid = self.sessionListBox.curselection()
 
         try:
             lstBatch = self.sessionListBox.get(lstid[0])
             BM.currentBatch = BM.GetBatchObject(lstBatch)
-            controller.show_frame(ConnectionWindow)
+            controller.show_frame(DC.ConnectionWindow)
         except:
             tm.showerror('Error', 'Please select a batch from the batch list')
