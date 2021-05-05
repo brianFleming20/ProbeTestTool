@@ -48,15 +48,25 @@ class SecurityManager(object):
             print('user not found in dict')
         '''
         nuser = self.SMDB.getUser(user.name)
+        
+        
       
         if nuser == False: #is the username a valid username?
             return False
         else:
             if nuser.password == user.password: #is the password correct?
                 self.loggedInUser = nuser.admin
-                user_status = self.GetUserObject(nuser.name)
-                is_admin = user_status.admin
-                print("{}\n".format(is_admin))
+               
+                print(nuser.name, self.loggedInUser)
+                myvar = [nuser.name, nuser.admin]
+  
+                # Open a file and use dump()
+                with open('file.ptt', 'wb') as file:
+      
+                # A new file will be created
+                    pickle.dump(myvar, file)
+            
+                file.close()
                 
                 
                 return True

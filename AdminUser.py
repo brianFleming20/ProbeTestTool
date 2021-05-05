@@ -33,8 +33,8 @@ import SecurityManager
 from SecurityManager import User
 import BatchManager
 import Sessions as SE
-import io
 import pickle
+
 
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
@@ -42,58 +42,6 @@ BM = BatchManager.BatchManager()
 
 def ignore():
     return 'break'
-
-
-
-class LogInWindow(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.currentUser = StringVar()
-        cUser = ""
-
-        self.label_1 = ttk.Label(self, text="Username")
-        self.label_2 = ttk.Label(self, text="Password")
-
-        self.entry_1 = ttk.Entry(self, textvariable=self.currentUser ,font="bold")
-        self.entry_2 = ttk.Entry(self, show="*", font="bold")
-        self.entry_1.insert(END, 'Jack')
-        cUser = str(self.currentUser.get())
-        self.entry_2.insert(END, 'password')
-
-        self.label_1.place(relx=0.4, rely=0.3, anchor=CENTER)
-        self.label_2.place(relx=0.4, rely=0.4, anchor=CENTER)
-        self.entry_1.place(relx=0.6, rely=0.3, anchor=CENTER)
-        self.entry_2.place(relx=0.6, rely=0.4, anchor=CENTER)
-
-        self.logbtn = ttk.Button(
-            self, text="Login", width="20",command=lambda: self._login_btn_clicked(controller))
-        self.logbtn.place(relx=0.5, rely=0.6 ,anchor=CENTER)
-        self.bind('<Return>', lambda: self._login_btn_clicked(controller))
-        
-        self.entry_1.focus_set()
-        
-        
-        
-
-    def _login_btn_clicked(self, controller):
-        self.logbtn.config(command=ignore)
-        
-        # create a user object from the users input
-        username = self.entry_1.get()
-        password = self.entry_2.get()
-        user = User(username, password)
-        
-        #self.entry_1.delete(0, 'end')
-        self.entry_2.delete(0, 'end')
-        # check to see if the details are valid
-        if SM.logIn(user):
-            controller.show_frame(SE.SessionSelectWindow)
-        else:
-            tm.showerror("Login error", "Incorrect username or password")
-        self.logbtn.config(command=lambda: self._login_btn_clicked(controller))
-        
-        
-
 
 class AdminWindow(tk.Frame):
     def __init__(self, parent, controller):
@@ -116,9 +64,9 @@ class AdminWindow(tk.Frame):
       
         
 class EditUserWindow(tk.Frame):
-    def __init__(self, controller):
+    def __init__(self, parent, controller):
         
-        tk.Frame.__init__(self)
+        tk.Frame.__init__(self, parent)
 
         self.Label1 = ttk.Label(self, text='Choose a user to edit')
         self.Label1.place(relx=0.5, rely=0.1, anchor=CENTER)
@@ -144,8 +92,6 @@ class EditUserWindow(tk.Frame):
         lstid = self.userListBox.curselection()
         lstUsr = self.userListBox.get(lstid[0])
         SM.editingUser = SM.GetUserObject(lstUsr)
-        self.newPassword = StringVar()
-
         self.CPWl1 = ttk.Label(self, text='Enter a new password')
         self.CPWl1.place(relx=0.35, rely=0.3, anchor=CENTER)
 
@@ -153,20 +99,8 @@ class EditUserWindow(tk.Frame):
         self.CPWe1.place(relx=0.65, rely=0.3, anchor=CENTER)
 
         self.confm_btn = ttk.Button(
-            self, text='Confirm', command=lambda: self.change_btn_clicked(controller))
+            self, text='Confirm', command=lambda: self.confm_btn_clicked())
         self.confm_btn.place(relx=0.5, rely=0.6, anchor=CENTER)
-        
-    def change_btn_clicked(self, controller):
-        SM.editingUser.password = self.newPassword.get()
-        SM.updatePassword(SM.editingUser)
-        tm.showinfo('Changed password', 'Password change successful')
-        controller.show_frame(EditUserWindow)
-
-    def confm_btn_clicked(self, controller):
-        SM.editingUser.password = self.newPassword.get()
-        SM.updatePassword(SM.editingUser)
-        tm.showinfo('Changed password', 'Password change successful')
-        controller.show_frame(EditUserWindow)
 
     def _delUsr_btn_clicked(self, controller):
         self.delUsr_btn.config(command=ignore)
@@ -206,29 +140,14 @@ class EditUserWindow(tk.Frame):
         # fill the listbox with the list of users
         for item in userList:
             self.userListBox.insert(END, item)
-            
-            
-class ChangePasswordWindow(tk.Frame):
-    def __init__(self, parent, controller):
-        self.newPassword = StringVar()
 
-        tk.Frame.__init__(self, parent)
+        
 
-        self.CPWl1 = ttk.Label(self, text='Enter a new password')
-        self.CPWl1.place(relx=0.35, rely=0.3, anchor=CENTER)
-
-        self.CPWe1 = ttk.Entry(self, textvariable=self.newPassword)
-        self.CPWe1.place(relx=0.65, rely=0.3, anchor=CENTER)
-
-        self.confm_btn = ttk.Button(
-            self, text='Confirm', command=lambda: self.confm_btn_clicked(controller))
-        self.confm_btn.place(relx=0.5, rely=0.6, anchor=CENTER)
-
-    def confm_btn_clicked(self, controller):
+    def confm_btn_clicked(self):
         SM.editingUser.password = self.newPassword.get()
         SM.updatePassword(SM.editingUser)
         tm.showinfo('Changed password', 'Password change successful')
-        controller.show_frame(EditUserWindow)
+        self.Ed
         
         
 class AddUserWindow(tk.Frame):
@@ -294,9 +213,4 @@ class AddUserWindow(tk.Frame):
         self.isAdmin.set('false')
         self.newusername.set("")
         self.newpassword.set("")
-        
-        
-
-            
-            
         

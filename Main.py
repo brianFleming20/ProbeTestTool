@@ -29,8 +29,7 @@ from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox as tm
 from tkinter import filedialog
-import pyvisa as visa
-import time
+
 
 
 

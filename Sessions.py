@@ -36,7 +36,7 @@ import SecurityManager
 from SecurityManager import User
 import UserLogin as UL
 import DeviceConnect as DC
-
+import pickle
 
 BM = BatchManager.BatchManager()
 SM = SecurityManager.SecurityManager()
@@ -47,11 +47,11 @@ def ignore():
 
 BTN_WIDTH = 30
 
-
 class SessionSelectWindow(tk.Frame):
     def __init__(self, parent, controller):
         # create a choose session window
         tk.Frame.__init__(self, parent)
+        self.isAdmin = False
         
         
         self.SSW_b1 = ttk.Button(self, text='Start a new session', command=lambda: controller.show_frame(
@@ -70,16 +70,21 @@ class SessionSelectWindow(tk.Frame):
             UL.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(relx=0.7, rely=0.6, anchor=CENTER)
 
-        exitBtn = ttk.Button(
-            self, text='Exit', command=lambda: controller.show_frame(UL.LogInWindow), width=BTN_WIDTH)
-        exitBtn.place(relx=0.5, rely=0.8, anchor=CENTER)
+        
+
+        
 
     def refresh_window(self):
        
-        is_admin = SM.get_user_admin_status()
-        print("user admin status {}\n".format(is_admin))
+       # Open the file in binary mode
+        with open('file.ptt', 'rb') as file:
+      
+        # Call load method to deserialze
+            myvar = pickle.load(file)
+            self.isAdmin = myvar[1:]
+        print("user admin status {}\n".format(self.isAdmin))
         
-        if SM.loggedInUser.admin == False:
+        if False in self.isAdmin:
             self.SSW_b4.config(state=DISABLED)
         else:
             self.SSW_b4.config(state=NORMAL)

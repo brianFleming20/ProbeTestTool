@@ -33,6 +33,7 @@ from tkinter import filedialog
 import BatchManager
 from BatchManager import Batch
 import ProbeManager
+import pickle
 import Sessions
 import NanoZND
 import ODMPlus
@@ -45,6 +46,8 @@ ODM = ODMPlus.ODMData()
 
 def ignore():
     return 'break'
+
+
 
 
 class ContinueSessionWindow(tk.Frame):

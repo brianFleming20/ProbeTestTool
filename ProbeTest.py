@@ -32,6 +32,7 @@ import tkinter.messagebox as tm
 from tkinter import filedialog
 import pyvisa as visa
 import time
+import pickle
 
 import SecurityManager
 from SecurityManager import User
@@ -66,6 +67,9 @@ BTN_WIDTH = 30
 # Assign as a command when I want to disable a button (double click prevention)
 def ignore():
     return 'break'
+
+def filename():
+    return "Ptt_system_store"
 
 class TestProgramWindow(tk.Frame):
     def __init__(self, parent, controller):

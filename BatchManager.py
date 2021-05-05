@@ -236,6 +236,8 @@ class CSVManager(object):
             return[lis]
 #             for i,x in enumerate(lis):              #print the list items 
 #                 print (i,x)
+    
+    
             
 class Batch(object):
     '''
