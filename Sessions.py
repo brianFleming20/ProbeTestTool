@@ -82,8 +82,8 @@ class SessionSelectWindow(tk.Frame):
         # Call load method to deserialze
             myvar = pickle.load(file)
             self.isAdmin = myvar[1:]
-        print("user admin status {}\n".format(self.isAdmin))
         
+        file.close()
         if False in self.isAdmin:
             self.SSW_b4.config(state=DISABLED)
         else:
@@ -93,6 +93,7 @@ class SessionSelectWindow(tk.Frame):
             self.SSW_b2.config(state=DISABLED)
         else:
             self.SSW_b2.config(state=NORMAL)
+            
             
             
 class NewSessionWindow(tk.Frame):
@@ -172,7 +173,11 @@ class ContinueSessionWindow(tk.Frame):
 
         self.sessionListBox = Listbox(self)
         self.sessionListBox.place(relx=0.5, rely=0.5, anchor=CENTER)
-        self.sessionListBox.config(height=14, width=20)
+        self.sessionListBox.config(height=10, width=20)
+        
+        self.probeTypeListBox = Listbox(self)
+        self.probeTypeListBox.place(relx=0.7, rely=0.5, anchor=CENTER)
+        self.probeTypeListBox.config(height=10, width=15)
 
         self.continue_btn = ttk.Button(
             self, text='Continue Session', command=lambda: self.continue_btn_clicked(controller))
@@ -187,23 +192,50 @@ class ContinueSessionWindow(tk.Frame):
     def refresh_window(self):
         # #create a list of the current users using the dictionary of users
         sessionList = []
+        probeTypeList = []
         for item in BM.GetAvailableBatches():
             sessionList.append(item)
+            batchObj = BM.GetBatchObject(item)
+            probeTypeList.append(batchObj.probeType)
+            batchObj = None
+        
+        print("batch types {}".format(probeTypeList))
 
         # clear the listbox
         self.sessionListBox.delete(0, END)
+        self.probeTypeListBox.delete(0, END)
 
         # fill the listbox with the list of users
         for item in sessionList:
             self.sessionListBox.insert(END, item)
+            
+        for item in probeTypeList:
+            self.probeTypeListBox.insert(END, item)
 
     def continue_btn_clicked(self, controller):
      
         lstid = self.sessionListBox.curselection()
+        allData = []
 
         try:
             lstBatch = self.sessionListBox.get(lstid[0])
-            BM.currentBatch = BM.GetBatchObject(lstBatch)
+            batch = BM.GetBatchObject(lstBatch)
+            # Open the file in binary mode
+            with open('file.ptt', 'rb') as file:
+      
+            # Call load method to deserialze
+                myvar = pickle.load(file)
+            allData.extend(myvar)
+            file.close()
+            
+            allData.append(lstBatch)
+            allData.append(batch.probeType)
+            
+            with open('file.ptt', 'wb') as file:
+                pickle.dump(allData, file)
+            file.close()
+            
+            print("batch is current {}\n".format(allData))
             controller.show_frame(DC.ConnectionWindow)
         except:
             tm.showerror('Error', 'Please select a batch from the batch list')

@@ -68,8 +68,6 @@ BTN_WIDTH = 30
 def ignore():
     return 'break'
 
-def filename():
-    return "Ptt_system_store"
 
 class TestProgramWindow(tk.Frame):
     def __init__(self, parent, controller):
@@ -153,7 +151,15 @@ class TestProgramWindow(tk.Frame):
         Tk.update(self)
         self.sessionComplete = True
         self.sessionOnGoing = False
-        BM.CompleteBatch(BM.currentBatch)
+        with open('file.ptt', 'rb') as file:
+      
+        # Call load method to deserialze
+            myvar = pickle.load(file)
+            currentBatch = ''.join(myvar[2])
+       
+        
+        file.close()
+        BM.CompleteBatch(currentBatch)
         controller.show_frame(SE.SessionSelectWindow)
 
     def suspnd_btn_clicked(self, controller):
@@ -167,11 +173,21 @@ class TestProgramWindow(tk.Frame):
         serial_results = []
         analyser_data = []
         port = NanoZND.GetAnalyserPortNumber()
+        
+        # Open the file in binary mode
+        with open('file.ptt', 'rb') as file:
+      
+        # Call load method to deserialze
+            myvar = pickle.load(file)
+            name = myvar[0]
+            currentBatch = myvar[2]
+            probeType = myvar[3]
+        file.close()
         # self.root.deiconify()
-        self.probeType.set(BM.currentBatch.probeType)
-        self.currentBatch.set(BM.currentBatch.batchNumber)
+        self.probeType.set(probeType)
+        self.currentBatch.set(currentBatch)
         self.probesPassed.set(0)
-        self.currentUser.set(SM.loggedInUser.name)
+        self.currentUser.set(name)
         self.deviceDetails.set(self.device)
         self.RLLimit = -1  # pass criteria for return loss measurement
         

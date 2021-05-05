@@ -8,6 +8,7 @@ fix path variables
 import csv
 import os
 from time import gmtime, strftime
+import pickle
 
 
 class BatchManager(object):
@@ -75,9 +76,16 @@ class BatchManager(object):
         move the batch file into the 'complete' folder 
         refresh the current batch list
         '''  
+        with open('file.ptt', 'rb') as file:
+      
+        # Call load method to deserialze
+            myvar = pickle.load(file)
+            self.currentBatch = ''.join(myvar[2])
         
-        if batch.batchNumber == self.currentBatch.batchNumber:
-            self.CSVM.MoveToCompleted(batch.batchNumber)        #move the batch file to the complete folder
+        
+        file.close()
+        if batch == self.currentBatch:
+            self.CSVM.MoveToCompleted(batch)        #move the batch file to the complete folder
             self.availableBatchs = self.CSVM.GetFileNamesInProgress()     #update the availableBaths list
         else:
             return False

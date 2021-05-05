@@ -38,6 +38,7 @@ import Sessions
 import NanoZND
 import ODMPlus
 import ProbeTest as PT
+import Sessions as SE
 
 BM = BatchManager.BatchManager()
 PM = ProbeManager.ProbeManager()
