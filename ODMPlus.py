@@ -6,6 +6,7 @@ Created on 24 Apr 2017
 
 import pyvisa as visa
 import serial
+import pickle
 
 class ODMData(object):
     
@@ -14,7 +15,6 @@ class ODMData(object):
         self.connectedinstrument = False
         self.port_read = ""
         self.port_control = ""
-        self.monitor_port = ""
         
     def ReadSerialODM(self):
             
@@ -24,15 +24,22 @@ class ODMData(object):
         ignor_bit = ","
         serial_result = []
         temp_add = []
+        session_data = []
         temp = ""
-        port = self.monitor_port
+        with open('file.ptt', 'rb') as file:
+      
+            # Call load method to deserialze
+                myvar = pickle.load(file)
+        session_data.extend(myvar)
+        file.close()
+        port = session_data[4][1]
+        
         # ======================
         # Set up port connection
         #=======================
         try:
             serial_port = self.AccessSerialControl(port)
         except:
-            print("Tounble getting ODM port")
             return None
         
         # ===========================

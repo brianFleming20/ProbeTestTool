@@ -45,12 +45,12 @@ SM = SecurityManager.SecurityManager()
 def ignore():
     return 'break'
 
-BTN_WIDTH = 30
+BTN_WIDTH = 25
 
 class SessionSelectWindow(tk.Frame):
     def __init__(self, parent, controller):
         # create a choose session window
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent, bg='#E0FFFF')
         self.isAdmin = False
         
         
@@ -80,8 +80,8 @@ class SessionSelectWindow(tk.Frame):
         with open('file.ptt', 'rb') as file:
       
         # Call load method to deserialze
-            myvar = pickle.load(file)
-            self.isAdmin = myvar[1:]
+            session_info = pickle.load(file)
+            self.isAdmin = session_info[:]
         
         file.close()
         if False in self.isAdmin:
@@ -100,72 +100,99 @@ class NewSessionWindow(tk.Frame):
     def __init__(self, parent, controller):
         self.batchNumber = StringVar()
         self.probeType = StringVar()
+        
 
         # Details Screen
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent, bg='#E0FFFF')
 
         batch_frame = tk.Frame(self, pady=3)
-        probe_type_frame = tk.Frame(self, pady=3)
+        probe_type_frame = tk.Frame(self, pady=3, padx=50, bg= '#E0FFFF')
         button_frame = tk.Frame(self, pady=3)
 
         #batch_frame.grid(row=0, sticky="ew")
         probe_type_frame.grid(row=1, column=1, sticky="news")
+        
+        self.NSWL1 = ttk.Label(self, text='Probe selection window. ', justify=RIGHT)
+        self.NSWL1.grid(row=0, column=2)
+        
+        self.NSWL1 = ttk.Label(self, text='  ', justify=RIGHT)
+        self.NSWL1.grid(row=1, column=2)
 
         self.NSWL1 = ttk.Label(self, text='Batch number: ', justify=RIGHT)
-        self.NSWL1.grid(row=0, column=0)
+        self.NSWL1.grid(row=2,column=2,columnspan=2,sticky=tk.W,padx=10,pady=(5,0))
 
         self.NSWE1 = ttk.Entry(self, textvariable=self.batchNumber)
-        self.NSWE1.grid(row=0, column=1)
+        self.NSWE1.grid(row=2, column=4)
 
         self.NSWL2 = ttk.Label(self, text='Select Probe Type: ')
-        self.NSWL2.grid(row=1, column=0)
+        self.NSWL2.grid(row=2, column=0)
+        
+       
+      
 
-        tk.Radiobutton(probe_type_frame, text='SDP30 [Suprasternal Probe]',
-                       variable=self.probeType, value='SDP30').pack(fill=X, ipady=5)
+        # tk.Radiobutton(probe_type_frame, text='SDP30 [Suprasternal Probe]',
+        #                variable=self.probeType, value='SDP30').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='DP240 [Doppler 10 Day]',
                        variable=self.probeType, value='DP240').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='DP12 [Doppler 12 Hour]',
                        variable=self.probeType, value='DP12').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='DP6 [Doppler 6 Hour]',
                        variable=self.probeType, value='DP6').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='I2C',
+        tk.Radiobutton(probe_type_frame, text='I2C [Doppler 72 Hour]',
                        variable=self.probeType, value='I2C').pack(fill=X, ipady=5)
-#        tk.Radiobutton(probe_type_frame, text='I2P', variable=self.probeType, value='I2P').pack(fill = X, ipady = 5)
-#        tk.Radiobutton(probe_type_frame, text='I2S', variable=self.probeType, value='I2S').pack(fill = X, ipady = 5)
-#        tk.Radiobutton(probe_type_frame, text='KDP', variable=self.probeType, value='KDP').pack(fill = X, ipady = 5)
+        tk.Radiobutton(probe_type_frame, text='I2P [Doppler 12 Hour]', 
+                       variable=self.probeType, value='I2P').pack(fill = X, ipady = 5)
+        tk.Radiobutton(probe_type_frame, text='I2S [Doppler 6 Hour]', 
+                       variable=self.probeType, value='I2S').pack(fill = X, ipady = 5)
+        tk.Radiobutton(probe_type_frame, text='KDP [Kinder 72 Hour]', 
+                       variable=self.probeType, value='KDP').pack(fill = X, ipady = 5)
         tk.Radiobutton(probe_type_frame, text='Blank',
                        variable=self.probeType, value='Blank').pack(fill=X, ipady=5)
 
-        self.confm_btn = tk.Button(self, text='Confirm', padx=3, pady=3,
+        self.confm_btn = tk.Button(self, text='Confirm', padx=2, pady=3,
                                    width=BTN_WIDTH, command=lambda: self.confm_btn_clicked(controller))
-        self.confm_btn.grid(row=2, column=0)
+        self.confm_btn.grid(row=5, column=1)
 
-        self.cancl_btn = tk.Button(self, text='Cancel', padx=3, pady=3, width=BTN_WIDTH,
+        self.cancl_btn = tk.Button(self, text='Cancel', padx=2, pady=3, width=BTN_WIDTH,
                                    command=lambda: controller.show_frame(SessionSelectWindow))
-        self.cancl_btn.grid(row=2, column=1)
+        self.cancl_btn.grid(row=5, column=4)
 
         self.bind('<Return>', self.confm_btn_clicked)
 
     def confm_btn_clicked(self, controller):
         # create batch object
-      
+        session_data = []
         newBatch = Batch(self.batchNumber.get())
         newBatch.probeType = self.probeType.get()
 
         DAnswer = tm.askyesno('Confirm', 'Are batch details correct?')
         if DAnswer == True:
             # create the batch file
-            if BM.CreateBatch(newBatch, SM.loggedInUser.name) == False:
+            # Open the file in binary mode
+            with open('file.ptt', 'rb') as file:
+      
+            # Call load method to deserialze
+                myvar = pickle.load(file)
+            session_data.extend(myvar)
+            file.close()
+            name = session_data[0]
+            if BM.CreateBatch(newBatch, name) == False:
                 tm.showerror('Error', 'Batch number not unique')
             else:
                 BM.currentBatch = newBatch
+                session_data.append(self.batchNumber.get())
+                session_data.append(self.probeType.get())
+            
+                with open('file.ptt', 'wb') as file:
+                    pickle.dump(session_data, file)
+                file.close()
                 self.NSWE1.delete(0, 'end')
                 controller.show_frame(DC.ConnectionWindow)
 
 
 class ContinueSessionWindow(tk.Frame):
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent, bg='#E0FFFF')
         
 
         self.Label1 = ttk.Label(self, text='Choose a session to resume')
@@ -199,7 +226,7 @@ class ContinueSessionWindow(tk.Frame):
             probeTypeList.append(batchObj.probeType)
             batchObj = None
         
-        print("batch types {}".format(probeTypeList))
+       
 
         # clear the listbox
         self.sessionListBox.delete(0, END)
@@ -215,7 +242,7 @@ class ContinueSessionWindow(tk.Frame):
     def continue_btn_clicked(self, controller):
      
         lstid = self.sessionListBox.curselection()
-        allData = []
+        session_data = []
 
         try:
             lstBatch = self.sessionListBox.get(lstid[0])
@@ -225,17 +252,17 @@ class ContinueSessionWindow(tk.Frame):
       
             # Call load method to deserialze
                 myvar = pickle.load(file)
-            allData.extend(myvar)
+            session_data.extend(myvar)
             file.close()
             
-            allData.append(lstBatch)
-            allData.append(batch.probeType)
+            session_data.append(lstBatch)
+            session_data.append(batch.probeType)
             
             with open('file.ptt', 'wb') as file:
-                pickle.dump(allData, file)
+                pickle.dump(session_data, file)
             file.close()
             
-            print("batch is current {}\n".format(allData))
+           
             controller.show_frame(DC.ConnectionWindow)
         except:
             tm.showerror('Error', 'Please select a batch from the batch list')

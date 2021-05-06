@@ -32,6 +32,7 @@ import tkinter.messagebox as tm
 from tkinter import filedialog
 import BatchManager
 from BatchManager import Batch
+import pyvisa as visa
 import ProbeManager
 import pickle
 import Sessions
@@ -51,50 +52,7 @@ def ignore():
 
 
 
-class ContinueSessionWindow(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        
 
-        self.Label1 = ttk.Label(self, text='Choose a session to resume')
-        self.Label1.place(relx=0.5, rely=0.1, anchor=CENTER)
-
-        self.sessionListBox = Listbox(self)
-        self.sessionListBox.place(relx=0.5, rely=0.5, anchor=CENTER)
-        self.sessionListBox.config(height=14, width=20)
-
-        self.continue_btn = ttk.Button(
-            self, text='Continue Session', command=lambda: self.continue_btn_clicked(controller))
-        self.continue_btn.place(relx=0.4, rely=0.9, anchor=CENTER)
-
-        self.cancel_btn = ttk.Button(
-            self, text='Cancel', command=lambda: controller.show_frame(SE.SessionSelectWindow))
-        self.cancel_btn.place(relx=0.6, rely=0.9, anchor=CENTER)
-
-        self.refresh_window()
-
-    def refresh_window(self):
-        # #create a list of the current users using the dictionary of users
-        sessionList = []
-        for item in BM.GetAvailableBatches():
-            sessionList.append(item)
-
-        # clear the listbox
-        self.sessionListBox.delete(0, END)
-
-        # fill the listbox with the list of users
-        for item in sessionList:
-            self.sessionListBox.insert(END, item)
-
-    def continue_btn_clicked(self, controller):
-        lstid = self.sessionListBox.curselection()
-
-        try:
-            lstBatch = self.sessionListBox.get(lstid[0])
-            BM.currentBatch = BM.GetBatchObject(lstBatch)
-            controller.show_frame(ConnectionWindow)
-        except:
-            tm.showerror('Error', 'Please select a batch from the batch list')
 
 
 class ConnectionWindow(tk.Frame):
@@ -112,7 +70,7 @@ class ConnectionWindow(tk.Frame):
         self.Monitor.set('COM5')
         self.file.set(NanoZND.GetFileLocation())
         # create the window and frame
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent, bg='#E0FFFF')
 
         # create the widgets
         self.label_1 = ttk.Label(self, text="ODM monitor port")
@@ -160,7 +118,7 @@ class ConnectionWindow(tk.Frame):
                                                             ("all files","*.*")))     
         NanoZND.SetFileLocation(filename)
         self.file = NanoZND.GetFileLocation()
-        print(self.file)
+        
         
             
 
@@ -168,33 +126,41 @@ class ConnectionWindow(tk.Frame):
         cp = self.comPort.get()
         odm = self.Monitor.get()
         usb = self.AnalyserUSB.get()
+        session_data = []
+        connection_data = []
+        with open('file.ptt', 'rb') as file:
+      
+            # Call load method to deserialze
+                myvar = pickle.load(file)
+        session_data.extend(myvar)
+        
+        file.close()
+        
+        connection_data.append(cp)
+        connection_data.append(odm)
+        connection_data.append(usb)
+        session_data.append(connection_data)
+        
+        with open('file.ptt', 'wb') as file:
+                pickle.dump(session_data, file)
+        file.close()
         
         
+        
+        
+                
+        print("Before probe interface")    
         try:
-            NanoZND.SetAnalyserPort(usb)
-            NanoZND.ReadAnalyserData()
-            self.connectedToAnalyser = True
-        except:
-            self.connectedToAnalyser = False
-            tm.showerror(
-                'Connection Error', 'Unable to connect to Analyser Interface\nPlease check the nanoZND Port is correct or turned on.')
-            
-        try:
-            PM.ConnectToProbeInterface(cp)
+            PT.ConnectToProbe().ConnectToProbeInterface(cp)
             self.connectedToCom = True
         except:
             self.connectedToCom = False
             tm.showerror(
                 'Connection Error', 'Unable to connect to Probe Interface\nPlease check the Probe interface port is correct.')
 
-        try:
-           ODM.set_ODM_port_number(odm) 
-           self.odm_connection = True
-        except:
-           self.odm_connection = False
-           tm.showerror(
-                'Connection Error', 'Unable to connect to Probe Interface\nPlease check the ODM port is correct and turned on.')
+      
   
+        print("Before transfer to test window")
 
-        if self.connectedToCom and self.connectedToAnalyser and self.odm_connection == True :
+        if self.connectedToCom  == True :
             controller.show_frame(PT.TestProgramWindow)

@@ -47,7 +47,7 @@ def ignore():
 
 class LogInWindow(tk.Frame):
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent, bg='#E0FFFF')
         self.currentUser = StringVar()
         cUser = ""
 
@@ -66,7 +66,7 @@ class LogInWindow(tk.Frame):
         self.entry_2.place(relx=0.6, rely=0.4, anchor=CENTER)
 
         self.logbtn = ttk.Button(
-            self, text="Login", width="20",command=lambda: self._login_btn_clicked(controller))
+            self, text="Login", width=20,command=lambda: self._login_btn_clicked(controller))
         self.logbtn.place(relx=0.5, rely=0.6 ,anchor=CENTER)
         self.bind('<Return>', lambda: self._login_btn_clicked(controller))
         
@@ -97,7 +97,7 @@ class LogInWindow(tk.Frame):
 
 class AdminWindow(tk.Frame):
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent, bg='#FFDAB9')
 
         self.AW_addUsrBtn = ttk.Button(
             self, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
@@ -118,7 +118,7 @@ class AdminWindow(tk.Frame):
 class EditUserWindow(tk.Frame):
     def __init__(self, controller):
         
-        tk.Frame.__init__(self)
+        tk.Frame.__init__(self, bg='#FFDAB9')
 
         self.Label1 = ttk.Label(self, text='Choose a user to edit')
         self.Label1.place(relx=0.5, rely=0.1, anchor=CENTER)
