@@ -11,7 +11,7 @@ from time import gmtime, strftime
 import time
 from bitstring import BitArray
 import pickle
-
+import pyvisa as visa
 
 
 
@@ -80,19 +80,16 @@ class PI(object):
         '''
         Returns True if a probe is present, False if not
         '''   
-        try:        
+              
         #get the IO byte
-            self.SM.OpenPort()
-            self.SM.Send(b'4950')   
-            time.sleep(0.05) #allow time for the data to be received  
-            IOByte = self.SM.Read()
-            self.SM.ClosePort()
-        except:
-            print("unable to tell if probe is there")
+        self.SM.OpenPort()
+        self.SM.Send(b'4950')   
+        time.sleep(0.05) #allow time for the data to be received  
+        IOByte = self.SM.Read()
+        self.SM.ClosePort()
         #get the relevant bit
         bits = BitArray(hex=IOByte)
         bit = bits.bin[2:3]
-        print("bits \n\n{}".format(bit))
         #check to see if the pin is pulled low by the probe
         if bit == '0':
             return True
@@ -174,7 +171,7 @@ class SerialManager(object):
         
     def ConfigurePort(self, port):
         session_data = []
-       
+        
         with open('file.ptt', 'rb') as file:
       
             # Call load method to deserialze
@@ -182,7 +179,7 @@ class SerialManager(object):
         session_data.extend(myvar)
         
         file.close()
-        print("session data before{}".format(session_data))
+        
         self.ser = serial.Serial(port = port, baudrate = 9600, \
             parity = serial.PARITY_NONE, \
             stopbits = serial.STOPBITS_ONE, \
@@ -190,16 +187,16 @@ class SerialManager(object):
             timeout  = 0, \
              )
         
+        session_data.append(self.ser)
         
         self.ser.close()
         
-        session_data.append(self.ser.port)
-
+        
+        
         with open('file.ptt', 'wb') as file:
             pickle.dump(session_data, file)
         file.close()
-        print("session data after {}".format(session_data))
-
+        
     def Send(self, input):
         '''
         pass in hex bytes, send the whole lot down the serial port.
@@ -230,6 +227,7 @@ class SerialManager(object):
         '''
         Opens the port, readying it for communication
         '''
+        self.ser = False
         session_data = []
        
         with open('file.ptt', 'rb') as file:
@@ -237,8 +235,10 @@ class SerialManager(object):
             # Call load method to deserialze
             myvar = pickle.load(file)
         session_data.extend(myvar)
-        self.ser = str(session_data[:-1])
+        self.ser = session_data[5]
         file.close()
+       
+        
         self.ser.open()
     
     def ClosePort(self):

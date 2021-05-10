@@ -18,13 +18,20 @@ class BatchManager(object):
         '''
         Constructor
         '''
+        self.CSVM = CSVManager()
         self.currentBatch = None
+        session_data = []
+        with open('file.ptt', 'rb') as file:
+            myvar = pickle.load(file)
+        session_data.extend(myvar)
+        file.close()
+        self.currentBatch = self.GetBatchObject(session_data[2])
         self.availableBatchs = []
         self.path = os.path.join("C:\\Users", os.getenv('username'), "Desktop\\PTT_Results", "")
         self.inProgressPath = os.path.join(self.path, "in_progress", "")
         self.completePath = os.path.join(self.path, "complete", "")
         
-        self.CSVM = CSVManager()
+        
     
     def CreateBatch(self, batch, user):
         '''

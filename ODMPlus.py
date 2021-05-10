@@ -15,6 +15,7 @@ class ODMData(object):
         self.connectedinstrument = False
         self.port_read = ""
         self.port_control = ""
+        self.monitor_port = ""
         
     def ReadSerialODM(self):
             
@@ -73,7 +74,7 @@ class ODMData(object):
                                     timeout=1,
                                     parity= serial.PARITY_NONE,
                                     stopbits=serial.STOPBITS_ONE)
-        
+        self.monitor_port = serial_port_control.port
         return serial_port_control
     
     
@@ -196,3 +197,8 @@ class ODMData(object):
     def GetODMPortNumber(self):
         return self.monitor_port
     
+    def checkODMPort(self, port):
+        self.AccessSerialControl(port)
+        if self.GetODMPortNumber() == port:
+            return True
+        

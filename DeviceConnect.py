@@ -32,7 +32,6 @@ import tkinter.messagebox as tm
 from tkinter import filedialog
 import BatchManager
 from BatchManager import Batch
-import pyvisa as visa
 import ProbeManager
 import pickle
 import Sessions
@@ -146,12 +145,18 @@ class ConnectionWindow(tk.Frame):
         file.close()
         
         
+            
         
-        
-                
-        print("Before probe interface")    
         try:
-            PT.ConnectToProbe().ConnectToProbeInterface(cp)
+            if ODM.checkODMPort(odm):
+                
+                self.odm_connection = True
+        except:
+            tm.showerror(
+                'Connection Error', 'Unable to connect to ODM Monitor\nPlease check the ODM is on and connected.')
+           
+        try:
+            PM.ConnectToProbeInterface(cp)
             self.connectedToCom = True
         except:
             self.connectedToCom = False
@@ -160,7 +165,7 @@ class ConnectionWindow(tk.Frame):
 
       
   
-        print("Before transfer to test window")
+        
 
-        if self.connectedToCom  == True :
+        if self.connectedToCom and self.odm_connection == True :
             controller.show_frame(PT.TestProgramWindow)

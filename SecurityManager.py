@@ -57,7 +57,6 @@ class SecurityManager(object):
             if nuser.password == user.password: #is the password correct?
                 self.loggedInUser = nuser.admin
                
-                print(nuser.name, self.loggedInUser)
                 myvar = [nuser.name, nuser.admin]
   
                 # Open a file and use dump()
