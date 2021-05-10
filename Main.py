@@ -80,7 +80,8 @@ class WindowController(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-
+        
+        
         for F in (UL.LogInWindow,
                   SE.SessionSelectWindow,
                   SE.NewSessionWindow,

@@ -80,6 +80,9 @@ class ConnectionWindow(tk.Frame):
         self.entry_2 = ttk.Entry(self, textvariable=self.comPort, )
         self.entry_3 = ttk.Entry(self, textvariable=self.AnalyserUSB, )
         self.entry_4 = ttk.Entry(self, textvariable=self.file)
+        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
+        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
       
 

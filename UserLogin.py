@@ -35,6 +35,7 @@ import BatchManager
 import Sessions as SE
 import io
 import pickle
+from PIL import Image, ImageTk
 
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
@@ -50,9 +51,18 @@ class LogInWindow(tk.Frame):
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
         self.currentUser = StringVar()
         cUser = ""
+        
+        self.login_btn = (PhotoImage(file="login_btn.gif"))
+        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
+        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
+        self.title = (PhotoImage(file="title.gif"))
+        self.label_4 = ttk.Label(self, image=self.title)
+        self.label_4.place(relx=0.54, rely=0.1, anchor=CENTER)
 
         self.label_1 = ttk.Label(self, text="Username")
         self.label_2 = ttk.Label(self, text="Password")
+       
 
         self.entry_1 = ttk.Entry(self, textvariable=self.currentUser ,font="bold")
         self.entry_2 = ttk.Entry(self, show="*", font="bold")
@@ -66,7 +76,7 @@ class LogInWindow(tk.Frame):
         self.entry_2.place(relx=0.6, rely=0.4, anchor=CENTER)
 
         self.logbtn = ttk.Button(
-            self, text="Login", width=20,command=lambda: self._login_btn_clicked(controller))
+            self, text="Login",image=self.login_btn, width=20,command=lambda: self._login_btn_clicked(controller))
         self.logbtn.place(relx=0.5, rely=0.6 ,anchor=CENTER)
         self.bind('<Return>', lambda: self._login_btn_clicked(controller))
         
@@ -98,6 +108,10 @@ class LogInWindow(tk.Frame):
 class AdminWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
+        
+        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
+        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
 
         self.AW_addUsrBtn = ttk.Button(
             self, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
@@ -119,6 +133,10 @@ class EditUserWindow(tk.Frame):
     def __init__(self, controller):
         
         tk.Frame.__init__(self, bg='#FFDAB9')
+        
+        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
+        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
 
         self.Label1 = ttk.Label(self, text='Choose a user to edit')
         self.Label1.place(relx=0.5, rely=0.1, anchor=CENTER)
@@ -145,6 +163,10 @@ class EditUserWindow(tk.Frame):
         lstUsr = self.userListBox.get(lstid[0])
         SM.editingUser = SM.GetUserObject(lstUsr)
         self.newPassword = StringVar()
+        
+        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
+        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
 
         self.CPWl1 = ttk.Label(self, text='Enter a new password')
         self.CPWl1.place(relx=0.35, rely=0.3, anchor=CENTER)
@@ -213,6 +235,11 @@ class ChangePasswordWindow(tk.Frame):
         self.newPassword = StringVar()
 
         tk.Frame.__init__(self, parent)
+        
+        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
+        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
+        
 
         self.CPWl1 = ttk.Label(self, text='Enter a new password')
         self.CPWl1.place(relx=0.35, rely=0.3, anchor=CENTER)
@@ -241,6 +268,10 @@ class AddUserWindow(tk.Frame):
         self.isAdmin = StringVar()
 
         self._setDefaults()
+        
+        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
+        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
 
         self.AUWl1 = ttk.Label(self, text='New user name: ')
         self.AUWl2 = ttk.Label(self, text='Password: ')

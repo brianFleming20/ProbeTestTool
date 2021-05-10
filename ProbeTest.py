@@ -86,6 +86,7 @@ class TestProgramWindow(tk.Frame):
         self.sessionOnGoing = False
         self.sessionComplete = None
         self.action = StringVar()
+        
 
         # define variables
         self.currentBatch = StringVar()
@@ -104,6 +105,9 @@ class TestProgramWindow(tk.Frame):
         self.amberlight = (PhotoImage(file="amber128.gif"))
         self.redlight = (PhotoImage(file="red128.gif"))
         self.greylight = (PhotoImage(file="grey128.gif"))
+        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
+        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
 
         ttk.Label(self, text='Batch number: ').place(
@@ -182,7 +186,7 @@ class TestProgramWindow(tk.Frame):
         self.sessionOnGoing = True
         serial_results = []
         analyser_data = []
-       
+        BM.updateBatchInfo()
         
         # Open the file in binary mode
         with open('file.ptt', 'rb') as file:

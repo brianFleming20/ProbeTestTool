@@ -53,6 +53,9 @@ class SessionSelectWindow(tk.Frame):
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
         self.isAdmin = False
         
+        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
+        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
         self.SSW_b1 = ttk.Button(self, text='Start a new session', command=lambda: controller.show_frame(
             NewSessionWindow), width=BTN_WIDTH)
@@ -108,6 +111,10 @@ class NewSessionWindow(tk.Frame):
         batch_frame = tk.Frame(self, pady=3)
         probe_type_frame = tk.Frame(self, pady=3, padx=50, bg= '#E0FFFF')
         button_frame = tk.Frame(self, pady=3)
+        
+        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
+        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
 
         #batch_frame.grid(row=0, sticky="ew")
         probe_type_frame.grid(row=1, column=1, sticky="news")
@@ -194,7 +201,10 @@ class ContinueSessionWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
         
-
+        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
+        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
+        
         self.Label1 = ttk.Label(self, text='Choose a session to resume')
         self.Label1.place(relx=0.5, rely=0.1, anchor=CENTER)
 
