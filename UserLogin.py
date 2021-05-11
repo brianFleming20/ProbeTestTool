@@ -58,7 +58,7 @@ class LogInWindow(tk.Frame):
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         self.title = (PhotoImage(file="title.gif"))
         self.label_4 = ttk.Label(self, image=self.title)
-        self.label_4.place(relx=0.54, rely=0.1, anchor=CENTER)
+        self.label_4.place(relx=0.5, rely=0.1, anchor=CENTER)
 
         self.label_1 = ttk.Label(self, text="Username")
         self.label_2 = ttk.Label(self, text="Password")
@@ -70,14 +70,14 @@ class LogInWindow(tk.Frame):
         cUser = str(self.currentUser.get())
         self.entry_2.insert(END, 'password')
 
-        self.label_1.place(relx=0.4, rely=0.3, anchor=CENTER)
-        self.label_2.place(relx=0.4, rely=0.4, anchor=CENTER)
-        self.entry_1.place(relx=0.6, rely=0.3, anchor=CENTER)
-        self.entry_2.place(relx=0.6, rely=0.4, anchor=CENTER)
+        self.label_1.place(relx=0.4, rely=0.4, anchor=CENTER)
+        self.label_2.place(relx=0.4, rely=0.5, anchor=CENTER)
+        self.entry_1.place(relx=0.6, rely=0.4, anchor=CENTER)
+        self.entry_2.place(relx=0.6, rely=0.5, anchor=CENTER)
 
         self.logbtn = ttk.Button(
             self, text="Login",image=self.login_btn, width=20,command=lambda: self._login_btn_clicked(controller))
-        self.logbtn.place(relx=0.5, rely=0.6 ,anchor=CENTER)
+        self.logbtn.place(relx=0.5, rely=0.75 ,anchor=CENTER)
         self.bind('<Return>', lambda: self._login_btn_clicked(controller))
         
         self.entry_1.focus_set()

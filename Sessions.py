@@ -85,8 +85,8 @@ class SessionSelectWindow(tk.Frame):
         # Call load method to deserialze
             session_info = pickle.load(file)
             self.isAdmin = session_info[:]
-        
         file.close()
+        
         if False in self.isAdmin:
             self.SSW_b4.config(state=DISABLED)
         else:

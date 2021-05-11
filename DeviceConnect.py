@@ -60,6 +60,7 @@ class ConnectionWindow(tk.Frame):
         self.Monitor = StringVar()
         self.comPort = StringVar()
         self.AnalyserUSB = StringVar()
+        self.moveProbe = StringVar()
         self.file = StringVar()
         self.connectedToCom = False
         self.connectedToAnalyser = False
@@ -67,6 +68,7 @@ class ConnectionWindow(tk.Frame):
         self.AnalyserUSB.set('COM4')
         self.comPort.set('COM3')
         self.Monitor.set('COM5')
+        self.moveProbe.set('Not Set')
         self.file.set(NanoZND.GetFileLocation())
         # create the window and frame
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
@@ -76,35 +78,39 @@ class ConnectionWindow(tk.Frame):
         self.label_2 = ttk.Label(self, text="Probe Interface Port")
         self.label_3 = ttk.Label(self, text="Analyser port")
         self.label_4 = ttk.Label(self, text="NanoZND file storage location")
+        self.label_5 = ttk.Label(self, text="Probe Movement Interface")
         self.entry_1 = ttk.Entry(self, textvariable=self.Monitor,)
         self.entry_2 = ttk.Entry(self, textvariable=self.comPort, )
         self.entry_3 = ttk.Entry(self, textvariable=self.AnalyserUSB, )
         self.entry_4 = ttk.Entry(self, textvariable=self.file)
+        self.entry_5 = ttk.Entry(self, textvariable=self.moveProbe)
         self.deltex = (PhotoImage(file="deltex.gif"))
-        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
-        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
+        self.label_8 = ttk.Label(self, text=" ", image=self.deltex)
+        self.label_8.place(relx=0.9, rely=0.1, anchor=CENTER)
         
       
 
         self.label_1.place(relx=0.275, rely=0.2, anchor=CENTER)
         self.label_2.place(relx=0.275, rely=0.4, anchor=CENTER)
         self.label_3.place(relx=0.275, rely=0.3,anchor=CENTER)
-        self.label_4.place(relx=0.25, rely=0.55, anchor=CENTER)
+        self.label_4.place(relx=0.25, rely=0.7, anchor=CENTER)
+        self.label_5.place(relx=0.275, rely=0.5, anchor=CENTER)
         self.entry_1.place(relx=0.5, rely=0.2, anchor=CENTER)
         self.entry_2.place(relx=0.5, rely=0.4, anchor=CENTER)
         self.entry_3.place(relx=0.5, rely=0.3, anchor=CENTER)
-        self.entry_4.place(relx=0.42, rely=0.55, width=250, anchor="w")
+        self.entry_4.place(relx=0.42, rely=0.7, width=250, anchor="w")
+        self.entry_5.place(relx=0.5, rely=0.5, anchor=CENTER)
        
         self.browseBtn = ttk.Button(
             self, text="Browse", command=lambda: self._browse_btn_clicked(controller))
         self.browseBtn.grid(row=2, column=1)
-        self.browseBtn.place(relx=0.8, rely=0.55, anchor=CENTER)
+        self.browseBtn.place(relx=0.8, rely=0.7, anchor=CENTER)
         self.bind('<Return>', self._connect_btn_clicked)
         
         self.connectBtn = ttk.Button(
             self, text="Connect", command=lambda: self._connect_btn_clicked(controller))
         self.connectBtn.grid(row=2, column=1)
-        self.connectBtn.place(relx=0.4, rely=0.8, anchor=CENTER)
+        self.connectBtn.place(relx=0.4, rely=0.82, anchor=CENTER)
         self.bind('<Return>', self._connect_btn_clicked)
 
         self.cancelBtn = ttk.Button(
@@ -130,13 +136,19 @@ class ConnectionWindow(tk.Frame):
         usb = self.AnalyserUSB.get()
         session_data = []
         connection_data = []
-        with open('file.ptt', 'rb') as file:
+        try:
+            with open('file.ptt', 'rb') as file:
       
             # Call load method to deserialze
                 myvar = pickle.load(file)
-        session_data.extend(myvar)
+            session_data.extend(myvar)
         
-        file.close()
+            file.close()
+        except:
+            with open('file.ptt', 'wb') as file:
+                pickle.dump(session_data, file)
+            file.close()
+            self._connect_btn_clicked(controller)
         
         connection_data.append(cp)
         connection_data.append(odm)
