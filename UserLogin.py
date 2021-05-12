@@ -120,6 +120,12 @@ class AdminWindow(tk.Frame):
         self.AW_editUsrBtn = ttk.Button(
             self, text='Edit a current user', command=lambda: controller.show_frame(EditUserWindow))
         self.AW_editUsrBtn.place(relx=0.5, rely=0.5, anchor=CENTER)
+        self.label = ttk.Label(self, text="Probe re-program Off / On")
+        self.label.place(relx=0.5, rely=0.1, anchor=CENTER)
+        self.w2 = Scale(self, from_=0, to=1, orient=HORIZONTAL)
+        self.w2.set(0)
+        self.w2.pack()
+        print(self.w2.get())
 
         self.AW_adminLogoutBtn = ttk.Button(
             self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))
@@ -326,7 +332,13 @@ class AddUserWindow(tk.Frame):
         self.newusername.set("")
         self.newpassword.set("")
         
+class SystemControls(tk.Frame):
+    def __init__(self, parent, controlleer):
+        self.reprogram = False
         
+        
+        
+            
 
             
             

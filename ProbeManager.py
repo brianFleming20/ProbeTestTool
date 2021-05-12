@@ -68,7 +68,7 @@ class ProbeManager(object):
     def TestProbe(self, serialNumber, batchNumber, user):
         # self.ZND.refresh_traces()
         r = self.ZND.get_trace_values(serialNumber, user)
-        print("Test probe {}".format(r))
+        
         return r
         
     def ProgramProbe(self, probeType):
