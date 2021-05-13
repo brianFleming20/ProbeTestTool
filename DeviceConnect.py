@@ -115,7 +115,7 @@ class ConnectionWindow(tk.Frame):
 
         self.cancelBtn = ttk.Button(
             self, text="Cancel",  command=lambda: controller.show_frame(SE.SessionSelectWindow))
-        self.cancelBtn.place(relx=0.6, rely=0.8, anchor=CENTER)
+        self.cancelBtn.place(relx=0.6, rely=0.82, anchor=CENTER)
 
         self.entry_1.focus_set()
         

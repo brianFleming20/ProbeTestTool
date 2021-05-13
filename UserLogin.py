@@ -125,7 +125,7 @@ class AdminWindow(tk.Frame):
         self.w2 = Scale(self, from_=0, to=1, orient=HORIZONTAL)
         self.w2.set(0)
         self.w2.pack()
-        print(self.w2.get())
+        
 
         self.AW_adminLogoutBtn = ttk.Button(
             self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))

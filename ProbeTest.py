@@ -86,11 +86,13 @@ class TestProgramWindow(tk.Frame):
         self.sessionOnGoing = False
         self.sessionComplete = None
         self.action = StringVar()
+        self.leftToTest = IntVar()
         
 
         # define variables
         self.currentBatch = StringVar()
         self.currentUser = StringVar()
+        self.leftToTest = IntVar()
         self.probesPassed = IntVar()
         self.deviceDetails = StringVar()
         self.device = "Not connected to analyser"
@@ -150,7 +152,14 @@ class TestProgramWindow(tk.Frame):
             relx=0.1, rely=0.7, anchor='w')
         ttk.Label(self, textvariable=self.probesPassed, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.3, rely=0.7, anchor='w')
+        
+        ttk.Label(self, text='Probes to test: ').place(
+            relx=0.5, rely=0.7, anchor='w')
+        ttk.Label(self, textvariable=self.leftToTest, relief=SUNKEN, font="bold",
+                  width=10).place(relx=0.7, rely=0.7, anchor='w')
 
+        
+        
         ttk.Label(self, text='Action: ').place(relx=0.1, rely=0.8, anchor='w')
         ttk.Label(self, textvariable=self.action, background='yellow',
                   width=40, relief=GROOVE).place(relx=0.3, rely=0.8, anchor='w')
@@ -165,43 +174,73 @@ class TestProgramWindow(tk.Frame):
         Tk.update(self)
         self.sessionComplete = True
         self.sessionOnGoing = False
+        batch_data = []
         with open('file.ptt', 'rb') as file:
       
         # Call load method to deserialze
             myvar = pickle.load(file)
             currentBatch = ''.join(myvar[2])
-       
-        
         file.close()
-        BM.CompleteBatch(currentBatch)
-        controller.show_frame(SE.SessionSelectWindow)
+        with open("file_batch", "wb") as file:
+                batch_data.append(self.currentBatch.get())
+                batch_data.append(self.leftToTest.get())
+                pickle.dump(batch_data, file)
+        file.close()
+        
+        if self.leftToTest.get() == False:
+            BM.CompleteBatch(currentBatch)
+            controller.show_frame(SE.SessionSelectWindow)
 
     def suspnd_btn_clicked(self, controller):
         self.sessionComplete = False
         self.sessionOnGoing = False
+        batch_data = []
+        
+        with open("file_batch", "wb") as file:
+                batch_data.append(self.currentBatch.get())
+                batch_data.append(self.leftToTest.get())
+                pickle.dump(batch_data, file)
+        file.close()
+        BM.SuspendBatch(self.currentBatch.get())
+        print("batch suspend info {}".format(batch_data))
         controller.show_frame(SE.SessionSelectWindow)
 
 
     def refresh_window(self):
         self.sessionOnGoing = True
+        
         serial_results = []
         analyser_data = []
         BM.updateBatchInfo()
         
         # Open the file in binary mode
-        with open('file.ptt', 'rb') as file:
+        try:
+            with open('file.ptt', 'rb') as file:
       
         # Call load method to deserialze
-            myvar = pickle.load(file)
-            name = myvar[0]
-            currentBatch = myvar[2]
-            probeType = myvar[3]
-            analyser_port = myvar[4][2]
-        file.close()
+                myvar = pickle.load(file)
+                name = myvar[0]
+                currentBatch = myvar[2]
+                probeType = myvar[3]
+                analyser_port = myvar[4][2]
+            file.close()
+        except:
+             tm.showerror(
+                'Data Collection Error', 'Unable to collect the data from system files.')  
+
+        try:
+            with open('file_batch', 'rb') as file:
+                myvar = pickle.load(file)
+                self.leftToTest.set(myvar[1])
+            file.close()
+        except:
+            self.leftToTest.set(50)
+            
         # self.root.deiconify()
         self.probeType.set(probeType)
         self.currentBatch.set(currentBatch)
-        self.probesPassed.set(0)
+       
+      
         self.currentUser.set(name)
         self.deviceDetails.set(self.device)
         self.RLLimit = -1  # pass criteria for return loss measurement
@@ -254,15 +293,16 @@ class TestProgramWindow(tk.Frame):
                 'Connection Error', 'Unable to collect the data from the ODM.')
                 # controller.show_frame(ConnectionWindow)
         
-        
-        
+
+        # Detect if probe is present.        
         while(self.sessionOnGoing == True):
             Tk.update(self)
             if PM.ProbePresent() == True:
                 self.action.set('Probe connected')
                 self.status_image.configure(image=self.amberlight)
                 ProbeIsProgrammed = PM.ProbeIsProgrammed()
-
+                # Ask is probe is to be re-programmed.
+                
                 if ProbeIsProgrammed == False or tm.askyesno('Programmed Probe Detected', 'This probe is already programmed.\nDo you wish to re-program and test?'):
                     self.action.set('Programming probe')
                     serialNumber = PM.ProgramProbe(BM.currentBatch.probeType)
@@ -283,6 +323,7 @@ class TestProgramWindow(tk.Frame):
                             BM.UpdateResults(
                                 results, BM.currentBatch.batchNumber)
                             self.probesPassed.set(self.probesPassed.get() + 1)
+                            self.leftToTest.set(self.leftToTest.get() - 1)
                             self.status_image.configure(image=self.greenlight)
                             Tk.update(self)
                         else:
@@ -309,11 +350,11 @@ class TestProgramWindow(tk.Frame):
                             except:
                                 tm.showerror(
                                         'Connection Error', 'Unable to collect the data from the ODM.')
- 
+    
                         
                 while 1:
                     if PM.ProbePresent() == False:
-                        # PM.ClearAnalyzer()
+                        
                         self.status_image.configure(image=self.greylight)
                         self.action.set('Connect New Probe')
                         break

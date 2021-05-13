@@ -20,6 +20,7 @@ class BatchManager(object):
         '''
         self.CSVM = CSVManager()
         self.currentBatch = None
+        self.batchQty = 0
         
         self.availableBatchs = []
         self.path = os.path.join("C:\\Users", os.getenv('username'), "Desktop\\PTT_Results", "")
@@ -38,26 +39,37 @@ class BatchManager(object):
         if batch.batchNumber not in self.CSVM.GetFileNamesInProgress() and batch.batchNumber not in self.CSVM.GetFileNamesComplete():
             #set the current batch to this batch
             self.currentBatch = batch
-            
+            print("Batch qty: {}".format(batch.batchQty))
             #create the info list for the first row
             timeNow = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             StimeNow = str(timeNow)
-            info = [batch.batchNumber, batch.probeType, user, StimeNow]
+            info = [batch.batchNumber, batch.probeType, batch.batchQty, user, StimeNow]
             list = [0,]
             list[0] = info
 
             self.CSVM.WriteListOfListsCSV(list, batch.batchNumber)    #create the CSV file
             self.availableBatchs = self.CSVM.GetFileNamesInProgress() #update the list of available batchs
+            
         else:
             return False
             
-    def SuspendBatch(self):
+    def SuspendBatch(self, batchnumber):
         '''
         tick
         check if batch object is the current batch
         makes the currentBatch False
         '''
-
+        with open("file_batch", "rb") as file:
+            myvar = pickle.load(file)
+           
+            probesleft = myvar[1]
+        file.close()
+        timeNow = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        StimeNow = str(timeNow)
+        info = [batchnumber, probesleft,timeNow]
+        list = [0,]
+        list[0] = info
+        self.CSVM.WriteListOfListsCSV(list, batchnumber) 
         self.currentBatch = False
         
     def updateBatchInfo(self):
@@ -66,7 +78,12 @@ class BatchManager(object):
             myvar = pickle.load(file)
         session_data.extend(myvar)
         file.close()
+        with open("file_batch", "rb") as file:
+            myvar = pickle.load(file)
+            probesleft = myvar[1]
+        file.close()
         self.currentBatch = self.GetBatchObject(session_data[2])
+        
         
         
     def ResumeBatch(self, batch):
@@ -76,6 +93,7 @@ class BatchManager(object):
         make the batch the currentBatch
         '''
         if batch.batchNumber in self.CSVM.GetFileNames():
+            
             self.currentBatch = batch
         
     def CompleteBatch(self, batch):
@@ -91,10 +109,13 @@ class BatchManager(object):
         # Call load method to deserialze
             myvar = pickle.load(file)
             self.currentBatch = ''.join(myvar[2])
-        
-        
         file.close()
-        if batch == self.currentBatch:
+        with open('file_batch', 'rb') as file:
+            myvar = pickle.load(file)
+            probesleft = myvar[1]
+        file.close()
+       
+        if batch == self.currentBatch and probesleft == 0:
             self.CSVM.MoveToCompleted(batch)        #move the batch file to the complete folder
             self.availableBatchs = self.CSVM.GetFileNamesInProgress()     #update the availableBaths list
         else:
@@ -112,14 +133,20 @@ class BatchManager(object):
         info = self.CSVM.ReadFirstLine(batchNumber)
         #get the batch's probe type
         probeType = info[1]
+        batchQty = info[2]
         #get the batch's probes programmed value
         #probesProgrammed = int(info[2])
         
         batch = Batch(batchNumber)
         batch.probesProgrammed = None
         batch.probeType = probeType
+        batch.batchQty = batchQty
         
         return batch
+    
+    def UpdateBatchObject(self, batchNumber):
+        info = self.CSVM.ReadFirstLine(batchNumber)
+        
 
     def UpdateResults(self, results, batchNumber):
         '''
@@ -213,7 +240,7 @@ class CSVManager(object):
             for item in inputList:
                 datawriter.writerow(item)
 
-
+        
     
     def MoveToCompleted(self, fileName):
         '''
@@ -264,6 +291,7 @@ class Batch(object):
     def __init__(self, batchNumber):
         self.batchNumber = batchNumber
         self.probesProgrammed = 0
+        self.batchQty = 0
         self.probeType = ''
        
 

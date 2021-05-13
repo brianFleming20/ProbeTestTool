@@ -103,7 +103,7 @@ class NewSessionWindow(tk.Frame):
     def __init__(self, parent, controller):
         self.batchNumber = StringVar()
         self.probeType = StringVar()
-        
+        self.batchQty = IntVar()
 
         # Details Screen
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
@@ -117,22 +117,25 @@ class NewSessionWindow(tk.Frame):
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
 
         #batch_frame.grid(row=0, sticky="ew")
-        probe_type_frame.grid(row=1, column=1, sticky="news")
+        probe_type_frame.place(relx=0.2, rely=0.35,anchor=CENTER)
         
         self.NSWL1 = ttk.Label(self, text='Probe selection window. ', justify=RIGHT)
-        self.NSWL1.grid(row=0, column=2)
-        
-        self.NSWL1 = ttk.Label(self, text='  ', justify=RIGHT)
-        self.NSWL1.grid(row=1, column=2)
+        self.NSWL1.place(relx=0.5, rely=0.05, anchor=CENTER)
 
         self.NSWL1 = ttk.Label(self, text='Batch number: ', justify=RIGHT)
-        self.NSWL1.grid(row=2,column=2,columnspan=2,sticky=tk.W,padx=10,pady=(5,0))
+        self.NSWL1.place(relx=0.5, rely=0.2, anchor=CENTER)
 
         self.NSWE1 = ttk.Entry(self, textvariable=self.batchNumber)
-        self.NSWE1.grid(row=2, column=4)
+        self.NSWE1.place(relx=0.7, rely=0.2, anchor=CENTER)
+        
+        self.NSWL1 = ttk.Label(self, text='Batch Qty: ', justify=RIGHT)
+        self.NSWL1.place(relx=0.5, rely=0.3, anchor=CENTER)
+        
+        self.NSWE1 = ttk.Entry(self, textvariable=self.batchQty)
+        self.NSWE1.place(relx=0.7, rely=0.3, anchor=CENTER)
 
         self.NSWL2 = ttk.Label(self, text='Select Probe Type: ')
-        self.NSWL2.grid(row=2, column=0)
+        self.NSWL2.place(relx=0.2, rely=0.65, anchor=CENTER)
         
        
       
@@ -148,32 +151,34 @@ class NewSessionWindow(tk.Frame):
         tk.Radiobutton(probe_type_frame, text='I2C [Doppler 72 Hour]',
                        variable=self.probeType, value='I2C').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='I2P [Doppler 12 Hour]', 
-                       variable=self.probeType, value='I2P').pack(fill = X, ipady = 5)
+                       variable=self.probeType, value='I2P').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='I2S [Doppler 6 Hour]', 
-                       variable=self.probeType, value='I2S').pack(fill = X, ipady = 5)
+                       variable=self.probeType, value='I2S').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='KDP [Kinder 72 Hour]', 
-                       variable=self.probeType, value='KDP').pack(fill = X, ipady = 5)
+                       variable=self.probeType, value='KDP').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='Blank',
-                       variable=self.probeType, value='Blank').pack(fill=X, ipady=5)
-
+                       variable=self.probeType, value='Blank').pack(fill=X, ipady=7)
+        
         self.confm_btn = tk.Button(self, text='Confirm', padx=2, pady=3,
                                    width=BTN_WIDTH, command=lambda: self.confm_btn_clicked(controller))
-        self.confm_btn.grid(row=5, column=1)
+        self.confm_btn.place(relx=0.3, rely=0.8, anchor=CENTER)
 
         self.cancl_btn = tk.Button(self, text='Cancel', padx=2, pady=3, width=BTN_WIDTH,
                                    command=lambda: controller.show_frame(SessionSelectWindow))
-        self.cancl_btn.grid(row=5, column=4)
+        self.cancl_btn.place(relx=0.7, rely=0.8, anchor=CENTER)
 
         self.bind('<Return>', self.confm_btn_clicked)
 
     def confm_btn_clicked(self, controller):
         # create batch object
         session_data = []
+        batch_data = []
         newBatch = Batch(self.batchNumber.get())
         newBatch.probeType = self.probeType.get()
+        newBatch.batchQty = self.batchQty.get()
 
-        DAnswer = tm.askyesno('Confirm', 'Are batch details correct?')
-        if DAnswer == True:
+        DAnswer = tm.askyesno('Confirm', 'Are batch details correct?' )
+        if DAnswer == True and self.batchQty.get() > 0:
             # create the batch file
             # Open the file in binary mode
             with open('file.ptt', 'rb') as file:
@@ -189,9 +194,15 @@ class NewSessionWindow(tk.Frame):
                 BM.currentBatch = newBatch
                 session_data.append(self.batchNumber.get())
                 session_data.append(self.probeType.get())
+                session_data.append(self.batchQty.get())
             
                 with open('file.ptt', 'wb') as file:
                     pickle.dump(session_data, file)
+                file.close()
+                with open("file_batch", "wb") as file:
+                    batch_data.append(self.batchNumber.get())
+                    batch_data.append(self.batchQty.get())
+                    pickle.dump(batch_data, file)
                 file.close()
                 self.NSWE1.delete(0, 'end')
                 controller.show_frame(DC.ConnectionWindow)
@@ -253,6 +264,7 @@ class ContinueSessionWindow(tk.Frame):
      
         lstid = self.sessionListBox.curselection()
         session_data = []
+        batch_data = []
 
         try:
             lstBatch = self.sessionListBox.get(lstid[0])
@@ -262,7 +274,7 @@ class ContinueSessionWindow(tk.Frame):
       
             # Call load method to deserialze
                 myvar = pickle.load(file)
-            session_data.extend(myvar)
+                session_data.extend(myvar)
             file.close()
             
             session_data.append(lstBatch)
@@ -271,7 +283,12 @@ class ContinueSessionWindow(tk.Frame):
             with open('file.ptt', 'wb') as file:
                 pickle.dump(session_data, file)
             file.close()
-            
+            batch = BM.GetBatchObject(lstBatch)
+            with open("file_batch", "wb") as file:
+                batch_data.append(lstBatch)
+                batch_data.append(batch.batchQty)
+                pickle.dump(batch_data, file)
+            file.close()
            
             controller.show_frame(DC.ConnectionWindow)
         except:
