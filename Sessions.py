@@ -201,6 +201,7 @@ class NewSessionWindow(tk.Frame):
                 file.close()
                 with open("file_batch", "wb") as file:
                     batch_data.append(self.batchNumber.get())
+                    batch_data.append(self.probeType.get())
                     batch_data.append(self.batchQty.get())
                     pickle.dump(batch_data, file)
                 file.close()
@@ -220,20 +221,20 @@ class ContinueSessionWindow(tk.Frame):
         self.Label1.place(relx=0.5, rely=0.1, anchor=CENTER)
 
         self.sessionListBox = Listbox(self)
-        self.sessionListBox.place(relx=0.5, rely=0.5, anchor=CENTER)
-        self.sessionListBox.config(height=10, width=20)
+        self.sessionListBox.place(relx=0.5, rely=0.4, anchor=CENTER)
+        self.sessionListBox.config(height=5, width=20)
         
         self.probeTypeListBox = Listbox(self)
-        self.probeTypeListBox.place(relx=0.7, rely=0.5, anchor=CENTER)
-        self.probeTypeListBox.config(height=10, width=15)
+        self.probeTypeListBox.place(relx=0.7, rely=0.4, anchor=CENTER)
+        self.probeTypeListBox.config(height=5, width=15)
 
         self.continue_btn = ttk.Button(
             self, text='Continue Session', command=lambda: self.continue_btn_clicked(controller))
-        self.continue_btn.place(relx=0.4, rely=0.9, anchor=CENTER)
+        self.continue_btn.place(relx=0.4, rely=0.8, anchor=CENTER)
 
         self.cancel_btn = ttk.Button(
             self, text='Cancel', command=lambda: controller.show_frame(SessionSelectWindow))
-        self.cancel_btn.place(relx=0.6, rely=0.9, anchor=CENTER)
+        self.cancel_btn.place(relx=0.6, rely=0.8, anchor=CENTER)
 
         self.refresh_window()
 
@@ -283,9 +284,10 @@ class ContinueSessionWindow(tk.Frame):
             with open('file.ptt', 'wb') as file:
                 pickle.dump(session_data, file)
             file.close()
-            batch = BM.GetBatchObject(lstBatch)
+            
             with open("file_batch", "wb") as file:
                 batch_data.append(lstBatch)
+                batch_data.append(batch.probeType)
                 batch_data.append(batch.batchQty)
                 pickle.dump(batch_data, file)
             file.close()

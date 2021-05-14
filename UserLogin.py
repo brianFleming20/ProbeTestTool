@@ -121,16 +121,39 @@ class AdminWindow(tk.Frame):
             self, text='Edit a current user', command=lambda: controller.show_frame(EditUserWindow))
         self.AW_editUsrBtn.place(relx=0.5, rely=0.5, anchor=CENTER)
         self.label = ttk.Label(self, text="Probe re-program Off / On")
-        self.label.place(relx=0.5, rely=0.1, anchor=CENTER)
-        self.w2 = Scale(self, from_=0, to=1, orient=HORIZONTAL)
+        self.label.place(relx=0.05, rely=0.42, anchor=CENTER)
+        self.w2 = Scale(self, label="Off",from_=0, to=1, command= self.update ,orient=HORIZONTAL)
         self.w2.set(0)
-        self.w2.pack()
+        self.w2.place(relx=0.5, rely=0.5, anchor=CENTER)
+        self.w2.pack(side=LEFT)
         
 
         self.AW_adminLogoutBtn = ttk.Button(
             self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))
         self.AW_adminLogoutBtn.place(relx=0.7, rely=0.5, anchor=CENTER)
-            
+         
+    def update(self, controller):
+        batch_data = []
+        print(self.w2.get())
+        with open('file.pkl', 'wb') as file:
+      
+            # Call load method to deserialze
+            pickle.dump(batch_data,file)
+        file.close()
+        
+        batch_data.append(self.w2.get())
+        
+        with open('file.pkl', 'wb') as file:
+      
+            # Call load method to deserialze
+            pickle.dump(batch_data,file)
+        file.close()
+        
+        
+        
+        
+        
+       
    
     
       

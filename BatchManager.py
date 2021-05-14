@@ -39,7 +39,6 @@ class BatchManager(object):
         if batch.batchNumber not in self.CSVM.GetFileNamesInProgress() and batch.batchNumber not in self.CSVM.GetFileNamesComplete():
             #set the current batch to this batch
             self.currentBatch = batch
-            print("Batch qty: {}".format(batch.batchQty))
             #create the info list for the first row
             timeNow = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             StimeNow = str(timeNow)
@@ -61,15 +60,17 @@ class BatchManager(object):
         '''
         with open("file_batch", "rb") as file:
             myvar = pickle.load(file)
-           
-            probesleft = myvar[1]
+            batchNumber = myvar[0]
+            probetype = myvar[1]
+            probesleft = myvar[2]
         file.close()
-        timeNow = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        StimeNow = str(timeNow)
-        info = [batchnumber, probesleft,timeNow]
-        list = [0,]
-        list[0] = info
-        self.CSVM.WriteListOfListsCSV(list, batchnumber) 
+        if batchnumber == batchNumber:
+            timeNow = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            StimeNow = str(timeNow)
+            info = [batchnumber, probetype, probesleft, timeNow]
+            list = [0,]
+            list[0] = info
+            self.CSVM.WriteListOfListsCSV(list, batchnumber) 
         self.currentBatch = False
         
     def updateBatchInfo(self):
@@ -78,10 +79,7 @@ class BatchManager(object):
             myvar = pickle.load(file)
         session_data.extend(myvar)
         file.close()
-        with open("file_batch", "rb") as file:
-            myvar = pickle.load(file)
-            probesleft = myvar[1]
-        file.close()
+       
         self.currentBatch = self.GetBatchObject(session_data[2])
         
         
@@ -130,7 +128,23 @@ class BatchManager(object):
     
     def GetBatchObject(self, batchNumber):
         #get the batch's info list
-        info = self.CSVM.ReadFirstLine(batchNumber)
+        print("batch number {}".format(batchNumber))
+        info = self.CSVM.ReadLastLine(batchNumber)
+        try:
+            for item in info:
+                if batchNumber in item:
+                    print("item1: {} {}".format(item[0],item[2]))
+                    info = item[:]
+        except:
+            pass
+        
+        if info[:] == []:
+            info = self.CSVM.ReadFirstLine(batchNumber)
+            try:  
+                 print("info: {} {}".format(info[0],info[2]))
+            except:
+                pass
+        
         #get the batch's probe type
         probeType = info[1]
         batchQty = info[2]
@@ -138,14 +152,11 @@ class BatchManager(object):
         #probesProgrammed = int(info[2])
         
         batch = Batch(batchNumber)
-        batch.probesProgrammed = None
         batch.probeType = probeType
         batch.batchQty = batchQty
+        print("batch qty: {}".format(batch.batchQty))
         
         return batch
-    
-    def UpdateBatchObject(self, batchNumber):
-        info = self.CSVM.ReadFirstLine(batchNumber)
         
 
     def UpdateResults(self, results, batchNumber):
@@ -266,7 +277,15 @@ class CSVManager(object):
 #             print(lis)       # create a list of lists
 #             for i,x in enumerate(lis):              #print the list items 
 #                 print (i,x)
+    def ReadLastLine(self, fileName):
+        fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
         
+        with open(fullPath) as f:
+            lis=[line.split() for line in f] 
+           
+        return lis[:]
+    
+    
     def ReadAllLines(self, fileName):
         '''
         pass in a filename string and a number of lines.

@@ -183,6 +183,7 @@ class TestProgramWindow(tk.Frame):
         file.close()
         with open("file_batch", "wb") as file:
                 batch_data.append(self.currentBatch.get())
+                batch_data.append(self.probeType.get())
                 batch_data.append(self.leftToTest.get())
                 pickle.dump(batch_data, file)
         file.close()
@@ -198,6 +199,7 @@ class TestProgramWindow(tk.Frame):
         
         with open("file_batch", "wb") as file:
                 batch_data.append(self.currentBatch.get())
+                batch_data.append(self.probeType.get())
                 batch_data.append(self.leftToTest.get())
                 pickle.dump(batch_data, file)
         file.close()
@@ -231,10 +233,10 @@ class TestProgramWindow(tk.Frame):
         try:
             with open('file_batch', 'rb') as file:
                 myvar = pickle.load(file)
-                self.leftToTest.set(myvar[1])
+                self.leftToTest.set(myvar[2])
             file.close()
         except:
-            self.leftToTest.set(50)
+            self.leftToTest.set(100)
             
         # self.root.deiconify()
         self.probeType.set(probeType)
@@ -292,7 +294,13 @@ class TestProgramWindow(tk.Frame):
             tm.showerror(
                 'Connection Error', 'Unable to collect the data from the ODM.')
                 # controller.show_frame(ConnectionWindow)
-        
+        control_data = []
+        with open('file.ptt', 'rb') as file:
+      
+            # Call load method to deserialze
+                myvar = pickle.load(file)
+                control_data.extend(myvar)
+        file.close()
 
         # Detect if probe is present.        
         while(self.sessionOnGoing == True):
@@ -300,7 +308,10 @@ class TestProgramWindow(tk.Frame):
             if PM.ProbePresent() == True:
                 self.action.set('Probe connected')
                 self.status_image.configure(image=self.amberlight)
-                ProbeIsProgrammed = PM.ProbeIsProgrammed()
+                if 1 in control_data:
+                    ProbeIsProgrammed = PM.ProbeIsProgrammed()  
+                else:
+                    ProbeIsProgrammed = False  
                 # Ask is probe is to be re-programmed.
                 
                 if ProbeIsProgrammed == False or tm.askyesno('Programmed Probe Detected', 'This probe is already programmed.\nDo you wish to re-program and test?'):
