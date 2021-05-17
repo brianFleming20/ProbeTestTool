@@ -79,6 +79,19 @@ class LogInWindow(tk.Frame):
             self, text="Login",image=self.login_btn, width=20,command=lambda: self._login_btn_clicked(controller))
         self.logbtn.place(relx=0.5, rely=0.75 ,anchor=CENTER)
         self.bind('<Return>', lambda: self._login_btn_clicked(controller))
+        with open('file.ptt','wb') as file:
+            pickle.dump([],file)
+        file.close()
+        
+        with open('file_batch','wb') as file:
+            pickle.dump([],file)
+        file.close()
+        
+        with open('file.admin', 'wb') as file:
+            
+            # Call load method to deserialze
+            pickle.dump(['0'],file)
+        file.close()
         
         self.entry_1.focus_set()
         
@@ -133,9 +146,10 @@ class AdminWindow(tk.Frame):
         self.AW_adminLogoutBtn.place(relx=0.7, rely=0.5, anchor=CENTER)
          
     def update(self, controller):
-        batch_data = []
+        batch_data = [self.w2.get()]
+        
         print(self.w2.get())
-        with open('file.pkl', 'wb') as file:
+        with open('file.admin', 'wb') as file:
       
             # Call load method to deserialze
             pickle.dump(batch_data,file)
@@ -143,7 +157,7 @@ class AdminWindow(tk.Frame):
         
         batch_data.append(self.w2.get())
         
-        with open('file.pkl', 'wb') as file:
+        with open('file.admin', 'wb') as file:
       
             # Call load method to deserialze
             pickle.dump(batch_data,file)

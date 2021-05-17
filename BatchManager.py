@@ -102,22 +102,23 @@ class BatchManager(object):
         move the batch file into the 'complete' folder 
         refresh the current batch list
         '''  
+        
+        print("Move batch {}".format(batch))
         with open('file.ptt', 'rb') as file:
       
         # Call load method to deserialze
             myvar = pickle.load(file)
             self.currentBatch = ''.join(myvar[2])
+            
         file.close()
-        with open('file_batch', 'rb') as file:
-            myvar = pickle.load(file)
-            probesleft = myvar[1]
-        file.close()
-       
-        if batch == self.currentBatch and probesleft == 0:
-            self.CSVM.MoveToCompleted(batch)        #move the batch file to the complete folder
+      
+        
+        if self.currentBatch == batch:
+            self.CSVM.MoveToCompleted(self.currentBatch)        #move the batch file to the complete folder
             self.availableBatchs = self.CSVM.GetFileNamesInProgress()     #update the availableBaths list
         else:
             return False
+        
         
     def GetAvailableBatches(self):
         batchList = []
@@ -128,7 +129,7 @@ class BatchManager(object):
     
     def GetBatchObject(self, batchNumber):
         #get the batch's info list
-        print("batch number {}".format(batchNumber))
+      
         info = self.CSVM.ReadLastLine(batchNumber)
         try:
             for item in info:
@@ -232,7 +233,8 @@ class CSVManager(object):
         #strip the '.csv' bit off the end
         newList = []
         for item in list:
-            newItem = item[:-4]
+            newItem = item[2]
+            print("In progress {}".format(newItem))
             newList.append(newItem)
         
         return newList
@@ -261,6 +263,7 @@ class CSVManager(object):
         originalPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
         destinationPath = os.path.abspath(self.completePath + fileName + '.csv')
         os.renames(originalPath, destinationPath)
+        
         
     def ReadFirstLine(self, fileName):
         '''

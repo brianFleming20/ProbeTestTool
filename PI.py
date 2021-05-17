@@ -268,6 +268,7 @@ class ProbeData(object):
         self.I2STypeBytes = ['50','30','36','4a']
         self.KDP72TypeBytes = ['50','34','38','4a']
         self.SDP30TypeBytes = ['53','33','30','4a']
+        # self.Blank = ['00','00','00','00','00']
 
     
     def GenerateDataString(self, probeType):

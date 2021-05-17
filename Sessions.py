@@ -156,8 +156,8 @@ class NewSessionWindow(tk.Frame):
                        variable=self.probeType, value='I2S').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='KDP [Kinder 72 Hour]', 
                        variable=self.probeType, value='KDP').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='Blank',
-                       variable=self.probeType, value='Blank').pack(fill=X, ipady=7)
+        # tk.Radiobutton(probe_type_frame, text='Blank',
+        #                variable=self.probeType, value='Blank').pack(fill=X, ipady=7)
         
         self.confm_btn = tk.Button(self, text='Confirm', padx=2, pady=3,
                                    width=BTN_WIDTH, command=lambda: self.confm_btn_clicked(controller))

@@ -158,6 +158,7 @@ class ConnectionWindow(tk.Frame):
         with open('file.ptt', 'wb') as file:
                 pickle.dump(session_data, file)
         file.close()
+        print("Connection data: {}".format(session_data))
         
         
             

@@ -100,6 +100,8 @@ class TestProgramWindow(tk.Frame):
         self.SD_data = IntVar()
         self.FTc_data = IntVar()
         self.PV_data = IntVar()
+        self.userAdmin = False
+        self.check = 0
         
 
         #import images
@@ -165,8 +167,10 @@ class TestProgramWindow(tk.Frame):
                   width=40, relief=GROOVE).place(relx=0.3, rely=0.8, anchor='w')
         self.action.set('Connect New Probe')
 
-        ttk.Button(self, text='Complete Session', command=lambda: self.cmplt_btn_clicked(
-            controller)).place(relx=0.4, rely=0.9, anchor=CENTER)
+        self.completeButton = ttk.Button(self, text='Complete Session', command=lambda: self.cmplt_btn_clicked(
+            controller))
+        self.completeButton.place(relx=0.4, rely=0.9, anchor=CENTER)
+        
         ttk.Button(self, text='Suspend Session', command=lambda: self.suspnd_btn_clicked(
             controller)).place(relx=0.6, rely=0.9, anchor=CENTER)
 
@@ -179,7 +183,7 @@ class TestProgramWindow(tk.Frame):
       
         # Call load method to deserialze
             myvar = pickle.load(file)
-            currentBatch = ''.join(myvar[2])
+            currentBatch = myvar[2]
         file.close()
         with open("file_batch", "wb") as file:
                 batch_data.append(self.currentBatch.get())
@@ -191,6 +195,8 @@ class TestProgramWindow(tk.Frame):
         if self.leftToTest.get() == False:
             BM.CompleteBatch(currentBatch)
             controller.show_frame(SE.SessionSelectWindow)
+            
+    
 
     def suspnd_btn_clicked(self, controller):
         self.sessionComplete = False
@@ -204,7 +210,7 @@ class TestProgramWindow(tk.Frame):
                 pickle.dump(batch_data, file)
         file.close()
         BM.SuspendBatch(self.currentBatch.get())
-        print("batch suspend info {}".format(batch_data))
+        
         controller.show_frame(SE.SessionSelectWindow)
 
 
@@ -225,6 +231,7 @@ class TestProgramWindow(tk.Frame):
                 currentBatch = myvar[2]
                 probeType = myvar[3]
                 analyser_port = myvar[4][2]
+                self.userAdmin = myvar[1]
             file.close()
         except:
              tm.showerror(
@@ -241,11 +248,10 @@ class TestProgramWindow(tk.Frame):
         # self.root.deiconify()
         self.probeType.set(probeType)
         self.currentBatch.set(currentBatch)
-       
-      
         self.currentUser.set(name)
         self.deviceDetails.set(self.device)
         self.RLLimit = -1  # pass criteria for return loss measurement
+        
         
         ##############################
         # Collect analyser port data #
@@ -301,25 +307,41 @@ class TestProgramWindow(tk.Frame):
                 myvar = pickle.load(file)
                 control_data.extend(myvar)
         file.close()
+        
+        with open('file.admin', 'rb') as fileAd:
+            myvar = pickle.load(fileAd)
+            reprogramOK = myvar[0]
+            
+        fileAd.close()
 
         # Detect if probe is present.        
         while(self.sessionOnGoing == True):
             Tk.update(self)
+            if self.leftToTest.get() == False and self.check == 0:
+                tm.showinfo("Batch complete.","\nPlease press the Complete Session button.")
+                self.check = 1
+                
             if PM.ProbePresent() == True:
                 self.action.set('Probe connected')
-                self.status_image.configure(image=self.amberlight)
-                if 1 in control_data:
-                    ProbeIsProgrammed = PM.ProbeIsProgrammed()  
-                else:
-                    ProbeIsProgrammed = False  
-                # Ask is probe is to be re-programmed.
-                
-                if ProbeIsProgrammed == False or tm.askyesno('Programmed Probe Detected', 'This probe is already programmed.\nDo you wish to re-program and test?'):
+                go = False
+                ProbeIsProgrammed = PM.ProbeIsProgrammed()  
+                   
+                if reprogramOK == False:
+                    tm.Dialog("Unable to re-programme probe.")
+                    go = False
+                    
+                if ProbeIsProgrammed == True and reprogramOK == True:    
+                    go = tm.askyesno('Programmed Probe Detected', 'This probe is already programmed.\nDo you wish to re-program and test?')
+                    self.status_image.configure(image=self.amberlight) 
+                if ProbeIsProgrammed == False:
+                    go = True
+                    self.status_image.configure(image=self.amberlight) 
+                if go == True:  
                     self.action.set('Programming probe')
                     serialNumber = PM.ProgramProbe(BM.currentBatch.probeType)
                     if serialNumber == False:
                         tm.showerror('Programming Error',
-                                     'Unable to program\nPlease check U1')
+                                'Unable to program\nPlease check U1')
                         self.action.set('Probe failed')
                         self.status_image.configure(image=self.redlight)
                     else:
@@ -340,19 +362,19 @@ class TestProgramWindow(tk.Frame):
                         else:
                             self.status_image.configure(image=self.redlight)
                             tm.showerror('Return Loss Error',
-                                         'Check crystal connections')
+                                    'Check crystal connections')
                             Tk.update(self)
                         
                         # Collect serial data
                         while PM.ProbePresent() == True:
-                            # serial_results = IM.GetPatientParamerts()
+                                # serial_results = IM.GetPatientParamerts()
                             try:
                                 serial_results = ODM.ReadSerialODM()
-                            # print(serial_results)
-                            # self.SD_data.set(serial_results[0])
-                            # self.FTc_data.set(serial_results[1])
-                            # self.PV_data.set(serial_results[2])
-                            # Tk.update(self)
+                                # print(serial_results)
+                                # self.SD_data.set(serial_results[0])
+                                # self.FTc_data.set(serial_results[1])
+                                # self.PV_data.set(serial_results[2])
+                                # Tk.update(self)
                             
                                 self.SD_data.set(serial_results[0][5])
                                 self.FTc_data.set(serial_results[0][6])
@@ -362,6 +384,7 @@ class TestProgramWindow(tk.Frame):
                                 tm.showerror(
                                         'Connection Error', 'Unable to collect the data from the ODM.')
     
+                            
                         
                 while 1:
                     if PM.ProbePresent() == False:
@@ -375,6 +398,7 @@ class TestProgramWindow(tk.Frame):
         # put something here to move csv?
         if self.sessionComplete == True:
             BM.CompleteBatch(BM.currentBatch)
+            
 
 
 
