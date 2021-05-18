@@ -12,6 +12,7 @@ from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox as tm
 from tkinter import filedialog
+import pickle
 import csv
 
 
@@ -27,11 +28,19 @@ class NanoZND(object):
         self.analyser_port = ""
         self.analyser_status = False
         self.port_info = None
-        self.file_location = "/PTT/"
+        self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
     
     
-    def ReadAnalyserData(self):
+    def ReadAnalyserData(self, usb):
+        port = str(usb)
         line = ''
+        self.port_info = serial.Serial(port = port, 
+                                   baudrate=1152000,
+                                   bytesize=8,
+                                   timeout=0.05,
+                                   parity = serial.PARITY_NONE,
+                                   stopbits=serial.STOPBITS_ONE)
+        
         self.port_info.write("data\r".encode('ascii'))
         while True:
             c = self.port_info.read().decode('utf-8')
@@ -52,21 +61,31 @@ class NanoZND(object):
                 # stop on prompt
                 break
         self.port_info.close() # Close port 
-        
+        return self.analyser_data  
         
 
     
-    # Set analyser port details
-    def SetAnalyserPort(self, port):
-        self.port_info = serial.Serial(port = port, 
-                                   baudrate=1152000,
-                                   bytesize=8,
-                                   timeout=0.05,
-                                   parity = serial.PARITY_NONE,
-                                   stopbits=serial.STOPBITS_ONE)
-        self.analyser_port = self.port_info.port
+    # # Set analyser port details
+    # def SetAnalyserPort(self, port):
+    #     self.port_info = port
+    #     # session_data = []
+    #     # with open('file.ptt', 'rb') as file:
+      
+    #     #     # Call load method to deserialze
+    #     #     myvar = pickle.load(file)
+    #     # session_data.extend(myvar)
+    #     # self.port_info = session_data[4][:-1]
+    #     # file.close()
+    #     self.port_info = serial.Serial(port = port, 
+    #                                baudrate=1152000,
+    #                                bytesize=8,
+    #                                timeout=0.05,
+    #                                parity = serial.PARITY_NONE,
+    #                                stopbits=serial.STOPBITS_ONE)
+    #     self.analyser_port = self.port_info.port
         # Set the analyser port connection status to true to show connection is available
-        self.analyser_status = True
+        
+        
         
     # Return the analyser port number   
     def GetAnalyserPortNumber(self):
@@ -88,19 +107,20 @@ class NanoZND(object):
     def FrequecyStop(self):
         pass
     
+    def GetFileLocation(self):
+        return self.file_location
+    
+    def SetFileLocation(self, file):
+        self.file_location = file
+        
+    
     # Collect the data points and send to a .csv file
     def CVSOutPut(self, batch):
         data = self.GetAnalyserData()
         b = []
         b.append(batch)
-        filename = filedialog.askopenfilename(initialdir = "/",
-                                          title = "Update or create a file",
-                                          filetypes = (("csv files",
-                                                        "*.csv*"),
-                                                       ("all files",
-                                                        "*.*")))
-        print(filename)
-        file_to_output = open("C:/Users/Brian/python-dev/data_from_NanoNVA.csv", mode='a', newline='')
+        
+        file_to_output = open(self.file_location, mode='a', newline='')
         csv_writer = csv.writer(file_to_output, delimiter=',')
         try:
             
@@ -113,5 +133,4 @@ class NanoZND(object):
         file_to_output.close()
  
     def GetOutFileLocation(self):
-        print("File location {}".format(self.file_location))
         return self.file_location

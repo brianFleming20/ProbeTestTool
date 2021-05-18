@@ -86,10 +86,10 @@ class TestProgramWindow(object):
         self.probeType = StringVar()
         
         #import images
-        self.greenlight = (PhotoImage(file="green128.gif"))
-        self.amberlight = (PhotoImage(file="amber128.gif"))
-        self.redlight = (PhotoImage(file="red128.gif"))
-        self.greylight = (PhotoImage(file="grey128.gif"))
+        self.greenlight = (tk.PhotoImage(file="green128.gif"))
+        self.amberlight = PhotoImage(file="amber128.gif")
+        self.redlight = PhotoImage(file="red128.gif")
+        self.greylight = (tk.PhotoImage(file="grey128.gif"))
 
         progress_label1 = ttk.Label(self.root, text='Probes Passed: ')
         progress_label1.place(relx=0.17, rely=0.05, anchor=CENTER)

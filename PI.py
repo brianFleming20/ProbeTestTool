@@ -10,6 +10,10 @@ import binascii
 from time import gmtime, strftime
 import time
 from bitstring import BitArray
+import pickle
+import pyvisa as visa
+
+
 
 
 class PI(object):
@@ -33,6 +37,7 @@ class PI(object):
         self.loggedInUser = False
         self.SM = SerialManager()
         self.PD = ProbeData()
+        self.ser = None
 
     
     def Connect(self, comPort):
@@ -74,18 +79,17 @@ class PI(object):
     def ProbePresent(self):
         '''
         Returns True if a probe is present, False if not
-        '''           
+        '''   
+              
         #get the IO byte
         self.SM.OpenPort()
         self.SM.Send(b'4950')   
         time.sleep(0.05) #allow time for the data to be received  
         IOByte = self.SM.Read()
         self.SM.ClosePort()
-
         #get the relevant bit
         bits = BitArray(hex=IOByte)
         bit = bits.bin[2:3]
-
         #check to see if the pin is pulled low by the probe
         if bit == '0':
             return True
@@ -166,16 +170,33 @@ class SerialManager(object):
         self.ser = False
         
     def ConfigurePort(self, port):
+        session_data = []
+        
+        with open('file.ptt', 'rb') as file:
+      
+            # Call load method to deserialze
+            myvar = pickle.load(file)
+        session_data.extend(myvar)
+        
+        file.close()
+        
         self.ser = serial.Serial(port = port, baudrate = 9600, \
             parity = serial.PARITY_NONE, \
             stopbits = serial.STOPBITS_ONE, \
             bytesize  = serial.EIGHTBITS, \
             timeout  = 0, \
              )
-
+        
+        session_data.append(self.ser)
+        
         self.ser.close()
-
-
+        
+        
+        
+        with open('file.ptt', 'wb') as file:
+            pickle.dump(session_data, file)
+        file.close()
+        
     def Send(self, input):
         '''
         pass in hex bytes, send the whole lot down the serial port.
@@ -206,6 +227,18 @@ class SerialManager(object):
         '''
         Opens the port, readying it for communication
         '''
+        self.ser = False
+        session_data = []
+       
+        with open('file.ptt', 'rb') as file:
+      
+            # Call load method to deserialze
+            myvar = pickle.load(file)
+        session_data.extend(myvar)
+        self.ser = session_data[5]
+        file.close()
+       
+        
         self.ser.open()
     
     def ClosePort(self):
@@ -235,6 +268,7 @@ class ProbeData(object):
         self.I2STypeBytes = ['50','30','36','4a']
         self.KDP72TypeBytes = ['50','34','38','4a']
         self.SDP30TypeBytes = ['53','33','30','4a']
+        # self.Blank = ['00','00','00','00','00']
 
     
     def GenerateDataString(self, probeType):

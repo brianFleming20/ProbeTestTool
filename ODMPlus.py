@@ -6,6 +6,7 @@ Created on 24 Apr 2017
 
 import pyvisa as visa
 import serial
+import pickle
 
 class ODMData(object):
     
@@ -24,13 +25,24 @@ class ODMData(object):
         ignor_bit = ","
         serial_result = []
         temp_add = []
+        session_data = []
         temp = ""
-        port = self.monitor_port
+        with open('file.ptt', 'rb') as file:
+      
+            # Call load method to deserialze
+                myvar = pickle.load(file)
+        session_data.extend(myvar)
+        file.close()
+        port = session_data[4][1]
+        
+        
         # ======================
         # Set up port connection
         #=======================
-        
-        serial_port = self.AccessSerialControl(port)
+        try:
+            serial_port = self.AccessSerialControl(port)
+        except:
+            return None
         
         # ===========================
         # Access the ODM via the port
@@ -63,7 +75,7 @@ class ODMData(object):
                                     timeout=1,
                                     parity= serial.PARITY_NONE,
                                     stopbits=serial.STOPBITS_ONE)
-        
+        self.monitor_port = serial_port_control.port
         return serial_port_control
     
     
@@ -186,3 +198,8 @@ class ODMData(object):
     def GetODMPortNumber(self):
         return self.monitor_port
     
+    def checkODMPort(self, port):
+        self.AccessSerialControl(port)
+        if self.GetODMPortNumber() == port:
+            return True
+        

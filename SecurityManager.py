@@ -17,9 +17,13 @@ set a user to be logged in or out
 '''
 import pickle
 
+
+
 class SecurityManager(object):
     """
-    Handles all interaction with the User functionality. Such as: log in/out, add or delete user. Makes use of SecManDB to interact with the pickle file where user data is stored
+    Handles all interaction with the User functionality. 
+    Such as: log in/out, add or delete user. Makes use of SecManDB to interact with the pickle file where user data is stored
+    As this is now a seperate module, the state needs to stay the same.
     """
     
     def __init__(self):
@@ -28,6 +32,8 @@ class SecurityManager(object):
         self.loggedInUser = False
         self.editingUser = False
         self.SMDB = SecManDB()
+        self.is_admin_status = False
+        
 
     
     def logIn(self, user):
@@ -42,13 +48,34 @@ class SecurityManager(object):
             print('user not found in dict')
         '''
         nuser = self.SMDB.getUser(user.name)
+        
+        
+      
         if nuser == False: #is the username a valid username?
             return False
         else:
             if nuser.password == user.password: #is the password correct?
-                self.loggedInUser = nuser
+                self.loggedInUser = nuser.admin
+               
+                myvar = [nuser.name, nuser.admin]
+  
+                # Open a file and use dump()
+                with open('file.ptt', 'wb') as file:
+      
+                # A new file will be created
+                    pickle.dump(myvar, file)
+            
+                file.close()
+                
+                
                 return True
 
+    def set_user_admin_status(self, status=False):
+        pass
+        
+    def get_user_admin_status(self):
+        pass
+    
     def logOut(self):
         '''
         tick
@@ -97,6 +124,7 @@ class SecurityManager(object):
         userList = []
         userlist = self.SMDB.getUserList()
         return userlist
+        
         
     
 class SecManDB(object):
@@ -182,7 +210,8 @@ class User(object):
         self.password = password
         self.admin = admin
 
- 
+    def get_user_status(self):
+        return admin
 #SM = SecurityManager()
          
 #with open('filename.pickle', 'rb') as handle:

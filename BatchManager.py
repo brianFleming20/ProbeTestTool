@@ -8,6 +8,8 @@ fix path variables
 import csv
 import os
 from time import gmtime, strftime
+import pickle
+
 
 class BatchManager(object):
     
@@ -16,13 +18,16 @@ class BatchManager(object):
         '''
         Constructor
         '''
+        self.CSVM = CSVManager()
         self.currentBatch = None
+        self.batchQty = 0
+        
         self.availableBatchs = []
         self.path = os.path.join("C:\\Users", os.getenv('username'), "Desktop\\PTT_Results", "")
         self.inProgressPath = os.path.join(self.path, "in_progress", "")
         self.completePath = os.path.join(self.path, "complete", "")
         
-        self.CSVM = CSVManager()
+        
     
     def CreateBatch(self, batch, user):
         '''
@@ -34,29 +39,51 @@ class BatchManager(object):
         if batch.batchNumber not in self.CSVM.GetFileNamesInProgress() and batch.batchNumber not in self.CSVM.GetFileNamesComplete():
             #set the current batch to this batch
             self.currentBatch = batch
-            
             #create the info list for the first row
             timeNow = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             StimeNow = str(timeNow)
-            info = [batch.batchNumber, batch.probeType, user, StimeNow]
+            info = [batch.batchNumber, batch.probeType, batch.batchQty, user, StimeNow]
             list = [0,]
             list[0] = info
 
             self.CSVM.WriteListOfListsCSV(list, batch.batchNumber)    #create the CSV file
             self.availableBatchs = self.CSVM.GetFileNamesInProgress() #update the list of available batchs
+            
         else:
             return False
             
-    def SuspendBatch(self):
+    def SuspendBatch(self, batchnumber):
         '''
         tick
         check if batch object is the current batch
         makes the currentBatch False
         '''
-
+        with open("file_batch", "rb") as file:
+            myvar = pickle.load(file)
+            batchNumber = myvar[0]
+            probetype = myvar[1]
+            probesleft = myvar[2]
+        file.close()
+        if batchnumber == batchNumber:
+            timeNow = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            StimeNow = str(timeNow)
+            info = [batchnumber, probetype, probesleft, timeNow]
+            list = [0,]
+            list[0] = info
+            self.CSVM.WriteListOfListsCSV(list, batchnumber) 
         self.currentBatch = False
         
-    
+    def updateBatchInfo(self):
+        session_data = []
+        with open('file.ptt', 'rb') as file:
+            myvar = pickle.load(file)
+        session_data.extend(myvar)
+        file.close()
+       
+        self.currentBatch = self.GetBatchObject(session_data[2])
+        
+        
+        
     def ResumeBatch(self, batch):
         '''
         tick
@@ -64,6 +91,7 @@ class BatchManager(object):
         make the batch the currentBatch
         '''
         if batch.batchNumber in self.CSVM.GetFileNames():
+            
             self.currentBatch = batch
         
     def CompleteBatch(self, batch):
@@ -75,11 +103,22 @@ class BatchManager(object):
         refresh the current batch list
         '''  
         
-        if batch.batchNumber == self.currentBatch.batchNumber:
-            self.CSVM.MoveToCompleted(batch.batchNumber)        #move the batch file to the complete folder
+        print("Move batch {}".format(batch))
+        with open('file.ptt', 'rb') as file:
+      
+        # Call load method to deserialze
+            myvar = pickle.load(file)
+            self.currentBatch = ''.join(myvar[2])
+            
+        file.close()
+      
+        
+        if self.currentBatch == batch:
+            self.CSVM.MoveToCompleted(self.currentBatch)        #move the batch file to the complete folder
             self.availableBatchs = self.CSVM.GetFileNamesInProgress()     #update the availableBaths list
         else:
             return False
+        
         
     def GetAvailableBatches(self):
         batchList = []
@@ -90,17 +129,36 @@ class BatchManager(object):
     
     def GetBatchObject(self, batchNumber):
         #get the batch's info list
-        info = self.CSVM.ReadFirstLine(batchNumber)
+      
+        info = self.CSVM.ReadLastLine(batchNumber)
+        try:
+            for item in info:
+                if batchNumber in item:
+                    print("item1: {} {}".format(item[0],item[2]))
+                    info = item[:]
+        except:
+            pass
+        
+        if info[:] == []:
+            info = self.CSVM.ReadFirstLine(batchNumber)
+            try:  
+                 print("info: {} {}".format(info[0],info[2]))
+            except:
+                pass
+        
         #get the batch's probe type
         probeType = info[1]
+        batchQty = info[2]
         #get the batch's probes programmed value
         #probesProgrammed = int(info[2])
         
         batch = Batch(batchNumber)
-        batch.probesProgrammed = None
         batch.probeType = probeType
+        batch.batchQty = batchQty
+        print("batch qty: {}".format(batch.batchQty))
         
         return batch
+        
 
     def UpdateResults(self, results, batchNumber):
         '''
@@ -175,7 +233,8 @@ class CSVManager(object):
         #strip the '.csv' bit off the end
         newList = []
         for item in list:
-            newItem = item[:-4]
+            newItem = item[2]
+            print("In progress {}".format(newItem))
             newList.append(newItem)
         
         return newList
@@ -194,7 +253,7 @@ class CSVManager(object):
             for item in inputList:
                 datawriter.writerow(item)
 
-
+        
     
     def MoveToCompleted(self, fileName):
         '''
@@ -204,6 +263,7 @@ class CSVManager(object):
         originalPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
         destinationPath = os.path.abspath(self.completePath + fileName + '.csv')
         os.renames(originalPath, destinationPath)
+        
         
     def ReadFirstLine(self, fileName):
         '''
@@ -220,7 +280,15 @@ class CSVManager(object):
 #             print(lis)       # create a list of lists
 #             for i,x in enumerate(lis):              #print the list items 
 #                 print (i,x)
+    def ReadLastLine(self, fileName):
+        fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
         
+        with open(fullPath) as f:
+            lis=[line.split() for line in f] 
+           
+        return lis[:]
+    
+    
     def ReadAllLines(self, fileName):
         '''
         pass in a filename string and a number of lines.
@@ -235,6 +303,8 @@ class CSVManager(object):
             return[lis]
 #             for i,x in enumerate(lis):              #print the list items 
 #                 print (i,x)
+    
+    
             
 class Batch(object):
     '''
@@ -243,8 +313,9 @@ class Batch(object):
     def __init__(self, batchNumber):
         self.batchNumber = batchNumber
         self.probesProgrammed = 0
+        self.batchQty = 0
         self.probeType = ''
-        
+       
 
 
 

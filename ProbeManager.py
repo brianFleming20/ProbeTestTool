@@ -11,6 +11,7 @@ from serial.tools import list_ports
 import struct
 import NanoZND
 
+
 BM = BatchManager.BatchManager()
 
 class ProbeManager(object):
@@ -38,6 +39,7 @@ class ProbeManager(object):
         '''
         Pass in a com port ID (COMX) and connect to that comport.
         '''
+        
         self.PI.Connect(comPort)
         
     
@@ -66,7 +68,7 @@ class ProbeManager(object):
     def TestProbe(self, serialNumber, batchNumber, user):
         # self.ZND.refresh_traces()
         r = self.ZND.get_trace_values(serialNumber, user)
-        print(r)
+        
         return r
         
     def ProgramProbe(self, probeType):
