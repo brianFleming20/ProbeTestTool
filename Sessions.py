@@ -142,7 +142,7 @@ class NewSessionWindow(tk.Frame):
 
         # tk.Radiobutton(probe_type_frame, text='SDP30 [Suprasternal Probe]',
         #                variable=self.probeType, value='SDP30').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='DP240 [Doppler 10 Day]',
+        tk.Radiobutton(probe_type_frame, text='DP240 [9070-]',
                        variable=self.probeType, value='DP240').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='DP12 [Doppler 12 Hour]',
                        variable=self.probeType, value='DP12').pack(fill=X, ipady=5)

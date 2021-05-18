@@ -34,12 +34,13 @@ class NanoZND(object):
     def ReadAnalyserData(self, usb):
         port = str(usb)
         line = ''
-        self.port_info = serial.Serial(port = port, 
-                                   baudrate=1152000,
-                                   bytesize=8,
-                                   timeout=0.05,
-                                   parity = serial.PARITY_NONE,
-                                   stopbits=serial.STOPBITS_ONE)
+        analyser_port = self.SetAnalyserPort(usb)
+        # self.port_info = serial.Serial(port = port, 
+        #                            baudrate=1152000,
+        #                            bytesize=8,
+        #                            timeout=0.05,
+        #                            parity = serial.PARITY_NONE,
+        #                            stopbits=serial.STOPBITS_ONE)
         
         self.port_info.write("data\r".encode('ascii'))
         while True:
@@ -60,36 +61,36 @@ class NanoZND(object):
             if line.endswith('ch>'):
                 # stop on prompt
                 break
-        self.port_info.close() # Close port 
+        analyser_port.close() # Close port 
         return self.analyser_data  
         
 
     
     # # Set analyser port details
-    # def SetAnalyserPort(self, port):
-    #     self.port_info = port
-    #     # session_data = []
-    #     # with open('file.ptt', 'rb') as file:
+    def SetAnalyserPort(self, port):
       
-    #     #     # Call load method to deserialze
-    #     #     myvar = pickle.load(file)
-    #     # session_data.extend(myvar)
-    #     # self.port_info = session_data[4][:-1]
-    #     # file.close()
-    #     self.port_info = serial.Serial(port = port, 
-    #                                baudrate=1152000,
-    #                                bytesize=8,
-    #                                timeout=0.05,
-    #                                parity = serial.PARITY_NONE,
-    #                                stopbits=serial.STOPBITS_ONE)
-    #     self.analyser_port = self.port_info.port
+        self.port_info = serial.Serial(port = port, 
+                                   baudrate=1152000,
+                                   bytesize=8,
+                                   timeout=0.05,
+                                   parity = serial.PARITY_NONE,
+                                   stopbits=serial.STOPBITS_ONE)
+        
+        return self.port_info
         # Set the analyser port connection status to true to show connection is available
         
         
         
     # Return the analyser port number   
-    def GetAnalyserPortNumber(self):
-        return self.analyser_port
+    def GetAnalyserPortNumber(self, usb):
+        sentport = usb
+        analyser_port_info = self.SetAnalyserPort(usb)
+        analyser_port_info.close()
+        if analyser_port_info.port == sentport:
+            
+            return True
+        else:
+            return False
      
     # Return the analyser data points 
     def GetAnalyserData(self):

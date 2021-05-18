@@ -256,11 +256,11 @@ class TestProgramWindow(tk.Frame):
         ##############################
         # Collect analyser port data #
         ##############################
-      
+        
         try:
             # Check to see if the analyser port is connected
             
-            if analyser_port:
+            if NanoZND.GetAnalyserPortNumber(analyser_port):
                 # Get the analyser to generate data points and return them
                 analyser_data = NanoZND.ReadAnalyserData(analyser_port)
                 

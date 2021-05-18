@@ -134,7 +134,6 @@ class BatchManager(object):
         try:
             for item in info:
                 if batchNumber in item:
-                    print("item1: {} {}".format(item[0],item[2]))
                     info = item[:]
         except:
             pass
@@ -155,7 +154,7 @@ class BatchManager(object):
         batch = Batch(batchNumber)
         batch.probeType = probeType
         batch.batchQty = batchQty
-        print("batch qty: {}".format(batch.batchQty))
+        
         
         return batch
         
