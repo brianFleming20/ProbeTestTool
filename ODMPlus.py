@@ -35,6 +35,7 @@ class ODMData(object):
         file.close()
         port = session_data[4][1]
         
+        
         # ======================
         # Set up port connection
         #=======================
