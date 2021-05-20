@@ -126,6 +126,7 @@ class ConnectionWindow(tk.Frame):
         session_data = []
         connection_data = []
         
+        
         with open('file.ptt', 'rb') as file:
             myvar = pickle.load(file)
         session_data.extend(myvar)
@@ -140,8 +141,9 @@ class ConnectionWindow(tk.Frame):
         
         with open('file.ptt', 'wb') as file:
                 pickle.dump(session_data, file)
+                
         file.close()
-        
+       
         
         try:
             if NanoZND.GetAnalyserPortNumber(usb):
@@ -162,7 +164,6 @@ class ConnectionWindow(tk.Frame):
             PM.ConnectToProbeInterface(cp)
             self.connectedToCom = True
         except:
-            self.connectedToCom = False
             tm.showerror(
                 'Connection Error', 'Unable to connect to Probe Interface\nPlease check the Probe interface port is correct.')
 
@@ -170,5 +171,5 @@ class ConnectionWindow(tk.Frame):
   
         
 
-        if self.connectedToCom and self.odm_connection == True :
+        if self.connectedToCom and self.odm_connection == True and self.connectedToAnalyser == True :
             controller.show_frame(PT.TestProgramWindow)

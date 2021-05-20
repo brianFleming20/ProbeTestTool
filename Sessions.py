@@ -142,19 +142,19 @@ class NewSessionWindow(tk.Frame):
 
         # tk.Radiobutton(probe_type_frame, text='SDP30 [Suprasternal Probe]',
         #                variable=self.probeType, value='SDP30').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='DP240 [9070-]',
+        tk.Radiobutton(probe_type_frame, text='DP240 [9070-7005]',
                        variable=self.probeType, value='DP240').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='DP12 [Doppler 12 Hour]',
+        tk.Radiobutton(probe_type_frame, text='DP12 [9070-7003]',
                        variable=self.probeType, value='DP12').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='DP6 [Doppler 6 Hour]',
+        tk.Radiobutton(probe_type_frame, text='DP6 [9070-7001]',
                        variable=self.probeType, value='DP6').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='I2C [Doppler 72 Hour]',
+        tk.Radiobutton(probe_type_frame, text='I2C [9090-7014]',
                        variable=self.probeType, value='I2C').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='I2P [Doppler 12 Hour]', 
+        tk.Radiobutton(probe_type_frame, text='I2P [9090-7013]', 
                        variable=self.probeType, value='I2P').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='I2S [Doppler 6 Hour]', 
+        tk.Radiobutton(probe_type_frame, text='I2S [9090-7012]', 
                        variable=self.probeType, value='I2S').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='KDP [Kinder 72 Hour]', 
+        tk.Radiobutton(probe_type_frame, text='KDP72 [9081-7001]', 
                        variable=self.probeType, value='KDP').pack(fill=X, ipady=5)
         # tk.Radiobutton(probe_type_frame, text='Blank',
         #                variable=self.probeType, value='Blank').pack(fill=X, ipady=7)
@@ -182,9 +182,10 @@ class NewSessionWindow(tk.Frame):
             # create the batch file
             # Open the file in binary mode
             with open('file.ptt', 'rb') as file:
-      
+
             # Call load method to deserialze
                 myvar = pickle.load(file)
+                
             session_data.extend(myvar)
             file.close()
             name = session_data[0]
@@ -192,13 +193,15 @@ class NewSessionWindow(tk.Frame):
                 tm.showerror('Error', 'Batch number not unique')
             else:
                 BM.currentBatch = newBatch
-                session_data.append(self.batchNumber.get())
-                session_data.append(self.probeType.get())
-                session_data.append(self.batchQty.get())
+                session_data.append(newBatch.batchNumber)
+                session_data.append(newBatch.probeType)
+                
             
                 with open('file.ptt', 'wb') as file:
                     pickle.dump(session_data, file)
+                    
                 file.close()
+                
                 with open("file_batch", "wb") as file:
                     batch_data.append(self.batchNumber.get())
                     batch_data.append(self.probeType.get())
@@ -222,11 +225,11 @@ class ContinueSessionWindow(tk.Frame):
 
         self.sessionListBox = Listbox(self)
         self.sessionListBox.place(relx=0.5, rely=0.4, anchor=CENTER)
-        self.sessionListBox.config(height=5, width=20)
+        self.sessionListBox.config(height=2, width=20)
         
         self.probeTypeListBox = Listbox(self)
         self.probeTypeListBox.place(relx=0.7, rely=0.4, anchor=CENTER)
-        self.probeTypeListBox.config(height=5, width=15)
+        self.probeTypeListBox.config(height=2, width=15)
 
         self.continue_btn = ttk.Button(
             self, text='Continue Session', command=lambda: self.continue_btn_clicked(controller))
@@ -244,12 +247,14 @@ class ContinueSessionWindow(tk.Frame):
         probeTypeList = []
         for item in BM.GetAvailableBatches():
             sessionList.append(item)
+            
             batchObj = BM.GetBatchObject(item)
             probeTypeList.append(batchObj.probeType)
+            print(batchObj.probeType)
             batchObj = None
         
        
-
+        print("session box {}".format(probeTypeList))
         # clear the listbox
         self.sessionListBox.delete(0, END)
         self.probeTypeListBox.delete(0, END)
@@ -266,7 +271,7 @@ class ContinueSessionWindow(tk.Frame):
         lstid = self.sessionListBox.curselection()
         session_data = []
         batch_data = []
-
+        
         try:
             lstBatch = self.sessionListBox.get(lstid[0])
             batch = BM.GetBatchObject(lstBatch)
@@ -281,6 +286,7 @@ class ContinueSessionWindow(tk.Frame):
             session_data.append(lstBatch)
             session_data.append(batch.probeType)
             
+            
             with open('file.ptt', 'wb') as file:
                 pickle.dump(session_data, file)
             file.close()
@@ -291,7 +297,8 @@ class ContinueSessionWindow(tk.Frame):
                 batch_data.append(batch.batchQty)
                 pickle.dump(batch_data, file)
             file.close()
-           
+            
+            
             controller.show_frame(DC.ConnectionWindow)
         except:
             tm.showerror('Error', 'Please select a batch from the batch list')
