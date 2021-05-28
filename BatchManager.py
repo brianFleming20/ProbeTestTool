@@ -9,6 +9,7 @@ import csv
 import os
 from time import gmtime, strftime
 import pickle
+import pdb
 
 
 class BatchManager(object):
@@ -70,7 +71,7 @@ class BatchManager(object):
         file.close()
         with open('file.ptt','rb') as file:
             myvar = pickle.load(file)
-            print("file.ptt {}".format(myvar))
+        
             user = myvar[0]
         file.close()    
         if batchnumber == batchNumber:
@@ -111,7 +112,7 @@ class BatchManager(object):
         refresh the current batch list
         '''  
         
-        print("Move batch {}".format(batch))
+        
         with open('file.ptt', 'rb') as file:
       
         # Call load method to deserialze
@@ -144,10 +145,10 @@ class BatchManager(object):
         info = self.CSVM.ReadLastLine(batchNumber)
         try:
             for item in info:
-                print("batch {}".format(item[0]))
+                
                 if batchNumber in item[0]:
                     info = item[:]
-                    print("info {}".format(info))
+                    
         except:
             pass
         
@@ -273,10 +274,13 @@ class CSVManager(object):
         fullPath = os.path.abspath(self.inProgressPathTest + fileName + '.csv')
         
         #write the list to the CSV file
-        with open(fullPath, 'a+', newline='') as csvfile:
-            datawriter = csv.writer(csvfile)
+        with open(fullPath, 'a', newline='') as file:
+            
+            # Create a writer object from csv module
+            datawriter = csv.writer(file)
+            # Add contents of list as last row in the csv file
             datawriter.writerow(inputList)
-        csvfile.close()
+        file.close()
 
     def WriteCSVTitles(self, fileName):
         '''
@@ -298,8 +302,10 @@ class CSVManager(object):
         tick
         pass in a file name, move this file from the inprogress folder to the completed folder
         '''
-        originalPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
+        
+        originalPath = os.path.abspath(self.inProgressPathTest + fileName + '.csv')
         destinationPath = os.path.abspath(self.completePath + fileName + '.csv')
+        
         os.renames(originalPath, destinationPath)
         
         
@@ -324,13 +330,25 @@ class CSVManager(object):
         
         fullPathTest = os.path.abspath(self.inProgressPathTest + fileName + '.csv')
         batches = []
-        
+        print("filename {}".format(fileName))
         with open(fullPathTest, 'r') as csvfile:
             datareader = csv.reader(csvfile)
-            for item in datareader:
-                batches.append(item)
+            
+            for line in datareader:
                 
-        csvfile.close()    
+                if "Batch No" in line:
+                    pass
+                elif line == []:
+                    pass
+                elif fileName in line:
+                    probes = line[2]
+                    if probes in batches.split():
+                batches.append(line)
+                       
+                    
+                
+        csvfile.close()   
+        
        
         return batches
         

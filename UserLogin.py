@@ -165,7 +165,6 @@ class AdminWindow(tk.Frame):
     def update(self, controller):
         batch_data = [self.w2.get()]
         
-        print(self.w2.get())
         with open('file.admin', 'wb') as file:
       
             # Call load method to deserialze

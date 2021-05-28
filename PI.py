@@ -12,7 +12,7 @@ import time
 from bitstring import BitArray
 import pickle
 import pyvisa as visa
-
+import pdb
 
 
 
@@ -49,7 +49,7 @@ class PI(object):
         '''
         
         self.SM.OpenPort()
-        print(data)
+        
         for item in data:
             self.SM.Send(item)
             time.sleep(0.01)
@@ -301,13 +301,13 @@ class ProbeData(object):
             typeBytes = self.I2STypeBytes
         elif probeType == 'I2P':
             typeBytes = self.I2PTypeBytes
-        elif probeType == 'KDP72':
+        elif probeType == 'KDP':
             typeBytes = self.KDP72TypeBytes
         elif probeType == 'I2P':
             typeBytes = self.I2PTypeBytes
         elif probeType == 'SDP30':
             typeBytes = self.SDP30TypeBytes
-            
+         
         #create a 12 byte timestamp of the format
         timeStamp = strftime("%Y%m%d%H%M%S", gmtime())
         timeStampFormatted = timeStamp[2:]
@@ -315,7 +315,7 @@ class ProbeData(object):
         for item in timeStampFormatted:
             x = (ord(item))
             timeStampASCII.append(format((x), "x"))
-        
+       
         #stick the type bytes and the timestamp together 
         serialNumber = typeBytes + timeStampASCII
         

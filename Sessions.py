@@ -250,11 +250,11 @@ class ContinueSessionWindow(tk.Frame):
             
             batchObj = BM.GetBatchObject(item)
             probeTypeList.append(batchObj.probeType)
-            print(batchObj.probeType)
+            
             batchObj = None
         
        
-        print("session box {}".format(probeTypeList))
+        
         # clear the listbox
         self.sessionListBox.delete(0, END)
         self.probeTypeListBox.delete(0, END)
