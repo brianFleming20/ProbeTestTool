@@ -37,7 +37,7 @@ import UserLogin as UL
 import Sessions as SE
 import DeviceConnect as DC
 import ProbeTest as PT
-
+import AdminUser as AU
 
 
 
@@ -87,8 +87,9 @@ class WindowController(tk.Tk):
                   SE.NewSessionWindow,
                   SE.ContinueSessionWindow,
                   DC.ConnectionWindow,
-                  UL.AdminWindow,
-                  UL.AddUserWindow,
+                  AU.AdminWindow,
+                  AU.AddUserWindow,
+                  AU.EditUserWindow,
                   PT.TestProgramWindow):
 
             frame = F(container, self)
