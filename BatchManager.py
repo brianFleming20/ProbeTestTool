@@ -330,6 +330,7 @@ class CSVManager(object):
         
         fullPathTest = os.path.abspath(self.inProgressPathTest + fileName + '.csv')
         batches = []
+        eachBatch = []
         print("filename {}".format(fileName))
         with open(fullPathTest, 'r') as csvfile:
             datareader = csv.reader(csvfile)
@@ -340,11 +341,11 @@ class CSVManager(object):
                     pass
                 elif line == []:
                     pass
-                elif fileName in line:
-                    probes = line[2]
-                    if probes in batches.split():
-                batches.append(line)
-                       
+                else:
+                    eachBatch.append(line)
+                    
+            batches.append(eachBatch[-1])
+            
                     
                 
         csvfile.close()   
