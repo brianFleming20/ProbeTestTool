@@ -66,7 +66,7 @@ class SecurityManager(object):
                     pickle.dump(myvar, file)
             
                 file.close()
-                
+               
                 
                 return True
 

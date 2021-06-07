@@ -331,7 +331,7 @@ class CSVManager(object):
         fullPathTest = os.path.abspath(self.inProgressPathTest + fileName + '.csv')
         batches = []
         eachBatch = []
-        print("filename {}".format(fileName))
+        
         with open(fullPathTest, 'r') as csvfile:
             datareader = csv.reader(csvfile)
             

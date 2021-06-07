@@ -36,7 +36,9 @@ import SecurityManager
 from SecurityManager import User
 import UserLogin as UL
 import DeviceConnect as DC
+import AdminUser as AU
 import pickle
+from time import gmtime, strftime
 
 BM = BatchManager.BatchManager()
 SM = SecurityManager.SecurityManager()
@@ -51,11 +53,15 @@ class SessionSelectWindow(tk.Frame):
     def __init__(self, parent, controller):
         # create a choose session window
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
-        self.isAdmin = False
+        
         
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
+        
+        self.textArea = tk.Text(self, height=5, width=35)
+        self.textArea.place(relx=0.2, rely=0.15, anchor=CENTER)
+        timeNow = strftime("%H:%M:%p", gmtime())
         
         self.SSW_b1 = ttk.Button(self, text='Start a new session', command=lambda: controller.show_frame(
             NewSessionWindow), width=BTN_WIDTH)
@@ -70,10 +76,15 @@ class SessionSelectWindow(tk.Frame):
         self.SSW_b3.place(relx=0.3, rely=0.6, anchor=CENTER)
 
         self.SSW_b4 = ttk.Button(self, text='Edit Users', command=lambda: controller.show_frame(
-            UL.AdminWindow), width=BTN_WIDTH)
+            AU.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(relx=0.7, rely=0.6, anchor=CENTER)
-
-        
+        if "AM" in timeNow :
+            self.textArea.insert('1.0','Good Morning ', font=('bold',12))
+            
+        else:
+            self.textArea.insert('1.0','Good Afternoon ')
+            
+            
 
         
 
@@ -81,13 +92,11 @@ class SessionSelectWindow(tk.Frame):
        
        # Open the file in binary mode
         with open('file.ptt', 'rb') as file:
-      
         # Call load method to deserialze
             session_info = pickle.load(file)
-            self.isAdmin = session_info[:]
         file.close()
         
-        if False in self.isAdmin:
+        if False in session_info:
             self.SSW_b4.config(state=DISABLED)
         else:
             self.SSW_b4.config(state=NORMAL)
@@ -96,7 +105,10 @@ class SessionSelectWindow(tk.Frame):
             self.SSW_b2.config(state=DISABLED)
         else:
             self.SSW_b2.config(state=NORMAL)
-            
+        self.textArea.insert('2.0',session_info[0])
+        self.textArea.insert('3.3','\n\nPlease choose an option.')
+        
+      
             
             
 class NewSessionWindow(tk.Frame):

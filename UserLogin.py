@@ -37,7 +37,7 @@ import Sessions as SE
 import NanoZND
 import io
 import pickle
-from PIL import Image, ImageTk
+from time import gmtime, strftime
 
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
@@ -64,6 +64,10 @@ class LogInWindow(tk.Frame):
 
         self.label_1 = ttk.Label(self, text="Username")
         self.label_2 = ttk.Label(self, text="Password")
+        self.label_5 = ttk.Label(self, text="Good morning.", font=("bold", 20))
+        self.label_6 = ttk.Label(self, text="Good afternoon.", font=("bold", 20))
+        timeNow = strftime("%H:%M:%p", gmtime())
+        
        
 
         self.entry_1 = ttk.Entry(self, textvariable=self.currentUser ,font="bold")
@@ -95,6 +99,14 @@ class LogInWindow(tk.Frame):
             pickle.dump(['0'],file)
         file.close()
         
+        
+        if "AM" in timeNow :
+            self.label_5.place(relx=0.5, rely=0.25, anchor=CENTER)
+            
+        else:
+            self.label_6.place(relx=0.5, rely=0.25, anchor=CENTER)
+            
+        
         self.entry_1.focus_set()
         
         
@@ -120,71 +132,7 @@ class LogInWindow(tk.Frame):
         
 
 
-class AdminWindow(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent, bg='#FFDAB9')
-        self.file = StringVar()
-        self.file.set(NanoZND.GetFileLocation())
-        
-        self.deltex = (PhotoImage(file="deltex.gif"))
-        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
-        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
-        self.label_4 = ttk.Label(self, text="NanoZND file storage location")
-        self.entry_4 = ttk.Entry(self, textvariable=self.file)
-
-        self.AW_addUsrBtn = ttk.Button(
-            self, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
-        self.AW_addUsrBtn.place(relx=0.42, rely=0.5, anchor=CENTER)
-
-        self.AW_editUsrBtn = ttk.Button(
-            self, text='Edit a current user', command=lambda: controller.show_frame(EditUserWindow))
-        self.AW_editUsrBtn.place(relx=0.62, rely=0.5, anchor=CENTER)
-        self.label_4.place(relx=0.18, rely=0.7, anchor=CENTER)
-        self.entry_4.place(relx=0.3, rely=0.7, width=300, anchor="w")
-        
-        self.browseBtn = ttk.Button(
-            self, text="Browse", command=lambda: self._browse_btn_clicked(controller))
-        self.browseBtn.grid(row=2, column=1)
-        self.browseBtn.place(relx=0.8, rely=0.7, anchor=CENTER)
-        self.bind('<Return>', self.update)
-        
-        self.label = ttk.Label(self, text="Probe re-program Off / On")
-        self.label.place(relx=0.05, rely=0.42, anchor=CENTER)
-        self.w2 = Scale(self, label="Off",from_=0, to=1, command= self.update ,orient=HORIZONTAL)
-        self.w2.set(0)
-        self.w2.place(relx=0.5, rely=0.5, anchor=CENTER)
-        self.w2.pack(side=LEFT)
-        
-
-        self.AW_adminLogoutBtn = ttk.Button(
-            self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))
-        self.AW_adminLogoutBtn.place(relx=0.8, rely=0.5, anchor=CENTER)
-        
-        
-         
-    def update(self, controller):
-        batch_data = [self.w2.get()]
-        
-        with open('file.admin', 'wb') as file:
-      
-            # Call load method to deserialze
-            pickle.dump(batch_data,file)
-        file.close()
-        
-        batch_data.append(self.w2.get())
-        
-        with open('file.admin', 'wb') as file:
-      
-            # Call load method to deserialze
-            pickle.dump(batch_data,file)
-        file.close()
-        
-    def _browse_btn_clicked(self, controller):
-        filename = filedialog.askopenfilenames(initialdir = "/",title = "Select file",
-                                               filetypes = ((".csv files","*.csv"),
-                                                            ("all files","*.*")))     
-        NanoZND.SetFileLocation(filename)
-        self.file = NanoZND.GetFileLocation()   
+ 
         
         
         
