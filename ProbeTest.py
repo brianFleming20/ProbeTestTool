@@ -113,66 +113,75 @@ class TestProgramWindow(tk.Frame):
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
+        self.textArea = tk.Text(self, height=5, width=38)
+        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
+        timeNow = strftime("%H:%M:%p", gmtime())
+        if "AM" in timeNow :
+            self.textArea.insert('1.0','Good Morning ', font=('bold',12))
+            
+        else:
+            self.textArea.insert('1.0','Good Afternoon ')
+        
 
         ttk.Label(self, text='Batch number: ').place(
-            relx=0.1, rely=0.05, anchor='w')
+            relx=0.1, rely=0.3, anchor='w')
         ttk.Label(self, textvariable=self.currentBatch, relief=SUNKEN, font="bold",
-                 width=10).place(relx=0.3, rely=0.05, anchor='w')
+                 width=10).place(relx=0.3, rely=0.3, anchor='w')
 
         ttk.Label(self, text='Probe type: ').place(
-            relx=0.45, rely=0.05, anchor='w')
+            relx=0.1, rely=0.45, anchor='w')
         ttk.Label(self, textvariable=self.probeType, relief=SUNKEN, font="bold",
-                  width=10).place(relx=0.6, rely=0.05, anchor='w')
+                  width=10).place(relx=0.3, rely=0.45, anchor='w')
 
-        ttk.Label(self, text='User: ').place(relx=0.1, rely=0.15, anchor='w')
-        ttk.Label(self, textvariable=self.currentUser, relief=SUNKEN, font="bold",
-                  width=20).place(relx=0.3, rely=0.15, anchor='w')
+        # ttk.Label(self, text='User: ').place(relx=0.1, rely=0.15, anchor='w')
+        # ttk.Label(self, textvariable=self.currentUser, relief=SUNKEN, font="bold",
+        #           width=20).place(relx=0.3, rely=0.15, anchor='w')
 
         ttk.Label(self, text='Connected to: ').place(
-            relx=0.1, rely=0.25, anchor='w')
+            relx=0.73, rely=0.2, anchor='w')
         ttk.Label(self, textvariable=self.deviceDetails, relief=SUNKEN,
-                  width=50).place(relx=0.3, rely=0.25, anchor='w')
+                  width=30).place(relx=0.7, rely=0.25, anchor='w')
         
         ttk.Label(self, text="Probe parameter data").place(
-            relx=0.7, rely=0.4, anchor="w")
-        ttk.Label(self, text="SD").place(relx=0.70, rely=0.44, anchor="w")
-        ttk.Label(self, text="FTc").place(relx=0.77, rely=0.44, anchor="w")
-        ttk.Label(self, text="PV").place(relx=0.85, rely=0.44, anchor="w")
+            relx=0.7, rely=0.42, anchor="w")
+        ttk.Label(self, text="SD").place(relx=0.70, rely=0.46, anchor="w")
+        ttk.Label(self, text="FTc").place(relx=0.77, rely=0.46, anchor="w")
+        ttk.Label(self, text="PV").place(relx=0.85, rely=0.46, anchor="w")
         ttk.Label(self, textvariable=self.SD_data, relief=SUNKEN, font="bold",
-                  width=5).place(relx=0.69, rely=0.49, anchor='w')
+                  width=5).place(relx=0.69, rely=0.51, anchor='w')
         ttk.Label(self, textvariable=self.FTc_data, relief=SUNKEN, font="bold",
-                  width=5).place(relx=0.76, rely=0.49, anchor='w')
+                  width=5).place(relx=0.76, rely=0.51, anchor='w')
         ttk.Label(self, textvariable=self.PV_data, relief=SUNKEN, font="bold",
-                  width=5).place(relx=0.84, rely=0.49, anchor='w')
+                  width=5).place(relx=0.84, rely=0.51, anchor='w')
 
         ttk.Label(self, text='Program/Test Status: ').place(relx=0.1,
-                                            rely=0.5, anchor='w')
+                                            rely=0.58, anchor='w')
         self.status_image = ttk.Label(self, image=self.greylight)
-        self.status_image.place(relx=0.5, rely=0.5, anchor=CENTER)
+        self.status_image.place(relx=0.53, rely=0.56, anchor=CENTER)
 
         ttk.Label(self, text='Probes Passed: ').place(
-            relx=0.1, rely=0.7, anchor='w')
+            relx=0.1, rely=0.75, anchor='w')
         ttk.Label(self, textvariable=self.probesPassed, relief=SUNKEN, font="bold",
-                  width=10).place(relx=0.3, rely=0.7, anchor='w')
+                  width=10).place(relx=0.28, rely=0.75, anchor='w')
         
         ttk.Label(self, text='Probes to test: ').place(
-            relx=0.5, rely=0.7, anchor='w')
+            relx=0.7, rely=0.75, anchor='w')
         ttk.Label(self, textvariable=self.leftToTest, relief=SUNKEN, font="bold",
-                  width=10).place(relx=0.7, rely=0.7, anchor='w')
+                  width=10).place(relx=0.83, rely=0.75, anchor='w')
 
         
         
-        ttk.Label(self, text='Action: ').place(relx=0.1, rely=0.8, anchor='w')
+        ttk.Label(self, text='Action: ').place(relx=0.1, rely=0.85, anchor='w')
         ttk.Label(self, textvariable=self.action, background='yellow',
-                  width=40, relief=GROOVE).place(relx=0.3, rely=0.8, anchor='w')
+                  width=40, relief=GROOVE).place(relx=0.3, rely=0.85, anchor='w')
         self.action.set('Connect New Probe')
 
         self.completeButton = ttk.Button(self, text='Complete Session', command=lambda: self.cmplt_btn_clicked(
             controller))
-        self.completeButton.place(relx=0.4, rely=0.9, anchor=CENTER)
+        self.completeButton.place(relx=0.68, rely=0.92, anchor=CENTER)
         
         ttk.Button(self, text='Suspend Session', command=lambda: self.suspnd_btn_clicked(
-            controller)).place(relx=0.6, rely=0.9, anchor=CENTER)
+            controller)).place(relx=0.85, rely=0.92, anchor=CENTER)
 
     def cmplt_btn_clicked(self, controller):
         Tk.update(self)
@@ -233,6 +242,9 @@ class TestProgramWindow(tk.Frame):
                 analyser_port = myvar[4][2]
                 self.userAdmin = myvar[1]
             file.close()
+            self.textArea.insert('2.0',name)
+            self.textArea.insert('4.0','\n\nPlease continue testing batch ')
+            self.textArea.insert('3.30', currentBatch)
         except:
              tm.showerror(
                 'Data Collection Error', 'Unable to collect the data from system files.')  
@@ -242,6 +254,7 @@ class TestProgramWindow(tk.Frame):
                 myvar = pickle.load(file)
                 self.leftToTest.set(myvar[2])
             file.close()
+            
         except:
             self.leftToTest.set(100)
             

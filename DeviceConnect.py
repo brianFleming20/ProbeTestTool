@@ -36,6 +36,7 @@ import pickle
 import Sessions
 import NanoZND
 import ODMPlus
+from time import gmtime, strftime
 import ProbeTest as PT
 import Sessions as SE
 
@@ -67,40 +68,14 @@ class ConnectionWindow(tk.Frame):
         self.comPort.set('COM3')
         self.Monitor.set('COM5')
         self.moveProbe.set('Not Set')
-       
+        self.isAdmin = []
+        self.name = []
+        
+        
         # create the window and frame
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
 
-        # create the widgets
-        self.label_1 = ttk.Label(self, text="ODM monitor port")
-        self.label_2 = ttk.Label(self, text="Probe Interface Port")
-        self.label_3 = ttk.Label(self, text="Analyser port")
-        
-        self.label_5 = ttk.Label(self, text="Probe Movement Interface")
-        self.entry_1 = ttk.Entry(self, textvariable=self.Monitor,)
-        self.entry_2 = ttk.Entry(self, textvariable=self.comPort, )
-        self.entry_3 = ttk.Entry(self, textvariable=self.AnalyserUSB, )
-        
-        self.entry_5 = ttk.Entry(self, textvariable=self.moveProbe)
-        self.deltex = (PhotoImage(file="deltex.gif"))
-        self.label_8 = ttk.Label(self, text=" ", image=self.deltex)
-        self.label_8.place(relx=0.9, rely=0.1, anchor=CENTER)
-        
-      
-
-        self.label_1.place(relx=0.275, rely=0.2, anchor=CENTER)
-        self.label_2.place(relx=0.275, rely=0.4, anchor=CENTER)
-        self.label_3.place(relx=0.275, rely=0.3,anchor=CENTER)
-        
-        self.label_5.place(relx=0.275, rely=0.5, anchor=CENTER)
-        self.entry_1.place(relx=0.5, rely=0.2, anchor=CENTER)
-        self.entry_2.place(relx=0.5, rely=0.4, anchor=CENTER)
-        self.entry_3.place(relx=0.5, rely=0.3, anchor=CENTER)
-        
-        self.entry_5.place(relx=0.5, rely=0.5, anchor=CENTER)
-       
-        
-        
+        # create the widges
         self.connectBtn = ttk.Button(
             self, text="Connect", command=lambda: self._connect_btn_clicked(controller))
         self.connectBtn.grid(row=2, column=1)
@@ -110,13 +85,57 @@ class ConnectionWindow(tk.Frame):
         self.cancelBtn = ttk.Button(
             self, text="Cancel",  command=lambda: controller.show_frame(SE.SessionSelectWindow))
         self.cancelBtn.place(relx=0.6, rely=0.82, anchor=CENTER)
-
-        self.entry_1.focus_set()
+        
+        self.textArea = tk.Text(self, height=5, width=38)
+        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
+        timeNow = strftime("%H:%M:%p", gmtime())
+        
+        if "AM" in timeNow :
+            self.textArea.insert('1.0','Good Morning ', font=('bold',12))
+            
+        else:
+            self.textArea.insert('1.0','Good Afternoon ')
+        
         
       
     
+    def refresh_window(self):
+        with open('file.ptt', 'rb') as file:
+            myvar = pickle.load(file)
+            self.isAdmin.append(myvar[1])
+            self.name.append(myvar[0])
+        file.close()  
+         
+        if True in self.isAdmin:
+            self.label_1 = ttk.Label(self, text="ODM monitor port")
+            self.label_2 = ttk.Label(self, text="Probe Interface Port")
+            self.label_3 = ttk.Label(self, text="Analyser port")
         
+            self.label_5 = ttk.Label(self, text="Probe Movement Interface")
+            self.entry_1 = ttk.Entry(self, textvariable=self.Monitor,)
+            self.entry_2 = ttk.Entry(self, textvariable=self.comPort, )
+            self.entry_3 = ttk.Entry(self, textvariable=self.AnalyserUSB, )
         
+            self.entry_5 = ttk.Entry(self, textvariable=self.moveProbe)
+            self.deltex = (PhotoImage(file="deltex.gif"))
+            self.label_8 = ttk.Label(self, text=" ", image=self.deltex)
+            self.label_8.place(relx=0.9, rely=0.2, anchor=CENTER)
+        
+            self.label_1.place(relx=0.275, rely=0.3, anchor=CENTER)
+            self.label_2.place(relx=0.275, rely=0.5, anchor=CENTER)
+            self.label_3.place(relx=0.275, rely=0.4,anchor=CENTER)
+        
+            self.label_5.place(relx=0.275, rely=0.6, anchor=CENTER)
+            self.entry_1.place(relx=0.5, rely=0.3, anchor=CENTER)
+            self.entry_2.place(relx=0.5, rely=0.5, anchor=CENTER)
+            self.entry_3.place(relx=0.5, rely=0.4, anchor=CENTER)
+        
+            self.entry_5.place(relx=0.5, rely=0.6, anchor=CENTER)
+
+            self.entry_1.focus_set()
+        self.textArea.insert('2.0',self.name)
+        self.textArea.insert('2.0','\n\nPlease connect the external devices\nand progress to the testing screen.')
+        self.textArea.config(state=DISABLED)
             
 
     def _connect_btn_clicked(self, controller):
@@ -129,7 +148,8 @@ class ConnectionWindow(tk.Frame):
         
         with open('file.ptt', 'rb') as file:
             myvar = pickle.load(file)
-        session_data.extend(myvar)
+            session_data.extend(myvar)
+            self.isAdmin.append(myvar)
 
         file.close()
         

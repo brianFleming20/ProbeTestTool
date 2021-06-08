@@ -33,6 +33,7 @@ from tkinter import filedialog
 import SecurityManager
 from SecurityManager import User
 import BatchManager
+from time import gmtime, strftime
 import Sessions as SE
 import NanoZND
 import io
@@ -56,6 +57,10 @@ class AdminWindow(tk.Frame):
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         self.label_4 = ttk.Label(self, text="NanoZND file storage location")
         self.entry_4 = ttk.Entry(self, textvariable=self.file)
+        
+        self.textArea = tk.Text(self, height=5, width=38)
+        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
+        timeNow = strftime("%H:%M:%p", gmtime())
 
         self.AW_addUsrBtn = ttk.Button(
             self, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
@@ -84,8 +89,22 @@ class AdminWindow(tk.Frame):
         self.AW_adminLogoutBtn = ttk.Button(
             self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))
         self.AW_adminLogoutBtn.place(relx=0.8, rely=0.5, anchor=CENTER)
+        if "AM" in timeNow :
+            self.textArea.insert('1.0','Good Morning ', font=('bold',12))
+            
+        else:
+            self.textArea.insert('1.0','Good Afternoon ')
         
-        
+    def refresh_window(self):
+           
+       # Open the file in binary mode
+        with open('file.ptt', 'rb') as file:
+        # Call load method to deserialze
+            session_info = pickle.load(file)
+        file.close()
+        self.textArea.insert('2.0',session_info[0])
+        self.textArea.insert('3.3','\n\nPlease choose an option.')
+        self.textArea.config(state=DISABLED)
          
     def update(self, controller):
         batch_data = [self.w2.get()]
@@ -152,41 +171,40 @@ class EditUserWindow(tk.Frame):
         self.Label1.place(relx=0.5, rely=0.1, anchor=CENTER)
 
         self.userListBox = Listbox(self, height=15, width=20)
-        self.userListBox.place(relx=0.5, rely=0.5, anchor=CENTER)
+        self.userListBox.place(relx=0.3, rely=0.4, anchor=CENTER)
 
         self.CngPWrd_btn = ttk.Button(
             self, text='Change password', command=lambda: self._cngPwrd_btn_clicked(controller))
-        self.CngPWrd_btn.place(relx=0.8, rely=0.35, anchor=CENTER)
+        self.CngPWrd_btn.place(relx=0.6, rely=0.25, anchor=CENTER)
 
         self.delUsr_btn = ttk.Button(
             self, text='Delete', command=lambda: self._delUsr_btn_clicked(controller))
-        self.delUsr_btn.place(relx=0.8, rely=0.5, anchor=CENTER)
+        self.delUsr_btn.place(relx=0.6, rely=0.35, anchor=CENTER)
 
         self.finished_btn = ttk.Button(
             self, text='Done', command=lambda: controller.show_frame(AdminWindow))
-        self.finished_btn.place(relx=0.5, rely=0.9, anchor=CENTER)
+        self.finished_btn.place(relx=0.6, rely=0.45, anchor=CENTER)
 
         self.refresh_window()
 
     def _cngPwrd_btn_clicked(self, controller):
+        
         lstid = self.userListBox.curselection()
         lstUsr = self.userListBox.get(lstid[0])
         SM.editingUser = SM.GetUserObject(lstUsr)
         self.newPassword = StringVar()
         
-        self.deltex = (PhotoImage(file="deltex.gif"))
-        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
-        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
+        
 
         self.CPWl1 = ttk.Label(self, text='Enter a new password')
-        self.CPWl1.place(relx=0.35, rely=0.3, anchor=CENTER)
+        self.CPWl1.place(relx=0.3, rely=0.7, anchor=CENTER)
 
         self.CPWe1 = ttk.Entry(self, textvariable=self.newPassword)
-        self.CPWe1.place(relx=0.65, rely=0.3, anchor=CENTER)
+        self.CPWe1.place(relx=0.55, rely=0.7, anchor=CENTER)
 
         self.confm_btn = ttk.Button(
             self, text='Confirm', command=lambda: self.change_btn_clicked(controller))
-        self.confm_btn.place(relx=0.5, rely=0.6, anchor=CENTER)
+        self.confm_btn.place(relx=0.4, rely=0.8, anchor=CENTER)
         
     def change_btn_clicked(self, controller):
         SM.editingUser.password = self.newPassword.get()
@@ -243,7 +261,7 @@ class EditUserWindow(tk.Frame):
 class AddUserWindow(tk.Frame):
     def __init__(self, parent, controller):
         # add User screen
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent, bg='#FFDAB9')
 
         self.newusername = StringVar()
         self.newpassword = StringVar()

@@ -45,8 +45,8 @@ import AdminUser as AU
 
 # define global variables
 PTT_Version = 'Deltex Medical : XXXX-XXXX Probe Test Tool V0.1'
-w = 800  # window width
-h = 600  # window height
+w = 1000  # window width
+h = 650  # window height
 LARGE_FONT = ("Verdana", 14)
 BTN_WIDTH = 30
 

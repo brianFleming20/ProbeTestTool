@@ -59,8 +59,8 @@ class SessionSelectWindow(tk.Frame):
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
-        self.textArea = tk.Text(self, height=5, width=35)
-        self.textArea.place(relx=0.2, rely=0.15, anchor=CENTER)
+        self.textArea = tk.Text(self, height=5, width=38)
+        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
         timeNow = strftime("%H:%M:%p", gmtime())
         
         self.SSW_b1 = ttk.Button(self, text='Start a new session', command=lambda: controller.show_frame(
@@ -84,9 +84,6 @@ class SessionSelectWindow(tk.Frame):
         else:
             self.textArea.insert('1.0','Good Afternoon ')
             
-            
-
-        
 
     def refresh_window(self):
        
@@ -107,7 +104,7 @@ class SessionSelectWindow(tk.Frame):
             self.SSW_b2.config(state=NORMAL)
         self.textArea.insert('2.0',session_info[0])
         self.textArea.insert('3.3','\n\nPlease choose an option.')
-        
+        self.textArea.config(state=DISABLED)
       
             
             
@@ -127,27 +124,31 @@ class NewSessionWindow(tk.Frame):
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
+        
+        self.textArea = tk.Text(self, height=5, width=38)
+        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
+        timeNow = strftime("%H:%M:%p", gmtime())
 
         #batch_frame.grid(row=0, sticky="ew")
-        probe_type_frame.place(relx=0.2, rely=0.35,anchor=CENTER)
+        probe_type_frame.place(relx=0.2, rely=0.45,anchor=CENTER)
         
         self.NSWL1 = ttk.Label(self, text='Probe selection window. ', justify=RIGHT)
         self.NSWL1.place(relx=0.5, rely=0.05, anchor=CENTER)
 
         self.NSWL1 = ttk.Label(self, text='Batch number: ', justify=RIGHT)
-        self.NSWL1.place(relx=0.5, rely=0.2, anchor=CENTER)
+        self.NSWL1.place(relx=0.5, rely=0.35, anchor=CENTER)
 
         self.NSWE1 = ttk.Entry(self, textvariable=self.batchNumber)
-        self.NSWE1.place(relx=0.7, rely=0.2, anchor=CENTER)
+        self.NSWE1.place(relx=0.7, rely=0.35, anchor=CENTER)
         
         self.NSWL1 = ttk.Label(self, text='Batch Qty: ', justify=RIGHT)
-        self.NSWL1.place(relx=0.5, rely=0.3, anchor=CENTER)
+        self.NSWL1.place(relx=0.5, rely=0.45, anchor=CENTER)
         
         self.NSWE1 = ttk.Entry(self, textvariable=self.batchQty)
-        self.NSWE1.place(relx=0.7, rely=0.3, anchor=CENTER)
+        self.NSWE1.place(relx=0.7, rely=0.45, anchor=CENTER)
 
         self.NSWL2 = ttk.Label(self, text='Select Probe Type: ')
-        self.NSWL2.place(relx=0.2, rely=0.65, anchor=CENTER)
+        self.NSWL2.place(relx=0.2, rely=0.7, anchor=CENTER)
         
        
       
@@ -180,6 +181,23 @@ class NewSessionWindow(tk.Frame):
         self.cancl_btn.place(relx=0.7, rely=0.8, anchor=CENTER)
 
         self.bind('<Return>', self.confm_btn_clicked)
+        
+        if "AM" in timeNow :
+            self.textArea.insert('1.0','Good Morning ', font=('bold',12))
+            
+        else:
+            self.textArea.insert('1.0','Good Afternoon ')
+        
+    def refresh_window(self):
+           
+       # Open the file in binary mode
+        with open('file.ptt', 'rb') as file:
+        # Call load method to deserialze
+            session_info = pickle.load(file)
+        file.close()
+        self.textArea.insert('2.0',session_info[0])
+        self.textArea.insert('3.3','\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
+        self.textArea.config(state=DISABLED)
 
     def confm_btn_clicked(self, controller):
         # create batch object
@@ -232,15 +250,24 @@ class ContinueSessionWindow(tk.Frame):
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
+        self.textArea = tk.Text(self, height=5, width=38)
+        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
+        
+        
         self.Label1 = ttk.Label(self, text='Choose a session to resume')
-        self.Label1.place(relx=0.5, rely=0.1, anchor=CENTER)
+        self.Label1.place(relx=0.5, rely=0.05, anchor=CENTER)
+        
+        self.label_4 = ttk.Label(self, text="Batch number")
+        self.label_4.place(relx=0.35, rely=0.3)
+        self.label_5 = ttk.Label(self, text="Batch type")
+        self.label_5.place(relx=0.55, rely=0.3)
 
         self.sessionListBox = Listbox(self)
-        self.sessionListBox.place(relx=0.5, rely=0.4, anchor=CENTER)
+        self.sessionListBox.place(relx=0.4, rely=0.4, anchor=CENTER)
         self.sessionListBox.config(height=2, width=20)
         
         self.probeTypeListBox = Listbox(self)
-        self.probeTypeListBox.place(relx=0.7, rely=0.4, anchor=CENTER)
+        self.probeTypeListBox.place(relx=0.6, rely=0.4, anchor=CENTER)
         self.probeTypeListBox.config(height=2, width=15)
 
         self.continue_btn = ttk.Button(
@@ -250,6 +277,7 @@ class ContinueSessionWindow(tk.Frame):
         self.cancel_btn = ttk.Button(
             self, text='Cancel', command=lambda: controller.show_frame(SessionSelectWindow))
         self.cancel_btn.place(relx=0.6, rely=0.8, anchor=CENTER)
+        
 
         self.refresh_window()
 
@@ -257,6 +285,15 @@ class ContinueSessionWindow(tk.Frame):
         # #create a list of the current users using the dictionary of users
         sessionList = []
         probeTypeList = []
+        with open('file.ptt', 'rb') as file:
+        # Call load method to deserialze
+            session_info = pickle.load(file)
+            print("cont session {}".format(session_info))
+        file.close()
+        # self.textArea.insert('2.0',session_info[0])
+        self.textArea.insert('3.3','\n\nPlease select a batch number\nto continue testing.')
+        self.textArea.config(state=DISABLED)
+
         for item in BM.GetAvailableBatches():
             sessionList.append(item)
             
