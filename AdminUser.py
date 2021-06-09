@@ -62,33 +62,34 @@ class AdminWindow(tk.Frame):
         self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
         timeNow = strftime("%H:%M:%p", gmtime())
 
+        self.label_4.place(relx=0.59, rely=0.4, anchor=CENTER)
+        self.entry_4.place(relx=0.45, rely=0.45, width=300, anchor="w")
+        
         self.AW_addUsrBtn = ttk.Button(
             self, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
-        self.AW_addUsrBtn.place(relx=0.42, rely=0.5, anchor=CENTER)
+        self.AW_addUsrBtn.place(relx=0.42, rely=0.65, anchor=CENTER)
 
         self.AW_editUsrBtn = ttk.Button(
             self, text='Edit a current user', command=lambda: controller.show_frame(EditUserWindow))
-        self.AW_editUsrBtn.place(relx=0.62, rely=0.5, anchor=CENTER)
-        self.label_4.place(relx=0.18, rely=0.7, anchor=CENTER)
-        self.entry_4.place(relx=0.3, rely=0.7, width=300, anchor="w")
+        self.AW_editUsrBtn.place(relx=0.62, rely=0.65, anchor=CENTER)
+        
+        self.AW_adminLogoutBtn = ttk.Button(
+            self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))
+        self.AW_adminLogoutBtn.place(relx=0.8, rely=0.65, anchor=CENTER)
         
         self.browseBtn = ttk.Button(
             self, text="Browse", command=lambda: self._browse_btn_clicked(controller))
         self.browseBtn.grid(row=2, column=1)
-        self.browseBtn.place(relx=0.8, rely=0.7, anchor=CENTER)
+        self.browseBtn.place(relx=0.8, rely=0.45, anchor=CENTER)
         self.bind('<Return>', self.update)
         
         self.label = ttk.Label(self, text="Probe re-program Off / On")
-        self.label.place(relx=0.05, rely=0.42, anchor=CENTER)
-        self.w2 = Scale(self, label="Off",from_=0, to=1, command= self.update ,orient=HORIZONTAL)
+        self.label.place(relx=0.08, rely=0.42, anchor=CENTER)
+        self.w2 = Scale(self, label="Off",from_=0, to=1, command=self.update ,orient=HORIZONTAL)
         self.w2.set(0)
         self.w2.place(relx=0.5, rely=0.5, anchor=CENTER)
-        self.w2.pack(side=LEFT)
+        self.w2.pack(side='left')
         
-
-        self.AW_adminLogoutBtn = ttk.Button(
-            self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))
-        self.AW_adminLogoutBtn.place(relx=0.8, rely=0.5, anchor=CENTER)
         if "AM" in timeNow :
             self.textArea.insert('1.0','Good Morning ', font=('bold',12))
             
@@ -102,9 +103,17 @@ class AdminWindow(tk.Frame):
         # Call load method to deserialze
             session_info = pickle.load(file)
         file.close()
-        self.textArea.insert('2.0',session_info[0])
-        self.textArea.insert('3.3','\n\nPlease choose an option.')
+        self.textArea.config(state=NORMAL)
+        self.textArea.delete('1.0','end')
+        self.textArea.insert('1.0',session_info[0])
+        self.textArea.insert('2.0','\n\nPlease choose an option.')
+        
+        if self.w2.get() == 1:
+            self.textArea.insert('4.0','\nProbe re-programming is enabled.')
+        else:
+            self.textArea.insert('4.0','\nProbe re-programming is disabled.')
         self.textArea.config(state=DISABLED)
+        Tk.update(self) 
          
     def update(self, controller):
         batch_data = [self.w2.get()]
@@ -122,6 +131,15 @@ class AdminWindow(tk.Frame):
             # Call load method to deserialze
             pickle.dump(batch_data,file)
         file.close()
+        self.textArea.config(state=NORMAL)
+        self.textArea.delete('4.0','end')
+        if self.w2.get() == 1:
+            self.textArea.insert('4.0','\nProbe re-programming is enabled.')
+          
+        else:
+            self.textArea.insert('4.0','\nProbe re-programming is disabled.')
+        self.textArea.config(state=DISABLED)
+     
         
     def _browse_btn_clicked(self, controller):
         filename = filedialog.askopenfilenames(initialdir = "/",title = "Select file",

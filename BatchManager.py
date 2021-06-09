@@ -91,7 +91,9 @@ class BatchManager(object):
        
         self.currentBatch = self.GetBatchObject(session_data[2])
         
-        
+    def saveProbeInfoToCSVFile(self, serialNumber, analyserData, user, batchNumber):
+       
+        self.CSVM.WriteProbeDataToFile(serialNumber,analyserData,user, batchNumber)
         
     def ResumeBatch(self, batch):
         '''
@@ -279,6 +281,24 @@ class CSVManager(object):
             # Create a writer object from csv module
             datawriter = csv.writer(file)
             # Add contents of list as last row in the csv file
+            datawriter.writerow(inputList)
+        file.close()
+        
+    def WriteProbeDataToFile(self, serialNumber, analyserData, user, fileName):
+        # print("saved")    
+        # print("serial number {}".format(serialNumber))
+        # print("analyser data {}".format(analyserData))
+        # print("user {}".format(user))
+        # print("batch {}".format(fileName))
+        
+        
+        fullPath = os.path.abspath(self.inProgressPathTest + fileName + '.csv')
+        inputList = [serialNumber,fileName,analyserData,user]
+        with open(fullPath, 'a', newline='') as file:
+            
+            # write pribe data to existing in-progress file
+            datawriter = csv.writer(file)
+            
             datawriter.writerow(inputList)
         file.close()
 

@@ -69,7 +69,7 @@ class ConnectionWindow(tk.Frame):
         self.Monitor.set('COM5')
         self.moveProbe.set('Not Set')
         self.isAdmin = []
-        self.name = []
+        
         
         
         # create the window and frame
@@ -90,20 +90,20 @@ class ConnectionWindow(tk.Frame):
         self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
         timeNow = strftime("%H:%M:%p", gmtime())
         
-        if "AM" in timeNow :
-            self.textArea.insert('1.0','Good Morning ', font=('bold',12))
+        # if "AM" in timeNow :
+        #     self.textArea.insert('1.0','Good Morning ', font=('bold',12))
             
-        else:
-            self.textArea.insert('1.0','Good Afternoon ')
+        # else:
+        #     self.textArea.insert('1.0','Good Afternoon ')
         
         
       
     
     def refresh_window(self):
         with open('file.ptt', 'rb') as file:
-            myvar = pickle.load(file)
-            self.isAdmin.append(myvar[1])
-            self.name.append(myvar[0])
+            fileData = pickle.load(file)
+            self.isAdmin.append(fileData[1])
+            
         file.close()  
          
         if True in self.isAdmin:
@@ -133,7 +133,7 @@ class ConnectionWindow(tk.Frame):
             self.entry_5.place(relx=0.5, rely=0.6, anchor=CENTER)
 
             self.entry_1.focus_set()
-        self.textArea.insert('2.0',self.name)
+        self.textArea.insert('2.0',fileData[0])
         self.textArea.insert('2.0','\n\nPlease connect the external devices\nand progress to the testing screen.')
         self.textArea.config(state=DISABLED)
             

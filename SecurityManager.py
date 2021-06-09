@@ -58,7 +58,7 @@ class SecurityManager(object):
                 self.loggedInUser = nuser.admin
                
                 myvar = [nuser.name, nuser.admin]
-  
+                
                 # Open a file and use dump()
                 with open('file.ptt', 'wb') as file:
       

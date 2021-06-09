@@ -182,11 +182,11 @@ class NewSessionWindow(tk.Frame):
 
         self.bind('<Return>', self.confm_btn_clicked)
         
-        if "AM" in timeNow :
-            self.textArea.insert('1.0','Good Morning ', font=('bold',12))
+        # if "AM" in timeNow :
+        #     self.textArea.insert('1.0','Good Morning ', font=('bold',12))
             
-        else:
-            self.textArea.insert('1.0','Good Afternoon ')
+        # else:
+        #     self.textArea.insert('1.0','Good Afternoon ')
         
     def refresh_window(self):
            
@@ -195,7 +195,8 @@ class NewSessionWindow(tk.Frame):
         # Call load method to deserialze
             session_info = pickle.load(file)
         file.close()
-        self.textArea.insert('2.0',session_info[0])
+        self.textArea.config(state=NORMAL)
+        self.textArea.insert('1.0',session_info[0])
         self.textArea.insert('3.3','\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
         self.textArea.config(state=DISABLED)
 
@@ -203,14 +204,24 @@ class NewSessionWindow(tk.Frame):
         # create batch object
         session_data = []
         batch_data = []
+        DAnswer = False
         newBatch = Batch(self.batchNumber.get())
         newBatch.probeType = self.probeType.get()
         newBatch.batchQty = self.batchQty.get()
 
-        DAnswer = tm.askyesno('Confirm', 'Are batch details correct?' )
+        if self.batchQty.get() > 100:
+                self.textArea.config(state=NORMAL)
+                self.textArea.delete('2.0','end')
+                self.textArea.insert('2.0','\nCheck batch quantity. ')
+                self.textArea.config(state=DISABLED)
+        else:
+            DAnswer = tm.askyesno('Confirm', 'Are batch details correct?' )
         if DAnswer == True and self.batchQty.get() > 0:
             # create the batch file
             # Open the file in binary mode
+            
+               
+        
             with open('file.ptt', 'rb') as file:
 
             # Call load method to deserialze
@@ -227,19 +238,19 @@ class NewSessionWindow(tk.Frame):
                 session_data.append(newBatch.probeType)
                 
             
-                with open('file.ptt', 'wb') as file:
+            with open('file.ptt', 'wb') as file:
                     pickle.dump(session_data, file)
                     
-                file.close()
+            file.close()
                 
-                with open("file_batch", "wb") as file:
+            with open("file_batch", "wb") as file:
                     batch_data.append(self.batchNumber.get())
                     batch_data.append(self.probeType.get())
                     batch_data.append(self.batchQty.get())
                     pickle.dump(batch_data, file)
-                file.close()
-                self.NSWE1.delete(0, 'end')
-                controller.show_frame(DC.ConnectionWindow)
+            file.close()
+            self.NSWE1.delete(0, 'end')
+            controller.show_frame(DC.ConnectionWindow)
 
 
 class ContinueSessionWindow(tk.Frame):
@@ -279,7 +290,7 @@ class ContinueSessionWindow(tk.Frame):
         self.cancel_btn.place(relx=0.6, rely=0.8, anchor=CENTER)
         
 
-        self.refresh_window()
+        # self.refresh_window()
 
     def refresh_window(self):
         # #create a list of the current users using the dictionary of users
@@ -288,9 +299,8 @@ class ContinueSessionWindow(tk.Frame):
         with open('file.ptt', 'rb') as file:
         # Call load method to deserialze
             session_info = pickle.load(file)
-            print("cont session {}".format(session_info))
         file.close()
-        # self.textArea.insert('2.0',session_info[0])
+        self.textArea.insert('1.0',session_info[0])
         self.textArea.insert('3.3','\n\nPlease select a batch number\nto continue testing.')
         self.textArea.config(state=DISABLED)
 

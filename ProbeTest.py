@@ -83,16 +83,14 @@ class TestProgramWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
+        # define variables
         self.sessionOnGoing = False
         self.sessionComplete = None
         self.action = StringVar()
         self.leftToTest = IntVar()
-        
-
-        # define variables
+        self.analyserResults = []
         self.currentBatch = StringVar()
         self.currentUser = StringVar()
-        self.leftToTest = IntVar()
         self.probesPassed = IntVar()
         self.deviceDetails = StringVar()
         self.device = "Not connected to analyser"
@@ -102,6 +100,7 @@ class TestProgramWindow(tk.Frame):
         self.PV_data = IntVar()
         self.userAdmin = False
         self.check = 0
+        self.probesPassed.set(0)
         
 
         #import images
@@ -116,6 +115,7 @@ class TestProgramWindow(tk.Frame):
         self.textArea = tk.Text(self, height=5, width=38)
         self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
         timeNow = strftime("%H:%M:%p", gmtime())
+        self.textArea.delete('1.0','end')
         if "AM" in timeNow :
             self.textArea.insert('1.0','Good Morning ', font=('bold',12))
             
@@ -188,12 +188,12 @@ class TestProgramWindow(tk.Frame):
         self.sessionComplete = True
         self.sessionOnGoing = False
         batch_data = []
+        
         with open('file.ptt', 'rb') as file:
-      
-        # Call load method to deserialze
-            myvar = pickle.load(file)
-            currentBatch = myvar[2]
+            data = pickle.load(file)
+            currentBatch = data[2]
         file.close()
+        
         with open("file_batch", "wb") as file:
                 batch_data.append(self.currentBatch.get())
                 batch_data.append(self.probeType.get())
@@ -229,39 +229,33 @@ class TestProgramWindow(tk.Frame):
         serial_results = []
         analyser_data = []
         BM.updateBatchInfo()
-        
+        self.textArea.delete('1.0','end')
         # Open the file in binary mode
-        try:
-            with open('file.ptt', 'rb') as file:
+       
+        with open('file.ptt', 'rb') as file:
       
         # Call load method to deserialze
-                myvar = pickle.load(file)
-                name = myvar[0]
-                currentBatch = myvar[2]
-                probeType = myvar[3]
-                analyser_port = myvar[4][2]
-                self.userAdmin = myvar[1]
-            file.close()
-            self.textArea.insert('2.0',name)
-            self.textArea.insert('4.0','\n\nPlease continue testing batch ')
-            self.textArea.insert('3.30', currentBatch)
-        except:
-             tm.showerror(
-                'Data Collection Error', 'Unable to collect the data from system files.')  
-
+            fileData = pickle.load(file)
+            analyser_port = fileData[4][2]
+            self.userAdmin = fileData[1]
+        file.close()
+        self.textArea.insert('1.0',fileData[0])
+        self.textArea.insert('2.0','\nPlease continue testing batch ')
+        self.textArea.insert('2.30', fileData[2])
+            
         try:
             with open('file_batch', 'rb') as file:
-                myvar = pickle.load(file)
-                self.leftToTest.set(myvar[2])
+                myvar1 = pickle.load(file)
+                self.leftToTest.set(myvar1[2])
             file.close()
             
         except:
             self.leftToTest.set(100)
             
         # self.root.deiconify()
-        self.probeType.set(probeType)
-        self.currentBatch.set(currentBatch)
-        self.currentUser.set(name)
+        self.probeType.set(fileData[3])
+        self.currentBatch.set(fileData[2])
+        self.currentUser.set(fileData[0])
         self.deviceDetails.set(self.device)
         self.RLLimit = -1  # pass criteria for return loss measurement
         
@@ -276,9 +270,9 @@ class TestProgramWindow(tk.Frame):
             if NanoZND.GetAnalyserPortNumber(analyser_port):
                 # Get the analyser to generate data points and return them
                 analyser_data = NanoZND.ReadAnalyserData(analyser_port)
-                
+                self.analyserResults.append(analyser_data[3])
                 # Print the analyser data points selected by 
-                print("Analyser data {}".format(analyser_data[3:10]))
+                # print("Analyser data {}".format(analyser_data[3:10]))
                 # Set the device connected name
                 self.device = " NanoNVA "
                 self.deviceDetails.set(self.device)
@@ -288,12 +282,12 @@ class TestProgramWindow(tk.Frame):
                 'Data Collection Error', 'Unable to collect the data from the NanoVNA Analyser. \nOr turn it on.')  
         # write data to .csv file
         
-        try:
+        # try:
             
-            NanoZND.CVSOutPut(currentBatch)
-        except:
-            tm.showerror(
-                'Data write Error', 'Unable to start write the data from the NanoVNA Analyser. \n to file.')  
+        #     NanoZND.CVSOutPut(currentBatch)
+        # except:
+        #     tm.showerror(
+        #         'Data write Error', 'Unable to start write the data from the NanoVNA Analyser. \n to file.')  
    
         #######################
         # Collect serial data #
@@ -317,36 +311,50 @@ class TestProgramWindow(tk.Frame):
         with open('file.ptt', 'rb') as file:
       
             # Call load method to deserialze
-                myvar = pickle.load(file)
-                control_data.extend(myvar)
+                control = pickle.load(file)
+                control_data.extend(control)
         file.close()
         
         with open('file.admin', 'rb') as fileAd:
-            myvar = pickle.load(fileAd)
-            reprogramOK = myvar[0]
-            
-        fileAd.close()
-
+            myAdmin = pickle.load(fileAd)
+        self.textArea.config(state=NORMAL)
+        if myAdmin[0] == 1:
+                self.textArea.delete('3.0','end')
+                self.textArea.insert('3.0', "\n\nProbe re-programming enabled.")
+                
+        else:
+                self.textArea.delete('3.0','end')
+                self.textArea.insert('3.0', "\n\nProbe re-programming disabled")
+        self.textArea.config(state=DISABLED)
+        fileAd.close()  
+             
         # Detect if probe is present.        
         while(self.sessionOnGoing == True):
-            Tk.update(self)
-            if self.leftToTest.get() == False and self.check == 0:
+            Tk.update(self) 
+            if self.leftToTest.get() == False and self.check == False:
                 tm.showinfo("Batch complete.","\nPlease press the Complete Session button.")
                 self.check = 1
-                
+            go = False  
+            
             if PM.ProbePresent() == True:
                 self.action.set('Probe connected')
-                go = False
                 ProbeIsProgrammed = PM.ProbeIsProgrammed()  
-                   
-                if reprogramOK == False:
-                    tm.Dialog("Unable to re-programme probe.")
+                Tk.update(self) 
+                
+                if myAdmin[0] == 0:
+                    print("Probe status {} {}".format(ProbeIsProgrammed,myAdmin))
+                    self.textArea.config(state=NORMAL)
+                    self.textArea.delete('3.0','end')
+                    self.textArea.insert('3.0', "\n\nYou can't re-program this probe.")   
+                    self.textArea.config(state=DISABLED)
                     go = False
-                    
-                if ProbeIsProgrammed == True and reprogramOK == True:    
+                Tk.update(self) 
+                if ProbeIsProgrammed == True and myAdmin[0] == 1:
                     go = tm.askyesno('Programmed Probe Detected', 'This probe is already programmed.\nDo you wish to re-program and test?')
                     self.status_image.configure(image=self.amberlight) 
                     
+                
+                Tk.update(self)    
                 if ProbeIsProgrammed == False:
                     go = True
                     self.status_image.configure(image=self.amberlight) 
@@ -372,6 +380,7 @@ class TestProgramWindow(tk.Frame):
                             self.probesPassed.set(self.probesPassed.get() + 1)
                             self.leftToTest.set(self.leftToTest.get() - 1)
                             self.status_image.configure(image=self.greenlight)
+                            BM.saveProbeInfoToCSVFile(serialNumber,self.analyserResults,self.currentUser.get(), BM.currentBatch.batchNumber)
                             Tk.update(self)
                         else:
                             self.status_image.configure(image=self.redlight)
@@ -409,18 +418,8 @@ class TestProgramWindow(tk.Frame):
         
        
                         
-        # put something here to move csv?
+        
         if self.sessionComplete == True:
             BM.CompleteBatch(BM.currentBatch)
             
 
-
-
-
-
-# PI = PI()
-# PD = ProbeData()
-# PI.Connect('COM3')
-# sn = PI.ProbeReadAllBytes()
-# 
-# print(sn)
