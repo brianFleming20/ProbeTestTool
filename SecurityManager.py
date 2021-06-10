@@ -70,11 +70,6 @@ class SecurityManager(object):
                 
                 return True
 
-    def set_user_admin_status(self, status=False):
-        pass
-        
-    def get_user_admin_status(self):
-        pass
     
     def logOut(self):
         '''
@@ -112,9 +107,17 @@ class SecurityManager(object):
         pass in a new user object
         checks to see if the user is in the user dict and the logged in user has admin privelages. if so, changes the password accordingly
         """
-        if self.SMDB.getUser(user.name) and self.loggedInUser.admin == True:
+        
+        with open('file.ptt', 'rb') as file:
+        # Call load method to deserialze
+            session_info = pickle.load(file)
+            
+        file.close()
+        
+        if self.SMDB.getUser(user.name) and session_info[1] == True:
             self.SMDB.removeUser(user)
             self.SMDB.putUser(user)
+           
     
     def GetUserObject(self, userName):
         user = self.SMDB.getUser(userName)

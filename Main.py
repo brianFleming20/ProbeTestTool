@@ -44,7 +44,7 @@ import AdminUser as AU
 
 
 # define global variables
-PTT_Version = 'Deltex Medical : XXXX-XXXX Probe Test Tool V0.1'
+PTT_Version = 'Deltex Medical : P0035 Probe Test Tool V1.0'
 w = 1000  # window width
 h = 650  # window height
 LARGE_FONT = ("Verdana", 14)
@@ -89,6 +89,7 @@ class WindowController(tk.Tk):
                   DC.ConnectionWindow,
                   AU.AdminWindow,
                   AU.AddUserWindow,
+                  AU.ChangePasswordWindow,
                   AU.EditUserWindow,
                   PT.TestProgramWindow):
 

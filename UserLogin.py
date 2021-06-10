@@ -72,9 +72,9 @@ class LogInWindow(tk.Frame):
 
         self.entry_1 = ttk.Entry(self, textvariable=self.currentUser ,font="bold")
         self.entry_2 = ttk.Entry(self, show="*", font="bold")
-        self.entry_1.insert(END, 'Jack')
+        self.entry_1.insert(END, 'Name')
         cUser = str(self.currentUser.get())
-        self.entry_2.insert(END, 'password')
+        self.entry_2.insert(END, '')
 
         self.label_1.place(relx=0.4, rely=0.4, anchor=CENTER)
         self.label_2.place(relx=0.4, rely=0.5, anchor=CENTER)

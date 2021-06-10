@@ -152,29 +152,68 @@ class AdminWindow(tk.Frame):
 class ChangePasswordWindow(tk.Frame):
     def __init__(self, parent, controller):
         self.newPassword = StringVar()
+        self.confirmPassword = StringVar()
+        self.name = ""
 
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent, bg='#FFDAB9')
         
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
+        self.textArea = tk.Text(self, height=5, width=38)
+        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
 
         self.CPWl1 = ttk.Label(self, text='Enter a new password')
         self.CPWl1.place(relx=0.35, rely=0.3, anchor=CENTER)
+        
+        self.CPWl1 = ttk.Label(self, text='Confirm new password')
+        self.CPWl1.place(relx=0.35, rely=0.35, anchor=CENTER)
 
-        self.CPWe1 = ttk.Entry(self, textvariable=self.newPassword)
+        self.CPWe1 = ttk.Entry(self, textvariable=self.newPassword, show="*", font="bold")
         self.CPWe1.place(relx=0.65, rely=0.3, anchor=CENTER)
+        
+        self.CPWe1 = ttk.Entry(self, textvariable=self.confirmPassword, show="*", font="bold")
+        self.CPWe1.place(relx=0.65, rely=0.35, anchor=CENTER)
 
         self.confm_btn = ttk.Button(
             self, text='Confirm', command=lambda: self.confm_btn_clicked(controller))
         self.confm_btn.place(relx=0.5, rely=0.6, anchor=CENTER)
+        
+        self.confm_btn = ttk.Button(
+            self, text='Back', command=lambda: controller.show_frame(EditUserWindow))
+        self.confm_btn.place(relx=0.65, rely=0.6, anchor=CENTER)
+        
+    def refresh_window(self):
+        # create a list of the current users using the dictionary of users
+        with open('file.ptt', 'rb') as file:
+        # Call load method to deserialze
+            session_info = pickle.load(file)
+        file.close()
+        
+        with open('file.admin', 'rb') as fileAd:
+            myAdmin = pickle.load(fileAd)
+            self.name = myAdmin[1]
+        fileAd.close()
+        
+        self.textArea.config(state=NORMAL)
+        self.textArea.delete('1.0','end')
+        self.textArea.insert('1.0',session_info[0])
+        self.textArea.insert('2.0','\nChange ' + self.name + "'s password.")
+        self.textArea.config(state=DISABLED)
 
     def confm_btn_clicked(self, controller):
-        SM.editingUser.password = self.newPassword.get()
-        SM.updatePassword(SM.editingUser)
-        tm.showinfo('Changed password', 'Password change successful')
-        controller.show_frame(EditUserWindow)
+        if self.newPassword.get() == self.confirmPassword.get():
+            # SM.editingUser.password = self.newPassword.get()
+            user = SM.GetUserObject(self.name)
+            SM.updatePassword(user)
+            tm.showinfo('Changed password', 'Password change successful')
+            controller.show_frame(EditUserWindow)
+        else:
+            self.textArea.config(state=NORMAL)
+            self.textArea.insert('3.3','\nPlease check password spelling,\nthey are not the same.')
+            self.textArea.config(state=DISABLED)
+        
         
 class EditUserWindow(tk.Frame):
     def __init__(self, parent, controller):
@@ -184,57 +223,46 @@ class EditUserWindow(tk.Frame):
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
+        
+        self.textArea = tk.Text(self, height=5, width=38)
+        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
 
         self.Label1 = ttk.Label(self, text='Choose a user to edit')
-        self.Label1.place(relx=0.5, rely=0.1, anchor=CENTER)
+        self.Label1.place(relx=0.5, rely=0.07, anchor=CENTER)
 
         self.userListBox = Listbox(self, height=15, width=20)
-        self.userListBox.place(relx=0.3, rely=0.4, anchor=CENTER)
+        self.userListBox.place(relx=0.3, rely=0.5, anchor=CENTER)
 
         self.CngPWrd_btn = ttk.Button(
-            self, text='Change password', command=lambda: self._cngPwrd_btn_clicked(controller))
-        self.CngPWrd_btn.place(relx=0.6, rely=0.25, anchor=CENTER)
+            self, text='Change password', command=lambda: self._getSelectedUser(controller))
+        self.CngPWrd_btn.place(relx=0.6, rely=0.35, anchor=CENTER)
 
         self.delUsr_btn = ttk.Button(
             self, text='Delete', command=lambda: self._delUsr_btn_clicked(controller))
-        self.delUsr_btn.place(relx=0.6, rely=0.35, anchor=CENTER)
+        self.delUsr_btn.place(relx=0.6, rely=0.45, anchor=CENTER)
 
         self.finished_btn = ttk.Button(
             self, text='Done', command=lambda: controller.show_frame(AdminWindow))
-        self.finished_btn.place(relx=0.6, rely=0.45, anchor=CENTER)
-
-        self.refresh_window()
-
-    def _cngPwrd_btn_clicked(self, controller):
+        self.finished_btn.place(relx=0.6, rely=0.55, anchor=CENTER)
         
-        lstid = self.userListBox.curselection()
-        lstUsr = self.userListBox.get(lstid[0])
-        SM.editingUser = SM.GetUserObject(lstUsr)
-        self.newPassword = StringVar()
+    def _getSelectedUser(self, controller):
+        updateFile = []
+        selectedId = self.userListBox.curselection()
+        selectedUser = self.userListBox.get(selectedId[0])
         
-        
+        # Get admin file
+        with open('file.admin', 'rb') as fileAd:
+            myAdmin = pickle.load(fileAd)
+        fileAd.close()
+        # Update admin file
+        updateFile.extend(myAdmin)
+        updateFile.append(selectedUser)
+        # Save new admin file with selected user to edit
+        with open('file.admin', 'wb') as file:
+            pickle.dump(updateFile,file)
+        file.close()
 
-        self.CPWl1 = ttk.Label(self, text='Enter a new password')
-        self.CPWl1.place(relx=0.3, rely=0.7, anchor=CENTER)
-
-        self.CPWe1 = ttk.Entry(self, textvariable=self.newPassword)
-        self.CPWe1.place(relx=0.55, rely=0.7, anchor=CENTER)
-
-        self.confm_btn = ttk.Button(
-            self, text='Confirm', command=lambda: self.change_btn_clicked(controller))
-        self.confm_btn.place(relx=0.4, rely=0.8, anchor=CENTER)
-        
-    def change_btn_clicked(self, controller):
-        SM.editingUser.password = self.newPassword.get()
-        SM.updatePassword(SM.editingUser)
-        tm.showinfo('Changed password', 'Password change successful')
-        controller.show_frame(EditUserWindow)
-
-    def confm_btn_clicked(self, controller):
-        SM.editingUser.password = self.newPassword.get()
-        SM.updatePassword(SM.editingUser)
-        tm.showinfo('Changed password', 'Password change successful')
-        controller.show_frame(EditUserWindow)
+        controller.show_frame(ChangePasswordWindow)
 
     def _delUsr_btn_clicked(self, controller):
         self.delUsr_btn.config(command=ignore)
@@ -264,6 +292,15 @@ class EditUserWindow(tk.Frame):
 
     def refresh_window(self):
         # create a list of the current users using the dictionary of users
+        with open('file.ptt', 'rb') as file:
+        # Call load method to deserialze
+            session_info = pickle.load(file)
+        file.close()
+        self.textArea.config(state=NORMAL)
+        self.textArea.delete('1.0','end')
+        self.textArea.insert('1.0',session_info[0])
+        self.textArea.insert('2.0','\n\nPlease choose an option.')
+        self.textArea.config(state=DISABLED)
         userList = []
         for item in SM.GetUserList():
             userList.append(item.name)
@@ -274,6 +311,9 @@ class EditUserWindow(tk.Frame):
         # fill the listbox with the list of users
         for item in userList:
             self.userListBox.insert(END, item)
+        # Getting the selected user
+        self.userListBox.select_set(0)
+        
             
             
 class AddUserWindow(tk.Frame):

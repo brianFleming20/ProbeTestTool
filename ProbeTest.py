@@ -109,10 +109,12 @@ class TestProgramWindow(tk.Frame):
         self.redlight = (PhotoImage(file="red128.gif"))
         self.greylight = (PhotoImage(file="grey128.gif"))
         self.deltex = (PhotoImage(file="deltex.gif"))
+        self.complete_btn = (PhotoImage(file="Completesession.gif"))
+        self.suspend_btn = (PhotoImage(file="suspend.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
-        self.textArea = tk.Text(self, height=5, width=38)
+        self.textArea = tk.Text(self, height=5, width=40)
         self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
         timeNow = strftime("%H:%M:%p", gmtime())
         self.textArea.delete('1.0','end')
@@ -176,12 +178,12 @@ class TestProgramWindow(tk.Frame):
                   width=40, relief=GROOVE).place(relx=0.3, rely=0.85, anchor='w')
         self.action.set('Connect New Probe')
 
-        self.completeButton = ttk.Button(self, text='Complete Session', command=lambda: self.cmplt_btn_clicked(
-            controller))
-        self.completeButton.place(relx=0.68, rely=0.92, anchor=CENTER)
+
+        ttk.Button(self, text='Complete Session', image=self.complete_btn, command=lambda: self.cmplt_btn_clicked(
+            controller)).place(relx=0.68, rely=0.9, anchor=CENTER)
         
-        ttk.Button(self, text='Suspend Session', command=lambda: self.suspnd_btn_clicked(
-            controller)).place(relx=0.85, rely=0.92, anchor=CENTER)
+        ttk.Button(self, text='Suspend Session', image=self.suspend_btn, command=lambda: self.suspnd_btn_clicked(
+            controller)).place(relx=0.85, rely=0.9, anchor=CENTER)
 
     def cmplt_btn_clicked(self, controller):
         Tk.update(self)
