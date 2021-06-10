@@ -323,31 +323,39 @@ class AddUserWindow(tk.Frame):
 
         self.newusername = StringVar()
         self.newpassword = StringVar()
+        self.confpassword = StringVar()
         self.isAdmin = StringVar()
 
         self._setDefaults()
+        
+        self.textArea = tk.Text(self, height=5, width=38)
+        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
         
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
 
         self.AUWl1 = ttk.Label(self, text='New user name: ')
-        self.AUWl2 = ttk.Label(self, text='Password: ')
+        self.AUWl2 = ttk.Label(self, text='Enter Password: ')
+        self.AUWl3 = ttk.Label(self, text='Confirm Password: ')
         #self.AUWl3 = ttk.Label(self.AUW, text='Admin: ')
         self.AUWe1 = ttk.Entry(self, textvariable=self.newusername)
         self.AUWe2 = ttk.Entry(self, textvariable=self.newpassword)
+        self.AUWe3 = ttk.Entry(self, textvariable=self.confpassword)
 
         self.rb1 = ttk.Radiobutton(
             self, text='Admin', variable=self.isAdmin, value='true')
-        self.rb1.place(relx=0.5, rely=0.45, anchor=CENTER)
+        self.rb1.place(relx=0.5, rely=0.55, anchor=CENTER)
         self.rb2 = ttk.Radiobutton(
             self, text='Non-Admin', variable=self.isAdmin, value='false')
-        self.rb2.place(relx=0.5, rely=0.55, anchor=CENTER)
+        self.rb2.place(relx=0.5, rely=0.65, anchor=CENTER)
 
         self.AUWl1.place(relx=0.4, rely=0.25, anchor=CENTER)
         self.AUWl2.place(relx=0.4, rely=0.35, anchor=CENTER)
         self.AUWe1.place(relx=0.6, rely=0.25, anchor=CENTER)
         self.AUWe2.place(relx=0.6, rely=0.35, anchor=CENTER)
+        self.AUWl3.place(relx=0.4, rely=0.4, anchor=CENTER)
+        self.AUWe3.place(relx=0.6, rely=0.4, anchor=CENTER)
 
         self.confm_btn = ttk.Button(
             self, text="Confirm", command=lambda: self._confm_btn_clicked(controller))
@@ -360,24 +368,41 @@ class AddUserWindow(tk.Frame):
     def _confm_btn_clicked(self, controller):
         self.confm_btn.config(command=ignore)
         self.cancl_btn.config(command=ignore)
+        if self.newpassword.get() == self.confpassword.get():
+            
+            # create user object
+            admin = False
+            if self.isAdmin.get() == 'true':
+                admin = True
+            newUser = User(self.newusername.get(), self.newpassword.get(), admin)
 
-        # create user object
-        admin = False
-        if self.isAdmin.get() == 'true':
-            admin = True
-        newUser = User(self.newusername.get(), self.newpassword.get(), admin)
-
-        # try adding it to the list of users
-        if SM.addUser(newUser):
-            tm.showinfo('New User', 'New user added')
-            self._setDefaults()
-            controller.show_frame(AdminWindow)
+            # try adding it to the list of users
+            if SM.addUser(newUser):
+                tm.showinfo('New User', 'New user added')
+                self._setDefaults()
+                controller.show_frame(AdminWindow)
+            else:
+                tm.showerror('Error', 'User already exsists')
+            self.confm_btn.config(
+                command=lambda: self._confm_btn_clicked(controller))
+            self.cancl_btn.config(
+                command=lambda: controller.show_frame(AdminWindow))
         else:
-            tm.showerror('Error', 'User already exsists')
-        self.confm_btn.config(
-            command=lambda: self._confm_btn_clicked(controller))
-        self.cancl_btn.config(
-            command=lambda: controller.show_frame(AdminWindow))
+            self.textArea.config(state=NORMAL)
+            self.textArea.insert('3.3','\nPlease check password spelling,\nthey are not the same.')
+            self.textArea.config(state=DISABLED)
+        
+    def refresh_window(self):
+         # create a list of the current users using the dictionary of users
+        with open('file.ptt', 'rb') as file:
+        # Call load method to deserialze
+            session_info = pickle.load(file)
+        file.close()
+        self.textArea.config(state=NORMAL)
+        self.textArea.delete('1.0','end')
+        self.textArea.insert('1.0',session_info[0])
+        self.textArea.insert('2.0','\n\nPlease complete the form.')
+        self.textArea.config(state=DISABLED)
 
     def _setDefaults(self):
         self.isAdmin.set('false')
