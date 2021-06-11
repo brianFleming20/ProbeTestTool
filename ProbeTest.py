@@ -55,6 +55,7 @@ import NanoZND
 import ODMPlus
 import UserLogin as UL
 import Sessions as SE
+import FaultFinder as FF
 
 # create instances
 SM = SecurityManager.SecurityManager()
@@ -119,7 +120,7 @@ class TestProgramWindow(tk.Frame):
         timeNow = strftime("%H:%M:%p", gmtime())
         self.textArea.delete('1.0','end')
         if "AM" in timeNow :
-            self.textArea.insert('1.0','Good Morning ', font=('bold',12))
+            self.textArea.insert('1.0','Good Morning ')
             
         else:
             self.textArea.insert('1.0','Good Afternoon ')
@@ -173,11 +174,13 @@ class TestProgramWindow(tk.Frame):
 
         
         
-        ttk.Label(self, text='Action: ').place(relx=0.1, rely=0.85, anchor='w')
+        ttk.Label(self, text='Action: ').place(relx=0.1, rely=0.9, anchor='w')
         ttk.Label(self, textvariable=self.action, background='yellow',
-                  width=40, relief=GROOVE).place(relx=0.3, rely=0.85, anchor='w')
+                  width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
         self.action.set('Connect New Probe')
 
+        ttk.Button(self, text=' Start fault finding ', command=lambda: self.findFaultWithProbe(controller), 
+                   width=BTN_WIDTH).place(relx=0.53, rely=0.7, anchor=CENTER)
 
         ttk.Button(self, text='Complete Session', image=self.complete_btn, command=lambda: self.cmplt_btn_clicked(
             controller)).place(relx=0.68, rely=0.9, anchor=CENTER)
@@ -207,7 +210,9 @@ class TestProgramWindow(tk.Frame):
             BM.CompleteBatch(currentBatch)
             controller.show_frame(SE.SessionSelectWindow)
             
-    
+    def findFaultWithProbe(self, controller):
+        controller.show_frame(FF.FaultFindWindow)
+        
 
     def suspnd_btn_clicked(self, controller):
         self.sessionComplete = False
@@ -227,7 +232,7 @@ class TestProgramWindow(tk.Frame):
 
     def refresh_window(self):
         self.sessionOnGoing = True
-        
+        batchData = []
         serial_results = []
         analyser_data = []
         BM.updateBatchInfo()
@@ -247,8 +252,8 @@ class TestProgramWindow(tk.Frame):
             
         try:
             with open('file_batch', 'rb') as file:
-                myvar1 = pickle.load(file)
-                self.leftToTest.set(myvar1[2])
+                qtyLeftToTest = pickle.load(file)
+                self.leftToTest.set(qtyLeftToTest[2])
             file.close()
             
         except:
@@ -363,6 +368,13 @@ class TestProgramWindow(tk.Frame):
                 if go == True:  
                     self.action.set('Programming probe')
                     serialNumber = PM.ProgramProbe(BM.currentBatch.probeType)
+                    
+                    with open("file_temp", "wb") as file:
+                        batchData.append(serialNumber)
+                        
+                        pickle.dump(batchData, file)
+                    file.close()
+                    
                     if serialNumber == False:
                         tm.showerror('Programming Error',
                                 'Unable to program\nPlease check U1')

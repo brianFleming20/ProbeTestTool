@@ -91,7 +91,7 @@ class AdminWindow(tk.Frame):
         self.w2.pack(side='left')
         
         if "AM" in timeNow :
-            self.textArea.insert('1.0','Good Morning ', font=('bold',12))
+            self.textArea.insert('1.0','Good Morning ')
             
         else:
             self.textArea.insert('1.0','Good Afternoon ')
@@ -340,8 +340,8 @@ class AddUserWindow(tk.Frame):
         self.AUWl3 = ttk.Label(self, text='Confirm Password: ')
         #self.AUWl3 = ttk.Label(self.AUW, text='Admin: ')
         self.AUWe1 = ttk.Entry(self, textvariable=self.newusername)
-        self.AUWe2 = ttk.Entry(self, textvariable=self.newpassword)
-        self.AUWe3 = ttk.Entry(self, textvariable=self.confpassword)
+        self.AUWe2 = ttk.Entry(self, textvariable=self.newpassword, show="*", font="bold")
+        self.AUWe3 = ttk.Entry(self, textvariable=self.confpassword, show="*", font="bold")
 
         self.rb1 = ttk.Radiobutton(
             self, text='Admin', variable=self.isAdmin, value='true')

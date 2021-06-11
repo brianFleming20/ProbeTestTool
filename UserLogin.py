@@ -72,9 +72,9 @@ class LogInWindow(tk.Frame):
 
         self.entry_1 = ttk.Entry(self, textvariable=self.currentUser ,font="bold")
         self.entry_2 = ttk.Entry(self, show="*", font="bold")
-        self.entry_1.insert(END, 'Name')
+        self.entry_1.insert(END, 'Jack')
         cUser = str(self.currentUser.get())
-        self.entry_2.insert(END, '')
+        self.entry_2.insert(END, 'password')
 
         self.label_1.place(relx=0.4, rely=0.4, anchor=CENTER)
         self.label_2.place(relx=0.4, rely=0.5, anchor=CENTER)
@@ -115,19 +115,22 @@ class LogInWindow(tk.Frame):
     def _login_btn_clicked(self, controller):
         self.logbtn.config(command=ignore)
         
-        # create a user object from the users input
-        username = self.entry_1.get()
-        password = self.entry_2.get()
-        user = User(username, password)
-        
-        #self.entry_1.delete(0, 'end')
-        self.entry_2.delete(0, 'end')
-        # check to see if the details are valid
-        if SM.logIn(user):
-            controller.show_frame(SE.SessionSelectWindow)
+        if '(' in self.entry_1.get() or ')' in self.entry_1.get() or '(' in self.entry_2.get() or ')' in self.entry_2.get():
+            tm.showerror("Login error", "Incorrect characters used.")
         else:
-            tm.showerror("Login error", "Incorrect username or password")
-        self.logbtn.config(command=lambda: self._login_btn_clicked(controller))
+             # create a user object from the users input
+            username = self.entry_1.get()
+            password = self.entry_2.get()
+            user = User(username, password)
+        
+            #self.entry_1.delete(0, 'end')
+            self.entry_2.delete(0, 'end')
+            # check to see if the details are valid
+            if SM.logIn(user):
+                controller.show_frame(SE.SessionSelectWindow)
+            else:
+                tm.showerror("Login error", "Incorrect username or password")
+            self.logbtn.config(command=lambda: self._login_btn_clicked(controller))
         
         
 

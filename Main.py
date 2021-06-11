@@ -38,7 +38,7 @@ import Sessions as SE
 import DeviceConnect as DC
 import ProbeTest as PT
 import AdminUser as AU
-
+import FaultFinder as FF
 
 
 
@@ -91,7 +91,8 @@ class WindowController(tk.Tk):
                   AU.AddUserWindow,
                   AU.ChangePasswordWindow,
                   AU.EditUserWindow,
-                  PT.TestProgramWindow):
+                  PT.TestProgramWindow,
+                  FF.FaultFindWindow):
 
             frame = F(container, self)
 

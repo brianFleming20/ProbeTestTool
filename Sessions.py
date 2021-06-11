@@ -79,7 +79,7 @@ class SessionSelectWindow(tk.Frame):
             AU.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(relx=0.7, rely=0.6, anchor=CENTER)
         if "AM" in timeNow :
-            self.textArea.insert('1.0','Good Morning ', font=('bold',12))
+            self.textArea.insert('1.0','Good Morning ')
             
         else:
             self.textArea.insert('1.0','Good Afternoon ')
