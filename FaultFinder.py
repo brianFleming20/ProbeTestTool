@@ -31,10 +31,21 @@ from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox as tm
 import ProbeTest as PT
-
+import ProbeManager
+import BatchManager
+from ProbeManager import Probe
+from ProbeManager import ProbeManager
+import PI
+import NanoZND
+import ODMPlus
 import pickle
-from time import gmtime, strftime
 
+from time import gmtime, strftime
+PM = ProbeManager()
+BM = BatchManager.BatchManager()
+NanoZND = NanoZND.NanoZND()
+ODM = ODMPlus.ODMData()
+PI = PI.PI()
 
 
 def ignore():
@@ -46,12 +57,20 @@ class FaultFindWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         
+        
         # Set up variavles
         self.currentBatch = StringVar()
         self.currentUser = StringVar()
         self.probeType = StringVar()
         self.deviceDetails = StringVar()
         self.serialNumber = StringVar()
+        self.readSerialNumber = StringVar()
+        self.analyserData = StringVar()
+        self.action = StringVar()
+        self.analyserResults = []
+        self.SD_data = IntVar()
+        self.FTc_data = IntVar()
+        self.PV_data = IntVar()
         self.device = "Not connected to analyser"
         
         # Import images
@@ -77,28 +96,60 @@ class FaultFindWindow(tk.Frame):
             relx=0.1, rely=0.44, anchor='w')
         ttk.Label(self, textvariable=self.deviceDetails, relief=SUNKEN,
                   width=30).place(relx=0.2, rely=0.44, anchor='w')
+        ttk.Label(self, textvariable=self.analyserData, relief=SUNKEN,
+                  width=40).place(relx=0.3, rely=0.48, anchor='w')
         
         ttk.Label(self, text='Serial Number: ').place(
-            relx=0.73, rely=0.2, anchor='w')
+            relx=0.78, rely=0.18, anchor='w')
+        ttk.Label(self, text='From file: ').place(
+            relx=0.73, rely=0.25, anchor='w')
+        ttk.Label(self, text='From Probe: ').place(
+            relx=0.73, rely=0.25, anchor='w')
         ttk.Label(self, textvariable=self.serialNumber, relief=SUNKEN,
                   width=30).place(relx=0.7, rely=0.25, anchor='w')
+        ttk.Label(self, textvariable=self.readSerialNumber, relief=SUNKEN,
+                  width=30).place(relx=0.7, rely=0.3, anchor='w')
+        
+        ttk.Label(self, text="Probe parameter data").place(
+            relx=0.7, rely=0.42, anchor="w")
+        ttk.Label(self, text="SD").place(relx=0.70, rely=0.46, anchor="w")
+        ttk.Label(self, text="FTc").place(relx=0.77, rely=0.46, anchor="w")
+        ttk.Label(self, text="PV").place(relx=0.85, rely=0.46, anchor="w")
+        ttk.Label(self, textvariable=self.SD_data, relief=SUNKEN, font="bold",
+                  width=5).place(relx=0.69, rely=0.51, anchor='w')
+        ttk.Label(self, textvariable=self.FTc_data, relief=SUNKEN, font="bold",
+                  width=5).place(relx=0.76, rely=0.51, anchor='w')
+        ttk.Label(self, textvariable=self.PV_data, relief=SUNKEN, font="bold",
+                  width=5).place(relx=0.84, rely=0.51, anchor='w')
+        
+        ttk.Label(self, text='Action: ').place(relx=0.1, rely=0.55, anchor='w')
+        ttk.Label(self, textvariable=self.action, background='#99c2ff',
+                  width=40, relief=GROOVE).place(relx=0.2, rely=0.55, anchor='w')
         
         self.cancel_btn = ttk.Button(
             self, text='Cancel', command=lambda: controller.show_frame(PT.TestProgramWindow))
-        self.cancel_btn.place(relx=0.6, rely=0.8, anchor=CENTER)
+        self.cancel_btn.place(relx=0.6, rely=0.75, anchor=CENTER)
+        
         
     def refresh_window(self):
-        
+        self.textArea.config(state=NORMAL)
         self.textArea.delete('1.0','end')
+        test = False
+        
         # Open the file in binary mode
-       
-        with open('file.ptt', 'rb') as file:
+        self.RLLimit = -1  # pass criteria for return loss measurement
+        try:
+            with open('file.ptt', 'rb') as file:
       
-        # Call load method to deserialze
-            fileData = pickle.load(file)
-            analyser_port = fileData[4][2]
-            self.userAdmin = fileData[1]
-        file.close()
+                # Call load method to deserialze
+                fileData = pickle.load(file)
+                analyser_port = fileData[4][2]
+                self.userAdmin = fileData[1]
+            file.close()
+        except:
+           self.textArea.insert('3.0','\nFault finding data ') 
+            
+        
         self.textArea.insert('1.0',fileData[0])
         self.textArea.insert('2.0','\nFault finding batch ')
         self.textArea.insert('2.30', fileData[2])
@@ -108,10 +159,67 @@ class FaultFindWindow(tk.Frame):
         self.currentUser.set(fileData[0])
         self.deviceDetails.set(self.device)
         
+        while PM.ProbePresent() == True:
         
-        with open("file_temp", "wb") as file:
-                        
-            batchData = pickle.load( file)
+            if PM.ProbePresent() == False:
+                test = False
+                self.action.set('No probe connected...')
+                Tk.update(self) 
+            else:
+                print("Probe present {}".format(PM.ProbePresent()))
+                self.action.set('Probe connected')
+                test = True
+                Tk.update(self) 
             
-        file.close()
-        self.serialNumber.set(batchData[0])
+        if test == False: 
+            pass
+        else:
+            while test == True:  
+                ProbeIsProgrammed = PM.ProbeIsProgrammed()
+                if ProbeIsProgrammed == True: 
+                    self.action.set('Programmed Probe connected')
+                else:
+                    self.action.set('Probe not programmed...')
+                try:
+                    # Check to see if the analyser port is connected
+                    self.textArea.delete('3.0','end')
+                    if NanoZND.GetAnalyserPortNumber(analyser_port):
+                        # Get the analyser to generate data points and return them
+                        analyser_data = NanoZND.ReadAnalyserData(analyser_port)
+                        self.analyserResults.append(analyser_data[3])
+                        # Print the analyser data points selected by 
+                        self.analyserData.set(self.analyserResults[0])
+                        # print("Analyser data {}".format(analyser_data[3:10]))
+                        # Set the device connected name
+                        self.device = " NanoNVA "
+                        self.deviceDetails.set(self.device) 
+                except:
+                    self.textArea.insert('3.30', '\nConnect analyser..')
+                try:
+                    self.textArea.delete('3.0','end')
+                    serial_results = ODM.ReadSerialODM()
+           
+                    self.SD_data.set(serial_results[0][5])
+                    self.FTc_data.set(serial_results[0][6])
+                    self.PV_data.set(serial_results[0][9])
+                except:
+                    self.textArea.insert('3.30', '\nConnect ODM Monitor..')
+                
+                try:
+                    serial_number = BM.CSVM.ReadLastLine()
+                    print("serial No {}".format(serial_number[0]))
+                    pcb_serial_number = PI.ReadFirstByte()
+                    self.readSerialNumber.set(pcb_serial_number)
+                    print("read serial number {}".format(pcb_serial_number))
+                except:
+                    self.serialNumber.set("Lost..")
+            
+                if PM.ProbePresent() == False:
+                    self.return_to_test(self)
+            
+            Tk.update(self)  
+            
+    def return_to_test(self, controller):
+        controller.show_frame(PT.TestProgramWindow)
+             
+        

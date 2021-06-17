@@ -100,12 +100,17 @@ class ConnectionWindow(tk.Frame):
       
     
     def refresh_window(self):
-        with open('file.ptt', 'rb') as file:
-            fileData = pickle.load(file)
-            self.isAdmin.append(fileData[1])
+        try:
+            with open('file.ptt', 'rb') as file:
+                fileData = pickle.load(file)
+                self.isAdmin.append(fileData[1])
             
-        file.close()  
-         
+            file.close()  
+        except:
+            self.textArea.delete('3.0','end')
+            self.textArea.insert('3.0', "\nError in getting Admin data...")
+        
+        
         if True in self.isAdmin:
             self.label_1 = ttk.Label(self, text="ODM monitor port")
             self.label_2 = ttk.Label(self, text="Probe Interface Port")
@@ -145,25 +150,31 @@ class ConnectionWindow(tk.Frame):
         session_data = []
         connection_data = []
         
-        
-        with open('file.ptt', 'rb') as file:
-            myvar = pickle.load(file)
-            session_data.extend(myvar)
-            self.isAdmin.append(myvar)
+        try:
+            with open('file.ptt', 'rb') as file:
+                myvar = pickle.load(file)
+                session_data.extend(myvar)
+                self.isAdmin.append(myvar)
 
-        file.close()
+            file.close()
         
         
-        connection_data.append(cp)
-        connection_data.append(odm)
-        connection_data.append(usb)
-        session_data.append(connection_data)
+            connection_data.append(cp)
+            connection_data.append(odm)
+            connection_data.append(usb)
+            session_data.append(connection_data)
+        except:
+            self.textArea.delete('3.0','end')
+            self.textArea.insert('3.0', "\nError in getting batch data in Connections...")
         
-        with open('file.ptt', 'wb') as file:
+        try:    
+            with open('file.ptt', 'wb') as file:
                 pickle.dump(session_data, file)
                 
-        file.close()
-       
+            file.close()
+        except:
+            self.textArea.delete('3.0','end')
+            self.textArea.insert('3.0', "\nError in writting batch data in connections...")
         
         try:
             if NanoZND.GetAnalyserPortNumber(usb):

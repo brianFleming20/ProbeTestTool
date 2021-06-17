@@ -101,6 +101,7 @@ class TestProgramWindow(tk.Frame):
         self.PV_data = IntVar()
         self.userAdmin = False
         self.check = 0
+        self.go = False
         self.probesPassed.set(0)
         
 
@@ -167,26 +168,27 @@ class TestProgramWindow(tk.Frame):
         ttk.Label(self, textvariable=self.probesPassed, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.28, rely=0.75, anchor='w')
         
+        self.ff_btn = ttk.Button(self, text=' Start fault finding ', command=lambda: controller.show_frame(FF.FaultFindWindow), 
+                   width=BTN_WIDTH).place(relx=0.53, rely=0.7, anchor=CENTER)
+        
+        
         ttk.Label(self, text='Probes to test: ').place(
             relx=0.7, rely=0.75, anchor='w')
         ttk.Label(self, textvariable=self.leftToTest, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.83, rely=0.75, anchor='w')
-
-        
         
         ttk.Label(self, text='Action: ').place(relx=0.1, rely=0.9, anchor='w')
         ttk.Label(self, textvariable=self.action, background='yellow',
                   width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
         self.action.set('Connect New Probe')
 
-        ttk.Button(self, text=' Start fault finding ', command=lambda: self.findFaultWithProbe(controller), 
-                   width=BTN_WIDTH).place(relx=0.53, rely=0.7, anchor=CENTER)
-
         ttk.Button(self, text='Complete Session', image=self.complete_btn, command=lambda: self.cmplt_btn_clicked(
             controller)).place(relx=0.68, rely=0.9, anchor=CENTER)
         
         ttk.Button(self, text='Suspend Session', image=self.suspend_btn, command=lambda: self.suspnd_btn_clicked(
             controller)).place(relx=0.85, rely=0.9, anchor=CENTER)
+        
+       
 
     def cmplt_btn_clicked(self, controller):
         Tk.update(self)
@@ -194,70 +196,90 @@ class TestProgramWindow(tk.Frame):
         self.sessionOnGoing = False
         batch_data = []
         
-        with open('file.ptt', 'rb') as file:
-            data = pickle.load(file)
-            currentBatch = data[2]
-        file.close()
+        try:
+            with open('file.ptt', 'rb') as file:
+                data = pickle.load(file)
+                currentBatch = data[2]
+            file.close()
         
-        with open("file_batch", "wb") as file:
+            with open("file_batch", "wb") as file:
                 batch_data.append(self.currentBatch.get())
                 batch_data.append(self.probeType.get())
                 batch_data.append(self.leftToTest.get())
                 pickle.dump(batch_data, file)
-        file.close()
+            file.close()
+        except:
+            self.textArea.delete('3.0','end')
+            self.textArea.insert('3.0', "\nError in getting batch data...")
         
         if self.leftToTest.get() == False:
             BM.CompleteBatch(currentBatch)
             controller.show_frame(SE.SessionSelectWindow)
             
-    def findFaultWithProbe(self, controller):
-        controller.show_frame(FF.FaultFindWindow)
-        
+            
+    def find_fault_with_probe(self, controller):
+        self.go = False
+        if PM.ProbePresent() == True:
+            controller.show_frame(FF.FaultFindWindow)
+        else:
+            self.go = True
+      
 
     def suspnd_btn_clicked(self, controller):
         self.sessionComplete = False
         self.sessionOnGoing = False
         batch_data = []
         
-        with open("file_batch", "wb") as file:
+        try:
+            with open("file_batch", "wb") as file:
                 batch_data.append(self.currentBatch.get())
                 batch_data.append(self.probeType.get())
                 batch_data.append(self.leftToTest.get())
                 pickle.dump(batch_data, file)
-        file.close()
-        BM.SuspendBatch(self.currentBatch.get())
+            file.close()
+            BM.SuspendBatch(self.currentBatch.get())
         
-        controller.show_frame(SE.SessionSelectWindow)
+            controller.show_frame(SE.SessionSelectWindow)
+        except:
+            self.textArea.delete('3.0','end')
+            self.textArea.insert('3.0', "\nError in Writting batch data...") 
+   
+        
 
 
     def refresh_window(self):
         self.sessionOnGoing = True
+       
         batchData = []
         serial_results = []
         analyser_data = []
-        BM.updateBatchInfo()
+        # BM.updateBatchInfo()
         self.textArea.delete('1.0','end')
         # Open the file in binary mode
        
+        
         with open('file.ptt', 'rb') as file:
       
-        # Call load method to deserialze
+            # Call load method to deserialze
             fileData = pickle.load(file)
             analyser_port = fileData[4][2]
             self.userAdmin = fileData[1]
         file.close()
+            
         self.textArea.insert('1.0',fileData[0])
         self.textArea.insert('2.0','\nPlease continue testing batch ')
         self.textArea.insert('2.30', fileData[2])
+       
             
-        try:
-            with open('file_batch', 'rb') as file:
-                qtyLeftToTest = pickle.load(file)
-                self.leftToTest.set(qtyLeftToTest[2])
-            file.close()
+      
+        with open('file_batch', 'rb') as file:
+            qtyLeftToTest = pickle.load(file)
+            self.leftToTest.set(qtyLeftToTest[2])
+        file.close()
             
-        except:
-            self.leftToTest.set(100)
+    
+            
+        
             
         # self.root.deiconify()
         self.probeType.set(fileData[3])
@@ -271,23 +293,19 @@ class TestProgramWindow(tk.Frame):
         # Collect analyser port data #
         ##############################
         
-        try:
+       
             # Check to see if the analyser port is connected
             
-            if NanoZND.GetAnalyserPortNumber(analyser_port):
+        if NanoZND.GetAnalyserPortNumber(analyser_port):
                 # Get the analyser to generate data points and return them
-                analyser_data = NanoZND.ReadAnalyserData(analyser_port)
-                self.analyserResults.append(analyser_data[3])
+            analyser_data = NanoZND.ReadAnalyserData(analyser_port)
+            self.analyserResults.append(analyser_data[3])
                 # Print the analyser data points selected by 
                 # print("Analyser data {}".format(analyser_data[3:10]))
                 # Set the device connected name
-                self.device = " NanoNVA "
-                self.deviceDetails.set(self.device)
-                
-        except:
-               tm.showerror(
-                'Data Collection Error', 'Unable to collect the data from the NanoVNA Analyser. \nOr turn it on.')  
-        # write data to .csv file
+            self.device = " NanoNVA "
+            self.deviceDetails.set(self.device)
+        
         
         # try:
             
@@ -299,21 +317,18 @@ class TestProgramWindow(tk.Frame):
         #######################
         # Collect serial data #
         #######################
-        try:
-            serial_results = ODM.ReadSerialODM()
+        
+        serial_results = ODM.ReadSerialODM()
             # serial_results = IM.GetPatientParamerts()
             # self.SD_data.set(serial_results[0])
             # self.FTc_data.set(serial_results[1])
             # self.PV_data.set(serial_results[2])
            
-            self.SD_data.set(serial_results[0][5])
-            self.FTc_data.set(serial_results[0][6])
-            self.PV_data.set(serial_results[0][9])
-            Tk.update(self)
-        except:
-            tm.showerror(
-                'Connection Error', 'Unable to collect the data from the ODM.')
-                # controller.show_frame(ConnectionWindow)
+        self.SD_data.set(serial_results[0][5])
+        self.FTc_data.set(serial_results[0][6])
+        self.PV_data.set(serial_results[0][9])
+        Tk.update(self)
+        
         control_data = []
         with open('file.ptt', 'rb') as file:
       
@@ -341,31 +356,31 @@ class TestProgramWindow(tk.Frame):
             if self.leftToTest.get() == False and self.check == False:
                 tm.showinfo("Batch complete.","\nPlease press the Complete Session button.")
                 self.check = 1
-            go = False  
+            self.go = False  
             
             if PM.ProbePresent() == True:
                 self.action.set('Probe connected')
                 ProbeIsProgrammed = PM.ProbeIsProgrammed()  
+                
                 Tk.update(self) 
                 
                 if myAdmin[0] == 0:
-                    print("Probe status {} {}".format(ProbeIsProgrammed,myAdmin))
                     self.textArea.config(state=NORMAL)
                     self.textArea.delete('3.0','end')
                     self.textArea.insert('3.0', "\n\nYou can't re-program this probe.")   
                     self.textArea.config(state=DISABLED)
-                    go = False
+                    self.go = False
                 Tk.update(self) 
-                if ProbeIsProgrammed == True and myAdmin[0] == 1:
-                    go = tm.askyesno('Programmed Probe Detected', 'This probe is already programmed.\nDo you wish to re-program and test?')
-                    self.status_image.configure(image=self.amberlight) 
-                    
                 
-                Tk.update(self)    
-                if ProbeIsProgrammed == False:
-                    go = True
+                if ProbeIsProgrammed == True and myAdmin[0] == 1:
+                    self.go = tm.askyesno('Programmed Probe Detected', 'This probe is already programmed.\nDo you wish to re-program and test?')
                     self.status_image.configure(image=self.amberlight) 
-                if go == True:  
+                Tk.update(self)    
+                
+                if ProbeIsProgrammed == False:
+                    self.go = True
+                    self.status_image.configure(image=self.amberlight) 
+                if self.go == True:  
                     self.action.set('Programming probe')
                     serialNumber = PM.ProgramProbe(BM.currentBatch.probeType)
                     
@@ -387,6 +402,7 @@ class TestProgramWindow(tk.Frame):
                         results = PM.TestProbe(
                             serialNumber, BM.currentBatch.batchNumber, self.currentUser.get())
                         self.action.set('Testing complete. Disconnect probe')
+                        
                         # if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
                         if self.RLLimit == -1: #check for crystal pass value, now pass every time
                             BM.UpdateResults(

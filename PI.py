@@ -120,23 +120,23 @@ class PI(object):
         self.SM.OpenPort()   
         
 
-        self.SM.Send(b'53A0010053A11e50')  
+        self.SM.Send(b'53A0010053A11e50')  # read serial number
         time.sleep(0.05) #allow time for the data to be received     
         serialData = self.SM.Read()
         
-        self.SM.Send(b'53A0011e53A11e50')
+        self.SM.Send(b'53A0011e53A11e50') # read characters ?
         time.sleep(0.05)
         serialData = serialData + self.SM.Read()
 
-        self.SM.Send(b'53A0013c53A11e50')
+        self.SM.Send(b'53A0013c53A11e50') # read (c) Deltex Medical ltd 200
         time.sleep(0.05)
         serialData = serialData + self.SM.Read()
         
-        self.SM.Send(b'53A0015A53A11e50')
+        self.SM.Send(b'53A0015A53A11e50') # read 0's
         time.sleep(0.05)
         serialData = serialData + self.SM.Read()
 
-        self.SM.Send(b'53A0017853A11e50')
+        self.SM.Send(b'53A0017853A11e50') # read 0's
         time.sleep(0.05)
         serialData = serialData + self.SM.Read()
         
@@ -152,7 +152,7 @@ class PI(object):
         time.sleep(0.05)
         serialData = serialData + self.SM.Read()
         
-        self.SM.Send(b'53A001F053A11050')
+        self.SM.Send(b'53A001F053A11050') # read 0's
         time.sleep(0.05)
         serialData = serialData + self.SM.Read()
         
@@ -229,14 +229,18 @@ class SerialManager(object):
         '''
         self.ser = False
         session_data = []
-       
-        with open('file.ptt', 'rb') as file:
+
+        try:
+            with open('file.ptt', 'rb') as file:
       
             # Call load method to deserialze
-            myvar = pickle.load(file)
-        session_data.extend(myvar)
-        self.ser = session_data[5]
-        file.close()
+                myvar = pickle.load(file)
+                session_data.extend(myvar)
+                self.ser = session_data[5]
+            file.close()
+            
+        except:
+            self.ConfigurePort('COM3')
        
         
         self.ser.open()

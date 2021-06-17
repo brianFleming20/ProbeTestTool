@@ -65,24 +65,29 @@ class SessionSelectWindow(tk.Frame):
         
         self.SSW_b1 = ttk.Button(self, text='Start a new session', command=lambda: controller.show_frame(
             NewSessionWindow), width=BTN_WIDTH)
-        self.SSW_b1.place(relx=0.3, rely=0.3, anchor=CENTER)
+        self.SSW_b1.place(relx=0.28, rely=0.3, anchor=CENTER)
 
         self.SSW_b2 = ttk.Button(self, text='Continue a previous session',
                                  command=lambda: controller.show_frame(ContinueSessionWindow), width=BTN_WIDTH)
-        self.SSW_b2.place(relx=0.7, rely=0.3, anchor=CENTER)
+        self.SSW_b2.place(relx=0.6, rely=0.3, anchor=CENTER)
 
-        self.SSW_b3 = ttk.Button(self, text='Log Out', command=lambda: controller.show_frame(
-            UL.LogInWindow), width=BTN_WIDTH)
-        self.SSW_b3.place(relx=0.3, rely=0.6, anchor=CENTER)
+        self.SSW_b3 = ttk.Button(self, text='Completed Batches', command=lambda: self.completed_btn_clicked(controller), width=BTN_WIDTH)
+        self.SSW_b3.place(relx=0.28, rely=0.55, anchor=CENTER)
 
         self.SSW_b4 = ttk.Button(self, text='Edit Users', command=lambda: controller.show_frame(
             AU.AdminWindow), width=BTN_WIDTH)
-        self.SSW_b4.place(relx=0.7, rely=0.6, anchor=CENTER)
+        self.SSW_b4.place(relx=0.6, rely=0.55, anchor=CENTER)
+        self.textArea.config(state=NORMAL)
+        self.textArea.delete('1.0','end')
         if "AM" in timeNow :
             self.textArea.insert('1.0','Good Morning ')
             
         else:
             self.textArea.insert('1.0','Good Afternoon ')
+            
+        self.SSW_b3 = ttk.Button(self, text='Log Out', command=lambda: controller.show_frame(
+            UL.LogInWindow), width=BTN_WIDTH)
+        self.SSW_b3.place(relx=0.75, rely=0.8, anchor=CENTER)
             
 
     def refresh_window(self):
@@ -102,9 +107,15 @@ class SessionSelectWindow(tk.Frame):
             self.SSW_b2.config(state=DISABLED)
         else:
             self.SSW_b2.config(state=NORMAL)
+            
+        
+        self.textArea.delete('1.0','end')
         self.textArea.insert('2.0',session_info[0])
         self.textArea.insert('3.3','\n\nPlease choose an option.')
         self.textArea.config(state=DISABLED)
+        
+    def completed_btn_clicked(self, controller):
+        print("Completed button clicked...")
       
             
             
@@ -280,6 +291,7 @@ class ContinueSessionWindow(tk.Frame):
         self.probeTypeListBox = Listbox(self)
         self.probeTypeListBox.place(relx=0.6, rely=0.4, anchor=CENTER)
         self.probeTypeListBox.config(height=2, width=15)
+        
 
         self.continue_btn = ttk.Button(
             self, text='Continue Session', command=lambda: self.continue_btn_clicked(controller))
@@ -324,6 +336,7 @@ class ContinueSessionWindow(tk.Frame):
             
         for item in probeTypeList:
             self.probeTypeListBox.insert(END, item)
+        
 
     def continue_btn_clicked(self, controller):
      

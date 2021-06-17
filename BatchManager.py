@@ -145,14 +145,14 @@ class BatchManager(object):
         #get the batch's info list
       
         info = self.CSVM.ReadLastLine(batchNumber)
-        try:
-            for item in info:
+        
+        for item in info:
                 
-                if batchNumber in item[0]:
-                    info = item[:]
+            if batchNumber in item[0]:
+                info = item[:]
                     
-        except:
-            pass
+        
+        
         
         
            
@@ -184,6 +184,10 @@ class BatchManager(object):
             print("data in {}".format(datareader))
         csvfile.close()
         
+    def ReadProbeSerialNumber(self, batchNumber):
+        info = self.GetBatchObject(batchNumber)
+        print("serial Number = {}".format(info))
+        
         
 class CSVManager(object):
     '''
@@ -193,7 +197,6 @@ class CSVManager(object):
     def __init__(self):
         self.path = os.path.join("C:\\Users", os.getenv('username'), "Desktop\\PTT_Results", "")
         self.inProgressPath = os.path.join(self.path, "in_progress", "")
-        self.inProgressPathTest = os.path.join(self.path, "in_progressTest", "")
         self.completePath = os.path.join(self.path, "complete", "")
         
         #os.rmdir(self.inProgressPath)
@@ -243,7 +246,7 @@ class CSVManager(object):
         #     newList.append(newItem)
             
         
-        list = os.listdir(self.inProgressPathTest) 
+        list = os.listdir(self.inProgressPath) 
        
         for item in list:
             newItem = item[:-4]
@@ -273,7 +276,7 @@ class CSVManager(object):
         pass in a list, save each item in the list as a new row in the csv file. Can also handle a list of lists
         '''
         #create the full path
-        fullPath = os.path.abspath(self.inProgressPathTest + fileName + '.csv')
+        fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
         
         #write the list to the CSV file
         with open(fullPath, 'a', newline='') as file:
@@ -292,7 +295,7 @@ class CSVManager(object):
         # print("batch {}".format(fileName))
         
         
-        fullPath = os.path.abspath(self.inProgressPathTest + fileName + '.csv')
+        fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
         inputList = [serialNumber,fileName,analyserData,user]
         with open(fullPath, 'a', newline='') as file:
             
@@ -308,7 +311,7 @@ class CSVManager(object):
         pass in a list, save each item in the list as a new row in the csv file. Can also handle a list of lists
         '''
         #create the full path
-        fullPath = os.path.abspath(self.inProgressPathTest + fileName + '.csv')
+        fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
         header = ['Batch No','Batch Type','Batch Qty','Username','Date and Time Tested']
         #write the list to the CSV file
         with open(fullPath, 'a+', newline='') as csvfile:
@@ -323,7 +326,7 @@ class CSVManager(object):
         pass in a file name, move this file from the inprogress folder to the completed folder
         '''
         
-        originalPath = os.path.abspath(self.inProgressPathTest + fileName + '.csv')
+        originalPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
         destinationPath = os.path.abspath(self.completePath + fileName + '.csv')
         
         os.renames(originalPath, destinationPath)
@@ -348,7 +351,7 @@ class CSVManager(object):
 
     def ReadLastLine(self, fileName):
         
-        fullPathTest = os.path.abspath(self.inProgressPathTest + fileName + '.csv')
+        fullPathTest = os.path.abspath(self.inProgressPath + fileName + '.csv')
         batches = []
         eachBatch = []
         

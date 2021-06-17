@@ -27,14 +27,17 @@ class ODMData(object):
         temp_add = []
         session_data = []
         temp = ""
-        with open('file.ptt', 'rb') as file:
+        try:
+            with open('file.ptt', 'rb') as file:
       
             # Call load method to deserialze
                 myvar = pickle.load(file)
-        session_data.extend(myvar)
-        file.close()
-        port = session_data[4][1]
-        
+            session_data.extend(myvar)
+            file.close()
+            port = session_data[4][1]
+        except:
+            tm.showerror(
+                'Connection Error', 'Unable to connect to ODM Monitor\nPlease check the ODM is on and connected.')
         
         # ======================
         # Set up port connection

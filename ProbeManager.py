@@ -83,6 +83,7 @@ class ProbeManager(object):
         #write the data to the probe
         self.PI.ProbeWrite(probeData[0])
         
+        
         #check to see if programming was succesful
         pd = ''.join(probeData[1])
         check = self.PI.ProbeReadAllBytes()
@@ -113,7 +114,7 @@ class ProbeManager(object):
         else:
             return False
 
-
+   
 
 class Probe(object):
     
