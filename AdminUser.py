@@ -36,6 +36,7 @@ import BatchManager
 from time import gmtime, strftime
 import Sessions as SE
 import NanoZND
+import random
 import io
 import pickle
 
@@ -302,8 +303,14 @@ class EditUserWindow(tk.Frame):
         self.textArea.insert('2.0','\n\nPlease choose an option.')
         self.textArea.config(state=DISABLED)
         userList = []
+        
         for item in SM.GetUserList():
-            userList.append(item.name)
+            
+            if item.admin == True:
+                item.name = item.name + "--> Admin"
+    
+            userList.append(item.name)   
+         
 
         # clear the listbox
         self.userListBox.delete(0, END)
@@ -325,11 +332,12 @@ class AddUserWindow(tk.Frame):
         self.newpassword = StringVar()
         self.confpassword = StringVar()
         self.isAdmin = StringVar()
-
+        self.allow_add = False
         self._setDefaults()
         
         self.textArea = tk.Text(self, height=5, width=38)
         self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
+        self.textArea.config(state=NORMAL)
         
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
@@ -368,41 +376,61 @@ class AddUserWindow(tk.Frame):
     def _confm_btn_clicked(self, controller):
         self.confm_btn.config(command=ignore)
         self.cancl_btn.config(command=ignore)
+        self.textArea.config(state=NORMAL)
+        if self.allow_add == False:
+            print(self.allow_add)
+            self.textArea.insert('4.30','\nThere are 2 administrators already,\nNo nore allowed')
         if self.newpassword.get() == self.confpassword.get():
             
             # create user object
             admin = False
-            if self.isAdmin.get() == 'true':
+            if self.isAdmin.get() == 'true' and self.allow_add == True:
                 admin = True
-            newUser = User(self.newusername.get(), self.newpassword.get(), admin)
+                newUser = User(self.newusername.get(), self.newpassword.get(), admin)
+            
+            
 
             # try adding it to the list of users
-            if SM.addUser(newUser):
-                tm.showinfo('New User', 'New user added')
-                self._setDefaults()
-                controller.show_frame(AdminWindow)
-            else:
-                tm.showerror('Error', 'User already exsists')
+            if self.allow_add == True:
+                if SM.addUser(newUser):
+                    tm.showinfo('New User', 'New user added')
+                    self._setDefaults()
+                    controller.show_frame(AdminWindow)
+                else:
+                    tm.showerror('Error', 'User already exsists')
+           
             self.confm_btn.config(
                 command=lambda: self._confm_btn_clicked(controller))
             self.cancl_btn.config(
                 command=lambda: controller.show_frame(AdminWindow))
         else:
-            self.textArea.config(state=NORMAL)
             self.textArea.insert('3.3','\nPlease check password spelling,\nthey are not the same.')
-            self.textArea.config(state=DISABLED)
+        self.textArea.config(state=DISABLED)
         
     def refresh_window(self):
          # create a list of the current users using the dictionary of users
+        
         with open('file.ptt', 'rb') as file:
         # Call load method to deserialze
             session_info = pickle.load(file)
         file.close()
-        self.textArea.config(state=NORMAL)
+    
         self.textArea.delete('1.0','end')
         self.textArea.insert('1.0',session_info[0])
         self.textArea.insert('2.0','\n\nPlease complete the form.')
-        self.textArea.config(state=DISABLED)
+        self.allow_add = True
+        admins = 0
+        admin_names = []
+        for item in SM.GetUserList():
+            if item.admin == True:
+                admin_names.append(item)
+        admins = len(admin_names)
+        
+        if admins >= 2:
+            
+            print("number of admins {}".format(admins))
+            self.allow_add = False
+        
 
     def _setDefaults(self):
         self.isAdmin.set('false')

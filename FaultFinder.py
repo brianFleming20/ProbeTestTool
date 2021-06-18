@@ -35,6 +35,7 @@ import ProbeManager
 import BatchManager
 from ProbeManager import Probe
 from ProbeManager import ProbeManager
+import codecs
 import PI
 import NanoZND
 import ODMPlus
@@ -158,28 +159,37 @@ class FaultFindWindow(tk.Frame):
         self.currentBatch.set(fileData[2])
         self.currentUser.set(fileData[0])
         self.deviceDetails.set(self.device)
+        self.serialNumber.set(" ")
+        self.readSerialNumber.set(" ")
         
-        while PM.ProbePresent() == True:
-        
+        while True:
             if PM.ProbePresent() == False:
                 test = False
                 self.action.set('No probe connected...')
-                Tk.update(self) 
             else:
-                print("Probe present {}".format(PM.ProbePresent()))
                 self.action.set('Probe connected')
                 test = True
-                Tk.update(self) 
+                break
+            Tk.update(self)
+                
             
-        if test == False: 
-            pass
-        else:
-            while test == True:  
+       
+        while test == True:  
                 ProbeIsProgrammed = PM.ProbeIsProgrammed()
-                if ProbeIsProgrammed == True: 
-                    self.action.set('Programmed Probe connected')
-                else:
+                if ProbeIsProgrammed == False: 
                     self.action.set('Probe not programmed...')
+                else:
+                    self.action.set('Programmed Probe connected')
+                    
+                # Collect serial number written to file   
+                serial_number = BM.CSVM.ReadLastLine(fileData[2])
+                self.serialNumber.set(serial_number[0][0])
+                # Collect serial number read from probe
+                pcb_serial_number = PI.ReadSerialNumber()
+                binary_str = codecs.decode(pcb_serial_number, "hex")
+                self.readSerialNumber.set(str(binary_str,'utf-8')[:16])
+                   
+                    
                 try:
                     # Check to see if the analyser port is connected
                     self.textArea.delete('3.0','end')
@@ -194,32 +204,26 @@ class FaultFindWindow(tk.Frame):
                         self.device = " NanoNVA "
                         self.deviceDetails.set(self.device) 
                 except:
-                    self.textArea.insert('3.30', '\nConnect analyser..')
+                    self.textArea.insert('3.30', '\nAnalyser error..')
+                    
+                
+                
+                self.textArea.delete('3.0','end')
                 try:
-                    self.textArea.delete('3.0','end')
                     serial_results = ODM.ReadSerialODM()
-           
+                   
                     self.SD_data.set(serial_results[0][5])
                     self.FTc_data.set(serial_results[0][6])
                     self.PV_data.set(serial_results[0][9])
                 except:
-                    self.textArea.insert('3.30', '\nConnect ODM Monitor..')
-                
-                try:
-                    serial_number = BM.CSVM.ReadLastLine()
-                    print("serial No {}".format(serial_number[0]))
-                    pcb_serial_number = PI.ReadFirstByte()
-                    self.readSerialNumber.set(pcb_serial_number)
-                    print("read serial number {}".format(pcb_serial_number))
-                except:
-                    self.serialNumber.set("Lost..")
-            
+                    self.textArea.insert('3.30', '\nODM Monitor error..')
+                 
                 if PM.ProbePresent() == False:
-                    self.return_to_test(self)
+                    self.refresh_window()
             
-            Tk.update(self)  
+                Tk.update(self) 
+      
             
-    def return_to_test(self, controller):
-        controller.show_frame(PT.TestProgramWindow)
+   
              
         

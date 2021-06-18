@@ -108,6 +108,19 @@ class PI(object):
 
         return firstByte
     
+    def ReadSerialNumber(self):
+        '''
+        returns a single byte as a 2 character string
+        '''
+        self.SM.OpenPort()         #open the port
+        self.SM.Send(b'53A0010053A11e50') #write data to request first byte from the probe EEPROM
+        time.sleep(0.05) #allow time for the data to be received  
+        sn = self.SM.Read() #read the first byte
+        self.SM.ClosePort()
+
+        return sn
+    
+    
     def ProbeReadAllBytes(self):
         '''
         Returns a 32 character string of the first 16 bytes of the probe's memory
@@ -120,15 +133,15 @@ class PI(object):
         self.SM.OpenPort()   
         
 
-        self.SM.Send(b'53A0010053A11e50')  # read serial number
+        self.SM.Send(b'53A0010053A11e50')  
         time.sleep(0.05) #allow time for the data to be received     
         serialData = self.SM.Read()
         
-        self.SM.Send(b'53A0011e53A11e50') # read characters ?
+        self.SM.Send(b'53A0011e53A11e50') 
         time.sleep(0.05)
         serialData = serialData + self.SM.Read()
 
-        self.SM.Send(b'53A0013c53A11e50') # read (c) Deltex Medical ltd 200
+        self.SM.Send(b'53A0013c53A11e50')
         time.sleep(0.05)
         serialData = serialData + self.SM.Read()
         
@@ -289,9 +302,9 @@ class ProbeData(object):
         secondStart = '53A00908'
         end = '50'
         
-        if probeType == 'Blank':
-            return probezeros
-        
+        # if probeType == 'Blank':
+        #     return probezeros
+        print("Probe type {}".format(probeType))
         #set the correct probe type bytes
         if probeType == 'DP240':
             typeBytes = self.DP240TypeBytes
@@ -311,6 +324,8 @@ class ProbeData(object):
             typeBytes = self.I2PTypeBytes
         elif probeType == 'SDP30':
             typeBytes = self.SDP30TypeBytes
+            
+       
          
         #create a 12 byte timestamp of the format
         timeStamp = strftime("%Y%m%d%H%M%S", gmtime())
@@ -322,6 +337,7 @@ class ProbeData(object):
        
         #stick the type bytes and the timestamp together 
         serialNumber = typeBytes + timeStampASCII
+        
         
         #put them in a format that can be sent via the SC18IM
         lower  = serialNumber[0:8]

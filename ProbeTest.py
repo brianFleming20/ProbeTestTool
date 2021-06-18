@@ -307,13 +307,6 @@ class TestProgramWindow(tk.Frame):
             self.deviceDetails.set(self.device)
         
         
-        # try:
-            
-        #     NanoZND.CVSOutPut(currentBatch)
-        # except:
-        #     tm.showerror(
-        #         'Data write Error', 'Unable to start write the data from the NanoVNA Analyser. \n to file.')  
-   
         #######################
         # Collect serial data #
         #######################
@@ -382,7 +375,7 @@ class TestProgramWindow(tk.Frame):
                     self.status_image.configure(image=self.amberlight) 
                 if self.go == True:  
                     self.action.set('Programming probe')
-                    serialNumber = PM.ProgramProbe(BM.currentBatch.probeType)
+                    serialNumber = PM.ProgramProbe(self.probeType.get())
                     
                     with open("file_temp", "wb") as file:
                         batchData.append(serialNumber)
@@ -400,17 +393,17 @@ class TestProgramWindow(tk.Frame):
                         self.action.set('Testing probe...')
                             
                         results = PM.TestProbe(
-                            serialNumber, BM.currentBatch.batchNumber, self.currentUser.get())
+                            serialNumber, self.currentBatch.get(), self.currentUser.get())
                         self.action.set('Testing complete. Disconnect probe')
                         
                         # if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
                         if self.RLLimit == -1: #check for crystal pass value, now pass every time
                             BM.UpdateResults(
-                                results, BM.currentBatch.batchNumber)
+                                results, self.currentBatch.get())
                             self.probesPassed.set(self.probesPassed.get() + 1)
                             self.leftToTest.set(self.leftToTest.get() - 1)
                             self.status_image.configure(image=self.greenlight)
-                            BM.saveProbeInfoToCSVFile(serialNumber,self.analyserResults,self.currentUser.get(), BM.currentBatch.batchNumber)
+                            BM.saveProbeInfoToCSVFile(serialNumber,self.analyserResults,self.currentUser.get(), self.currentBatch.get())
                             Tk.update(self)
                         else:
                             self.status_image.configure(image=self.redlight)

@@ -4,6 +4,8 @@ Created on 24 Apr 2017
 @author: Brian F
 '''
 
+import tkinter as tk
+import tkinter.messagebox as tm
 import pyvisa as visa
 import serial
 import pickle
@@ -32,7 +34,7 @@ class ODMData(object):
       
             # Call load method to deserialze
                 myvar = pickle.load(file)
-            session_data.extend(myvar)
+                session_data.extend(myvar)
             file.close()
             port = session_data[4][1]
         except:
