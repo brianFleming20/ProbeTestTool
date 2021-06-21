@@ -103,13 +103,13 @@ class FaultFindWindow(tk.Frame):
         ttk.Label(self, text='Serial Number: ').place(
             relx=0.78, rely=0.18, anchor='w')
         ttk.Label(self, text='From file: ').place(
-            relx=0.73, rely=0.25, anchor='w')
+            relx=0.6, rely=0.25, anchor='w')
         ttk.Label(self, text='From Probe: ').place(
-            relx=0.73, rely=0.25, anchor='w')
+            relx=0.6, rely=0.3, anchor='w')
         ttk.Label(self, textvariable=self.serialNumber, relief=SUNKEN,
-                  width=30).place(relx=0.7, rely=0.25, anchor='w')
+                  width=20).place(relx=0.7, rely=0.25, anchor='w')
         ttk.Label(self, textvariable=self.readSerialNumber, relief=SUNKEN,
-                  width=30).place(relx=0.7, rely=0.3, anchor='w')
+                  width=20).place(relx=0.7, rely=0.3, anchor='w')
         
         ttk.Label(self, text="Probe parameter data").place(
             relx=0.7, rely=0.42, anchor="w")
@@ -187,7 +187,7 @@ class FaultFindWindow(tk.Frame):
                 # Collect serial number read from probe
                 pcb_serial_number = PI.ReadSerialNumber()
                 binary_str = codecs.decode(pcb_serial_number, "hex")
-                self.readSerialNumber.set(str(binary_str,'utf-8')[:16])
+                self.readSerialNumber.set(str(binary_str,'utf-8')[:15])
                    
                     
                 try:

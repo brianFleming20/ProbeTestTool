@@ -269,20 +269,29 @@ class EditUserWindow(tk.Frame):
         self.delUsr_btn.config(command=ignore)
         self.finished_btn.config(command=ignore)
         self.CngPWrd_btn.config(command=ignore)
-
-        try:
-            lstid = self.userListBox.curselection()
-            lstUsr = self.userListBox.get(lstid[0])
-            sure = tm.askyesno(
+        
+        with open('file.ptt', 'rb') as file:
+        # Call load method to deserialze
+            session_info = pickle.load(file)
+        file.close()
+        
+        lstid = self.userListBox.curselection()
+        lstUsr = self.userListBox.get(lstid[0])
+        deleteUser = lstUsr[:-9]
+        sure = tm.askyesno(
                 'Delete confirm', 'Are you sure you want to Delete this user?')
+        
+        try:
             if sure == True:
-                if lstUsr != SM.loggedInUser.name:
-                    SM.deleteUser(SM.GetUserObject(lstUsr))
+                if lstUsr != session_info[0]:
+                    
+                    SM.deleteUser(SM.GetUserObject(deleteUser))
                     self.refresh_window()
                 else:
                     tm.showerror('Error', 'Cannot delete yourself')
         except:
-            pass
+            tm.showerror('Error', 'User not found')
+        
 
         self.delUsr_btn.config(
             command=lambda: self._delUsr_btn_clicked(controller))

@@ -238,6 +238,7 @@ class TestProgramWindow(tk.Frame):
                 pickle.dump(batch_data, file)
             file.close()
             BM.SuspendBatch(self.currentBatch.get())
+            
         
             controller.show_frame(SE.SessionSelectWindow)
         except:
@@ -376,10 +377,11 @@ class TestProgramWindow(tk.Frame):
                 if self.go == True:  
                     self.action.set('Programming probe')
                     serialNumber = PM.ProgramProbe(self.probeType.get())
+                    snum = str(codecs.decode(serialNumber, "hex"),'utf-8')[1:16]
+                    
                     
                     with open("file_temp", "wb") as file:
-                        batchData.append(serialNumber)
-                        
+                        batchData.append(snum)
                         pickle.dump(batchData, file)
                     file.close()
                     
@@ -403,7 +405,7 @@ class TestProgramWindow(tk.Frame):
                             self.probesPassed.set(self.probesPassed.get() + 1)
                             self.leftToTest.set(self.leftToTest.get() - 1)
                             self.status_image.configure(image=self.greenlight)
-                            BM.saveProbeInfoToCSVFile(serialNumber,self.analyserResults,self.currentUser.get(), self.currentBatch.get())
+                            BM.saveProbeInfoToCSVFile(snum,self.analyserResults,self.currentUser.get(), self.currentBatch.get())
                             Tk.update(self)
                         else:
                             self.status_image.configure(image=self.redlight)

@@ -54,6 +54,7 @@ class PI(object):
             self.SM.Send(item)
             time.sleep(0.01)
         self.SM.ClosePort()
+        
             
     def ProbeReadSerialNumber(self):
         '''
