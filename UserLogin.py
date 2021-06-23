@@ -34,7 +34,9 @@ import SecurityManager
 from SecurityManager import User
 import BatchManager
 import Sessions as SE
+import AdminUser as AU
 import NanoZND
+import sys
 import io
 import pickle
 from time import gmtime, strftime
@@ -72,9 +74,9 @@ class LogInWindow(tk.Frame):
 
         self.entry_1 = ttk.Entry(self, textvariable=self.currentUser ,font="bold")
         self.entry_2 = ttk.Entry(self, show="*", font="bold")
-        self.entry_1.insert(END, 'Jack')
+        self.entry_1.insert(END, 'Jon')
         cUser = str(self.currentUser.get())
-        self.entry_2.insert(END, 'password')
+        self.entry_2.insert(END, 'Batman')
 
         self.label_1.place(relx=0.4, rely=0.4, anchor=CENTER)
         self.label_2.place(relx=0.4, rely=0.5, anchor=CENTER)
@@ -84,6 +86,8 @@ class LogInWindow(tk.Frame):
         self.logbtn = ttk.Button(
             self, text="Login",image=self.login_btn, width=20,command=lambda: self._login_btn_clicked(controller))
         self.logbtn.place(relx=0.5, rely=0.75 ,anchor=CENTER)
+        ttk.Button(self, text="Exit", width=20,command=lambda: self.quit()).place(relx=0.7, rely=0.75 ,anchor=CENTER)
+        
         self.bind('<Return>', lambda: self._login_btn_clicked(controller))
         with open('file.ptt','wb') as file:
             pickle.dump([],file)
@@ -122,15 +126,20 @@ class LogInWindow(tk.Frame):
             username = self.entry_1.get()
             password = self.entry_2.get()
             user = User(username, password)
+                
         
             #self.entry_1.delete(0, 'end')
             self.entry_2.delete(0, 'end')
             # check to see if the details are valid
+            
             if SM.logIn(user):
                 controller.show_frame(SE.SessionSelectWindow)
             else:
                 tm.showerror("Login error", "Incorrect username or password")
             self.logbtn.config(command=lambda: self._login_btn_clicked(controller))
+            
+    def quit(self):
+        sys.exit()
         
         
 

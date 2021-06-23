@@ -99,6 +99,7 @@ class WindowController(tk.Tk):
             self.frames[F] = frame
 
             frame.grid(row=0, column=0, sticky="nsew")
+            self.attributes('-fullscreen', True)
 
         self.show_frame(UL.LogInWindow)
        

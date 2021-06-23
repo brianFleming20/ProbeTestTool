@@ -54,6 +54,7 @@ class SecurityManager(object):
         if nuser == False: #is the username a valid username?
             return False
         else:
+            
             if nuser.password == user.password: #is the password correct?
                 self.loggedInUser = nuser.admin
                
@@ -66,6 +67,7 @@ class SecurityManager(object):
                     pickle.dump(myvar, file)
             
                 file.close()
+                
                
                 
                 return True
