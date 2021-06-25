@@ -60,15 +60,15 @@ class FaultFindWindow(tk.Frame):
         
         
         # Set up variavles
-        self.currentBatch = StringVar()
-        self.currentUser = StringVar()
-        self.probeType = StringVar()
-        self.deviceDetails = StringVar()
+        self.current_batch = StringVar()
+        self.current_user = StringVar()
+        self.probe_type = StringVar()
+        self.device_details = StringVar()
         self.serialNumber = StringVar()
         self.readSerialNumber = StringVar()
         self.analyserData = StringVar()
         self.action = StringVar()
-        self.analyserResults = []
+        self.analyser_results = []
         self.SD_data = IntVar()
         self.FTc_data = IntVar()
         self.PV_data = IntVar()
@@ -79,23 +79,23 @@ class FaultFindWindow(tk.Frame):
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
-        self.textArea = tk.Text(self, height=5, width=40)
-        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
-        self.textArea.delete('1.0','end')
+        self.text_area = tk.Text(self, height=5, width=40)
+        self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
+        self.text_area.delete('1.0','end')
         
         ttk.Label(self, text='Batch number: ').place(
             relx=0.1, rely=0.3, anchor='w')
-        ttk.Label(self, textvariable=self.currentBatch, relief=SUNKEN, font="bold",
+        ttk.Label(self, textvariable=self.current_batch, relief=SUNKEN, font="bold",
                  width=10).place(relx=0.2, rely=0.3, anchor='w')
 
         ttk.Label(self, text='Probe type: ').place(
             relx=0.1, rely=0.38, anchor='w')
-        ttk.Label(self, textvariable=self.probeType, relief=SUNKEN, font="bold",
+        ttk.Label(self, textvariable=self.probe_type, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.2, rely=0.38, anchor='w')
         
         ttk.Label(self, text='Connected to: ').place(
             relx=0.1, rely=0.44, anchor='w')
-        ttk.Label(self, textvariable=self.deviceDetails, relief=SUNKEN,
+        ttk.Label(self, textvariable=self.device_details, relief=SUNKEN,
                   width=30).place(relx=0.2, rely=0.44, anchor='w')
         ttk.Label(self, textvariable=self.analyserData, relief=SUNKEN,
                   width=40).place(relx=0.3, rely=0.48, anchor='w')
@@ -133,8 +133,8 @@ class FaultFindWindow(tk.Frame):
         
         
     def refresh_window(self):
-        self.textArea.config(state=NORMAL)
-        self.textArea.delete('1.0','end')
+        self.text_area.config(state=NORMAL)
+        self.text_area.delete('1.0','end')
         test = False
         
         # Open the file in binary mode
@@ -145,20 +145,20 @@ class FaultFindWindow(tk.Frame):
                 # Call load method to deserialze
                 fileData = pickle.load(file)
                 analyser_port = fileData[4][2]
-                self.userAdmin = fileData[1]
+                self.user_admin = fileData[1]
             file.close()
         except:
-           self.textArea.insert('3.0','\nFault finding data ') 
+           self.text_area.insert('3.0','\nFault finding data ') 
             
         
-        self.textArea.insert('1.0',fileData[0])
-        self.textArea.insert('2.0','\nFault finding batch ')
-        self.textArea.insert('2.30', fileData[2])
+        self.text_area.insert('1.0',fileData[0])
+        self.text_area.insert('2.0','\nFault finding batch ')
+        self.text_area.insert('2.30', fileData[2])
         
-        self.probeType.set(fileData[3])
-        self.currentBatch.set(fileData[2])
-        self.currentUser.set(fileData[0])
-        self.deviceDetails.set(self.device)
+        self.probe_type.set(fileData[3])
+        self.current_batch.set(fileData[2])
+        self.current_user.set(fileData[0])
+        self.device_details.set(self.device)
         self.serialNumber.set(" ")
         self.readSerialNumber.set(" ")
         
@@ -192,23 +192,23 @@ class FaultFindWindow(tk.Frame):
                     
                 try:
                     # Check to see if the analyser port is connected
-                    self.textArea.delete('3.0','end')
+                    self.text_area.delete('3.0','end')
                     if NanoZND.GetAnalyserPortNumber(analyser_port):
                         # Get the analyser to generate data points and return them
                         analyser_data = NanoZND.ReadAnalyserData(analyser_port)
-                        self.analyserResults.append(analyser_data[3])
+                        self.analyser_results.append(analyser_data[3])
                         # Print the analyser data points selected by 
-                        self.analyserData.set(self.analyserResults[0])
+                        self.analyserData.set(self.analyser_results[0])
                         # print("Analyser data {}".format(analyser_data[3:10]))
                         # Set the device connected name
                         self.device = " NanoNVA "
-                        self.deviceDetails.set(self.device) 
+                        self.device_details.set(self.device) 
                 except:
-                    self.textArea.insert('3.30', '\nAnalyser error..')
+                    self.text_area.insert('3.30', '\nAnalyser error..')
                     
                 
                 
-                self.textArea.delete('3.0','end')
+                self.text_area.delete('3.0','end')
                 try:
                     serial_results = ODM.ReadSerialODM()
                    
@@ -216,7 +216,7 @@ class FaultFindWindow(tk.Frame):
                     self.FTc_data.set(serial_results[0][6])
                     self.PV_data.set(serial_results[0][9])
                 except:
-                    self.textArea.insert('3.30', '\nODM Monitor error..')
+                    self.text_area.insert('3.30', '\nODM monitor error..')
                  
                 if PM.ProbePresent() == False:
                     self.refresh_window()

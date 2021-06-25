@@ -20,11 +20,11 @@ class PI(object):
         self.loggedInUser = False
         self.SM = SerialManager()
     
-    def Connect(self, comPort):
+    def Connect(self, com_port):
         '''
-        pass in comport number, configures port. 
+        pass in com_port number, configures port. 
         '''
-        self.ser = self.SM.ConfigurePort(comPort)
+        self.ser = self.SM.ConfigurePort(com_port)
 
     def ProbePresent(self):
         '''

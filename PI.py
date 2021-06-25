@@ -40,8 +40,8 @@ class PI(object):
         self.ser = None
 
     
-    def Connect(self, comPort):
-        self.ser = self.SM.ConfigurePort(comPort)
+    def Connect(self, com_port):
+        self.ser = self.SM.ConfigurePort(com_port)
             
     def ProbeWrite(self, data):
         '''
@@ -289,7 +289,7 @@ class ProbeData(object):
         # self.Blank = ['00','00','00','00','00']
 
     
-    def GenerateDataString(self, probeType):
+    def GenerateDataString(self, probe_type):
         '''
         Pass in a probe type, returns the full 255 byte probe data including time stamped serial number
         
@@ -303,27 +303,27 @@ class ProbeData(object):
         secondStart = '53A00908'
         end = '50'
         
-        # if probeType == 'Blank':
+        # if probe_type == 'Blank':
         #     return probezeros
-        print("Probe type {}".format(probeType))
+        print("Probe type {}".format(probe_type))
         #set the correct probe type bytes
-        if probeType == 'DP240':
+        if probe_type == 'DP240':
             typeBytes = self.DP240TypeBytes
-        elif probeType == 'DP12':
+        elif probe_type == 'DP12':
             typeBytes = self.DP12TypeBytes
-        elif probeType == 'DP6':
+        elif probe_type == 'DP6':
             typeBytes = self.DP6TypeBytes
-        elif probeType == 'I2C':
+        elif probe_type == 'I2C':
             typeBytes = self.I2CTypeBytes
-        elif probeType == 'I2S':
+        elif probe_type == 'I2S':
             typeBytes = self.I2STypeBytes
-        elif probeType == 'I2P':
+        elif probe_type == 'I2P':
             typeBytes = self.I2PTypeBytes
-        elif probeType == 'KDP':
+        elif probe_type == 'KDP':
             typeBytes = self.KDP72TypeBytes
-        elif probeType == 'I2P':
+        elif probe_type == 'I2P':
             typeBytes = self.I2PTypeBytes
-        elif probeType == 'SDP30':
+        elif probe_type == 'SDP30':
             typeBytes = self.SDP30TypeBytes
             
        

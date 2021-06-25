@@ -23,7 +23,7 @@ class NanoZND(object):
     '''
     
     def __init__(self):
-        self.deviceDetails = ''
+        self.device_details = ''
         self.analyser_data = []
         self.analyser_port = ""
         self.analyser_status = False

@@ -39,7 +39,7 @@ class ODMData(object):
             port = session_data[4][1]
         except:
             tm.showerror(
-                'Connection Error', 'Unable to connect to ODM Monitor\nPlease check the ODM is on and connected.')
+                'Connection Error', 'Unable to connect to ODM monitor\nPlease check the ODM is on and connected.')
         
         # ======================
         # Set up port connection

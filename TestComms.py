@@ -30,8 +30,8 @@ class PI(object):
         self.loggedInUser = False
         self.SM = SerialManager()
     
-    def Connect(self, comPort):
-        self.ser = self.SM.ConfigurePort(comPort)
+    def Connect(self, com_port):
+        self.ser = self.SM.ConfigurePort(com_port)
             
     def ProbeWrite(self, data):
         '''

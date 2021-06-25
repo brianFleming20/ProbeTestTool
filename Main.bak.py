@@ -75,15 +75,15 @@ class TestProgramWindow(object):
         # set the dimensions of the screen and where it is placed
         self.root.geometry('%dx%d+%d+%d' % (w, h, x, y))
         
-        self.sessionOnGoing = False
-        self.sessionComplete = None
+        self.session_on_going = False
+        self.session_complete = None
         
         #define variables
-        self.currentBatch = StringVar()
-        self.currentUser = StringVar()
-        self.probesPassed = IntVar()
-        self.deviceDetails = StringVar()
-        self.probeType = StringVar()
+        self.current_batch = StringVar()
+        self.current_user = StringVar()
+        self.probes_passed = IntVar()
+        self.device_details = StringVar()
+        self.probe_type = StringVar()
         
         #import images
         self.greenlight = (tk.PhotoImage(file="green128.gif"))
@@ -94,31 +94,31 @@ class TestProgramWindow(object):
         progress_label1 = ttk.Label(self.root, text='Probes Passed: ')
         progress_label1.place(relx=0.17, rely=0.05, anchor=CENTER)
         
-        progress_label2 = ttk.Label(self.root, textvariable=self.probesPassed)
+        progress_label2 = ttk.Label(self.root, textvariable=self.probes_passed)
         progress_label2.place(relx=0.325, rely=0.05, anchor=CENTER)
         
         label1 = ttk.Label(self.root, text='Batch number: ')
         label1.place(relx=0.47, rely=0.05, anchor=CENTER)
         
-        label2 = ttk.Label(self.root, textvariable=self.currentBatch)
+        label2 = ttk.Label(self.root, textvariable=self.current_batch)
         label2.place(relx=0.57, rely=0.05, anchor=CENTER)
 
         label3 = ttk.Label(self.root, text='Probe type: ')
         label3.place(relx=0.75, rely=0.05, anchor=CENTER)
         
-        label4 = ttk.Label(self.root, textvariable=self.probeType)
+        label4 = ttk.Label(self.root, textvariable=self.probe_type)
         label4.place(relx=0.84, rely=0.05, anchor=CENTER)
         
         label5 = ttk.Label(self.root, text='User: ')
         label5.place(relx=0.13, rely=0.15, anchor=CENTER)
         
-        label6 = ttk.Label(self.root, textvariable=self.currentUser)
+        label6 = ttk.Label(self.root, textvariable=self.current_user)
         label6.place(relx=0.2, rely=0.15, anchor=CENTER)
 
         label7 = ttk.Label(self.root, text='Connected to: ')
         label7.place(relx=0.45, rely=0.15, anchor=CENTER)
         
-        label8 = ttk.Label(self.root, textvariable=self.deviceDetails)
+        label8 = ttk.Label(self.root, textvariable=self.device_details)
         label8.place(relx=0.55, rely=0.15, anchor=CENTER)
     
         
@@ -138,44 +138,44 @@ class TestProgramWindow(object):
         
     def cmplt_btn_clicked(self):
         Tk.update(self.rootFrame)
-        self.sessionComplete = True
-        self.sessionOnGoing = False
+        self.session_complete = True
+        self.session_on_going = False
     
     def suspnd_btn_clicked(self):
-        self.sessionComplete = False
-        self.sessionOnGoing = False
+        self.session_complete = False
+        self.session_on_going = False
     
     def RefreshWindow(self):
         Tk.update(self.root)
         Tk.update_idletasks(self.root)
     
     def OpenWindow(self):
-        self.sessionOnGoing = True
+        self.session_on_going = True
 
         self.root.deiconify()
-        self.probeType.set(BM.currentBatch.probeType)
-        self.currentBatch.set(BM.currentBatch.batchNumber)
-        self.probesPassed.set(0)
-        self.currentUser.set(SM.loggedInUser.name)
-        self.deviceDetails.set(PM.ZND.deviceDetails)
+        self.probe_type.set(BM.current_batch.probe_type)
+        self.current_batch.set(BM.current_batch.batchNumber)
+        self.probes_passed.set(0)
+        self.current_user.set(SM.loggedInUser.name)
+        self.device_details.set(PM.ZND.device_details)
         self.RLLimit = -1 #pass criteria for return loss measurement
 
-        while(self.sessionOnGoing == True):
+        while(self.session_on_going == True):
             Tk.update(self.root)
             if PM.ProbePresent() == True:
                 self.status_label.configure(image=self.amberlight)
                 ProbeIsProgrammed = PM.ProbeIsProgrammed()
                 if ProbeIsProgrammed == False:
-                    serialNumber = PM.ProgramProbe(BM.currentBatch.probeType)
+                    serialNumber = PM.ProgramProbe(BM.current_batch.probe_type)
                     if serialNumber == False:
                         tm.showerror('Programming Error', 'Unable to program\nPlease check U1')
                         self.status_label.configure(image=self.redlight)
                     else:
                         Tk.update(self.root)
-                        results = PM.TestProbe(serialNumber, BM.currentBatch.batchNumber, self.currentUser.get())
+                        results = PM.TestProbe(serialNumber, BM.current_batch.batchNumber, self.current_user.get())
                         if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
-                            BM.UpdateResults(results, BM.currentBatch.batchNumber)
-                            self.probesPassed.set(self.probesPassed.get() + 1)
+                            BM.UpdateResults(results, BM.current_batch.batchNumber)
+                            self.probes_passed.set(self.probes_passed.get() + 1)
                             self.status_label.configure(image=self.greenlight)
                             Tk.update(self.root)
                         else:
@@ -185,16 +185,16 @@ class TestProgramWindow(object):
 
                 else:
                     if tm.askyesno('Programmed Probe Detected', 'This probe is already programmed.\nDo you with to re-program and test?'):
-                        serialNumber = PM.ProgramProbe(BM.currentBatch.probeType)
+                        serialNumber = PM.ProgramProbe(BM.current_batch.probe_type)
                         if serialNumber == False:
                             tm.showerror('Programming Error', 'Unable to program\nPlease check U1')
                             self.status_label.configure(image=self.redlight)
                             break
                         else:
-                            results = PM.TestProbe(serialNumber, BM.currentBatch.batchNumber, self.currentUser.get())
+                            results = PM.TestProbe(serialNumber, BM.current_batch.batchNumber, self.current_user.get())
                             if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
-                                BM.UpdateResults(results, BM.currentBatch.batchNumber)
-                                self.probesPassed.set(self.probesPassed.get() + 1)
+                                BM.UpdateResults(results, BM.current_batch.batchNumber)
+                                self.probes_passed.set(self.probes_passed.get() + 1)
                                 self.status_label.configure(image=self.greenlight)
                                 Tk.update(self.root)
                             else:
@@ -209,8 +209,8 @@ class TestProgramWindow(object):
                         break
                     
         #put something here to move csv?
-        if self.sessionComplete == True:
-            BM.CompleteBatch(BM.currentBatch)
+        if self.session_complete == True:
+            BM.CompleteBatch(BM.current_batch)
             
         self.CloseWindow()
 
@@ -220,7 +220,7 @@ class TestProgramWindow(object):
 
 class LogInWindow(object):
     def __init__(self):
-        self.currentUser = StringVar()
+        self.current_user = StringVar()
         
         self.LW = Toplevel()
         self.LW.title('Login')
@@ -239,7 +239,7 @@ class LogInWindow(object):
         self.label_1 = ttk.Label(self.LW, text="Username")
         self.label_2 = ttk.Label(self.LW, text="Password")
         
-        self.entry_1 = ttk.Entry(self.LW, textvariable=self.currentUser)
+        self.entry_1 = ttk.Entry(self.LW, textvariable=self.current_user)
         self.entry_2 = ttk.Entry(self.LW, show="*")
         #self.entry_1.insert(END, 'Jack')
         #self.entry_2.insert(END, 'password')
@@ -440,7 +440,7 @@ class EditUserWindow(object):
             sure = tm.askyesno('Delete confirm', 'Are you sure you want to Delete this user?')
             if sure == True:
                 if lstUsr != SM.loggedInUser.name:
-                    SM.deleteUser(SM.GetUserObject(lstUsr))
+                    SM.delete_user(SM.GetUserObject(lstUsr))
                     self.RefreshUserList()
                 else:
                     tm.showerror('Error', 'Cannot delete yourself')
@@ -533,7 +533,7 @@ class AddUserWindow():
          
         self.newusername = StringVar()
         self.newpassword = StringVar()
-        self.isAdmin = StringVar()
+        self.is_admin = StringVar()
          
         self.AUWl1 = ttk.Label(self.AUW, text='New user name: ')
         self.AUWl2 = ttk.Label(self.AUW, text='Password: ')
@@ -541,7 +541,7 @@ class AddUserWindow():
         self.AUWe1 = ttk.Entry(self.AUW, textvariable=self.newusername)
         self.AUWe2 = ttk.Entry(self.AUW, textvariable=self.newpassword)
  
-        self.rb_DP240 = ttk.Radiobutton(self.AUW, text='Admin', variable=self.isAdmin, value='admin')
+        self.rb_DP240 = ttk.Radiobutton(self.AUW, text='Admin', variable=self.is_admin, value='admin')
         self.rb_DP240.place(relx=0.5, rely=0.5, anchor=CENTER)
         
         self.AUWl1.place(relx=0.4, rely=0.25, anchor=CENTER)
@@ -563,7 +563,7 @@ class AddUserWindow():
         
         #create user object
         admin = False
-        if self.isAdmin.get() == 'admin':
+        if self.is_admin.get() == 'admin':
             admin = True
         newUser = User(self.newusername.get(), self.newpassword.get(), admin )
         
@@ -590,7 +590,7 @@ class AddUserWindow():
 class NewSessionWindow():
     def __init__(self):
         self.batchNumber = StringVar()
-        self.probeType = StringVar()
+        self.probe_type = StringVar()
         
         #Details Screen
         self.NSW = Toplevel()
@@ -617,25 +617,25 @@ class NewSessionWindow():
         self.NSWL2 = ttk.Label(self.NSW, text='Probe type: ')
         self.NSWL2.place(relx=0.3, rely=0.5, anchor=CENTER)
         rely = 0.4
-        self.rb_SDP30 = ttk.Radiobutton(self.NSW, text='SDP30', variable=self.probeType, value='SDP30')
+        self.rb_SDP30 = ttk.Radiobutton(self.NSW, text='SDP30', variable=self.probe_type, value='SDP30')
         self.rb_SDP30.place(relx=0.6, rely=rely, anchor=CENTER)
         rely += 0.05
-        self.rb_DP240 = ttk.Radiobutton(self.NSW, text='DP240', variable=self.probeType, value='DP240')
+        self.rb_DP240 = ttk.Radiobutton(self.NSW, text='DP240', variable=self.probe_type, value='DP240')
         self.rb_DP240.place(relx=0.6, rely=rely, anchor=CENTER)
         rely += 0.05
-#         self.rb_DP12 = ttk.Radiobutton(self.NSW, text='DP12', variable=self.probeType, value='DP12')
+#         self.rb_DP12 = ttk.Radiobutton(self.NSW, text='DP12', variable=self.probe_type, value='DP12')
 #         self.rb_DP12.place(relx=0.595, rely=0.45, anchor=CENTER)
-#         self.rb_DP6 = ttk.Radiobutton(self.NSW, text='DP6', variable=self.probeType, value='DP6')
+#         self.rb_DP6 = ttk.Radiobutton(self.NSW, text='DP6', variable=self.probe_type, value='DP6')
 #         self.rb_DP6.place(relx=0.59, rely=0.5, anchor=CENTER)
-#         self.rb_I2C = ttk.Radiobutton(self.NSW, text='I2C', variable=self.probeType, value='I2C')
+#         self.rb_I2C = ttk.Radiobutton(self.NSW, text='I2C', variable=self.probe_type, value='I2C')
 #         self.rb_I2C.place(relx=0.5905, rely=0.55, anchor=CENTER)
-#         self.rb_I2P = ttk.Radiobutton(self.NSW, text='I2P', variable=self.probeType, value='I2P')
+#         self.rb_I2P = ttk.Radiobutton(self.NSW, text='I2P', variable=self.probe_type, value='I2P')
 #         self.rb_I2P.place(relx=0.59, rely=0.60, anchor=CENTER)
-#         self.rb_I2S = ttk.Radiobutton(self.NSW, text='I2S', variable=self.probeType, value='I2S')
+#         self.rb_I2S = ttk.Radiobutton(self.NSW, text='I2S', variable=self.probe_type, value='I2S')
 #         self.rb_I2S.place(relx=0.584, rely=0.65, anchor=CENTER)
-#         self.rb_KDP = ttk.Radiobutton(self.NSW, text='KDP', variable=self.probeType, value='KDP')
+#         self.rb_KDP = ttk.Radiobutton(self.NSW, text='KDP', variable=self.probe_type, value='KDP')
 #         self.rb_KDP.place(relx=0.59, rely=0.70, anchor=CENTER)
-        self.rb_Blank = ttk.Radiobutton(self.NSW, text='Blank', variable=self.probeType, value='Blank')
+        self.rb_Blank = ttk.Radiobutton(self.NSW, text='Blank', variable=self.probe_type, value='Blank')
         self.rb_Blank.place(relx=0.6, rely=rely, anchor=CENTER)
         rely += 0.05
                 
@@ -668,7 +668,7 @@ class NewSessionWindow():
         
         #create batch object
         newBatch = Batch(self.batchNumber.get())
-        newBatch.probeType = self.probeType.get()
+        newBatch.probe_type = self.probe_type.get()
             
         DAnswer = tm.askyesno('Confirm', 'Are batch details correct?')
         if DAnswer == True:
@@ -676,7 +676,7 @@ class NewSessionWindow():
             if BM.CreateBatch(newBatch, SM.loggedInUser.name) == False:
                 tm.showerror('Error', 'Batch number not unique')
             else:
-                BM.currentBatch = newBatch
+                BM.current_batch = newBatch
                 self.NSW.withdraw()
                 CW.OpenWindow()
         else:
@@ -747,7 +747,7 @@ class ContinueSessionWindow(object):
         
         try:
             lstBatch = self.sessionListBox.get(lstid[0])
-            BM.currentBatch = BM.GetBatchObject(lstBatch)
+            BM.current_batch = BM.GetBatchObject(lstBatch)
             CW.OpenWindow()
             self.CSW.withdraw()
         except:
@@ -768,9 +768,9 @@ class ConnectionWindow(object):
     def __init__(self):
         #define variables
         self.AnalyserIP = StringVar()
-        self.comPort = StringVar()
-        self.connectedToCom = False
-        self.connectedToAnalyser = False
+        self.com_port = StringVar()
+        self.connected_to_com = False
+        self.connected_to_analyser = False
         
         #create the window and frame
         self.CW = Toplevel()
@@ -792,7 +792,7 @@ class ConnectionWindow(object):
         self.label_2 = ttk.Label(self.CW, text="Probe Interface COM Port")
         
         self.entry_1 = ttk.Entry(self.CW, textvariable=self.AnalyserIP,)
-        self.entry_2 = ttk.Entry(self.CW, textvariable=self.comPort, )
+        self.entry_2 = ttk.Entry(self.CW, textvariable=self.com_port, )
         self.entry_1.insert(END, '192.168.0.126')
         self.entry_2.insert(END, 'COM7')
         
@@ -814,25 +814,25 @@ class ConnectionWindow(object):
         self.CW.withdraw()
     
     def _connect_btn_clicked(self, *args):
-        cp =  self.comPort.get()
+        cp =  self.com_port.get()
         ip = self.AnalyserIP.get()
         try:
             PM.ConnectToProbeInterface(cp)
-            self.connectedToCom = True
+            self.connected_to_com = True
         except:
-            self.connectedToCom = False
+            self.connected_to_com = False
             tm.showerror('Connection Error', 'Unable to connect to Probe Interface\nPlease check the COM Port is correct.')
               
         try:
             PM.SetVNAAddress(ip)
             PM.ZND.TestConnection()
             PM.ZND.Configure()
-            self.connectedToAnalyser = True
+            self.connected_to_analyser = True
         except:
-            self.connectedToAnalyser = False
+            self.connected_to_analyser = False
             tm.showerror('Connection Error', 'Unable to connect to Analyser\nPlease check the IP address is correct.')
   
-        if self.connectedToAnalyser and self.connectedToCom == True:
+        if self.connected_to_analyser and self.connected_to_com == True:
             self.CW.withdraw()
             TPW.OpenWindow()
 

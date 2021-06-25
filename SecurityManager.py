@@ -91,7 +91,7 @@ class SecurityManager(object):
         else:
             return False
 
-    def deleteUser(self, user):
+    def delete_user(self, user):
         '''
         tick
         pass in a user object

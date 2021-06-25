@@ -59,9 +59,9 @@ class SessionSelectWindow(tk.Frame):
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
-        self.textArea = tk.Text(self, height=5, width=38)
-        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
-        timeNow = strftime("%H:%M:%p", gmtime())
+        self.text_area = tk.Text(self, height=5, width=38)
+        self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
+        time_now = strftime("%H:%M:%p", gmtime())
         
         self.SSW_b1 = ttk.Button(self, text='Start a new session', command=lambda: controller.show_frame(
             NewSessionWindow), width=BTN_WIDTH)
@@ -77,13 +77,13 @@ class SessionSelectWindow(tk.Frame):
         self.SSW_b4 = ttk.Button(self, text='Edit Users', command=lambda: controller.show_frame(
             AU.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(relx=0.6, rely=0.55, anchor=CENTER)
-        self.textArea.config(state=NORMAL)
-        self.textArea.delete('1.0','end')
-        if "AM" in timeNow :
-            self.textArea.insert('1.0','Good Morning ')
+        self.text_area.config(state=NORMAL)
+        self.text_area.delete('1.0','end')
+        if "AM" in time_now :
+            self.text_area.insert('1.0','Good Morning ')
             
         else:
-            self.textArea.insert('1.0','Good Afternoon ')
+            self.text_area.insert('1.0','Good Afternoon ')
             
         self.SSW_b3 = ttk.Button(self, text='Log Out', command=lambda: controller.show_frame(
             UL.LogInWindow), width=BTN_WIDTH)
@@ -109,10 +109,10 @@ class SessionSelectWindow(tk.Frame):
             self.SSW_b2.config(state=NORMAL)
             
         
-        self.textArea.delete('1.0','end')
-        self.textArea.insert('2.0',session_info[0])
-        self.textArea.insert('3.3','\n\nPlease choose an option.')
-        self.textArea.config(state=DISABLED)
+        self.text_area.delete('1.0','end')
+        self.text_area.insert('2.0',session_info[0])
+        self.text_area.insert('3.3','\n\nPlease choose an option.')
+        self.text_area.config(state=DISABLED)
         
     def completed_btn_clicked(self, controller):
         print("Completed button clicked...")
@@ -122,7 +122,7 @@ class SessionSelectWindow(tk.Frame):
 class NewSessionWindow(tk.Frame):
     def __init__(self, parent, controller):
         self.batchNumber = StringVar()
-        self.probeType = StringVar()
+        self.probe_type = StringVar()
         self.batchQty = IntVar()
 
         # Details Screen
@@ -136,9 +136,9 @@ class NewSessionWindow(tk.Frame):
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
-        self.textArea = tk.Text(self, height=5, width=38)
-        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
-        timeNow = strftime("%H:%M:%p", gmtime())
+        self.text_area = tk.Text(self, height=5, width=38)
+        self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
+        time_now = strftime("%H:%M:%p", gmtime())
 
         #batch_frame.grid(row=0, sticky="ew")
         probe_type_frame.place(relx=0.2, rely=0.45,anchor=CENTER)
@@ -165,23 +165,23 @@ class NewSessionWindow(tk.Frame):
       
 
         # tk.Radiobutton(probe_type_frame, text='SDP30 [Suprasternal Probe]',
-        #                variable=self.probeType, value='SDP30').pack(fill=X, ipady=5)
+        #                variable=self.probe_type, value='SDP30').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='DP240 [9070-7005]',
-                       variable=self.probeType, value='DP240').pack(fill=X, ipady=5)
+                       variable=self.probe_type, value='DP240').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='DP12 [9070-7003]',
-                       variable=self.probeType, value='DP12').pack(fill=X, ipady=5)
+                       variable=self.probe_type, value='DP12').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='DP6 [9070-7001]',
-                       variable=self.probeType, value='DP6').pack(fill=X, ipady=5)
+                       variable=self.probe_type, value='DP6').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='I2C [9090-7014]',
-                       variable=self.probeType, value='I2C').pack(fill=X, ipady=5)
+                       variable=self.probe_type, value='I2C').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='I2P [9090-7013]', 
-                       variable=self.probeType, value='I2P').pack(fill=X, ipady=5)
+                       variable=self.probe_type, value='I2P').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='I2S [9090-7012]', 
-                       variable=self.probeType, value='I2S').pack(fill=X, ipady=5)
+                       variable=self.probe_type, value='I2S').pack(fill=X, ipady=5)
         tk.Radiobutton(probe_type_frame, text='KDP72 [9081-7001]', 
-                       variable=self.probeType, value='KDP').pack(fill=X, ipady=5)
+                       variable=self.probe_type, value='KDP').pack(fill=X, ipady=5)
         # tk.Radiobutton(probe_type_frame, text='Blank',
-        #                variable=self.probeType, value='Blank').pack(fill=X, ipady=7)
+        #                variable=self.probe_type, value='Blank').pack(fill=X, ipady=7)
         
         self.confm_btn = tk.Button(self, text='Confirm', padx=2, pady=3,
                                    width=BTN_WIDTH, command=lambda: self.confm_btn_clicked(controller))
@@ -193,11 +193,11 @@ class NewSessionWindow(tk.Frame):
 
         self.bind('<Return>', self.confm_btn_clicked)
         
-        # if "AM" in timeNow :
-        #     self.textArea.insert('1.0','Good Morning ', font=('bold',12))
+        # if "AM" in time_now :
+        #     self.text_area.insert('1.0','Good Morning ', font=('bold',12))
             
         # else:
-        #     self.textArea.insert('1.0','Good Afternoon ')
+        #     self.text_area.insert('1.0','Good Afternoon ')
         
     def refresh_window(self):
            
@@ -206,10 +206,10 @@ class NewSessionWindow(tk.Frame):
         # Call load method to deserialze
             session_info = pickle.load(file)
         file.close()
-        self.textArea.config(state=NORMAL)
-        self.textArea.insert('1.0',session_info[0])
-        self.textArea.insert('3.3','\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
-        self.textArea.config(state=DISABLED)
+        self.text_area.config(state=NORMAL)
+        self.text_area.insert('1.0',session_info[0])
+        self.text_area.insert('3.3','\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
+        self.text_area.config(state=DISABLED)
 
     def confm_btn_clicked(self, controller):
         # create batch object
@@ -217,14 +217,14 @@ class NewSessionWindow(tk.Frame):
         batch_data = []
         DAnswer = False
         newBatch = Batch(self.batchNumber.get())
-        newBatch.probeType = self.probeType.get()
+        newBatch.probe_type = self.probe_type.get()
         newBatch.batchQty = self.batchQty.get()
 
         if self.batchQty.get() > 100:
-                self.textArea.config(state=NORMAL)
-                self.textArea.delete('2.0','end')
-                self.textArea.insert('2.0','\nCheck batch quantity. ')
-                self.textArea.config(state=DISABLED)
+                self.text_area.config(state=NORMAL)
+                self.text_area.delete('2.0','end')
+                self.text_area.insert('2.0','\nCheck batch quantity. ')
+                self.text_area.config(state=DISABLED)
         else:
             DAnswer = tm.askyesno('Confirm', 'Are batch details correct?' )
         if DAnswer == True and self.batchQty.get() > 0:
@@ -244,9 +244,9 @@ class NewSessionWindow(tk.Frame):
             if BM.CreateBatch(newBatch, name) == False:
                 tm.showerror('Error', 'Batch number not unique')
             else:
-                BM.currentBatch = newBatch
+                BM.current_batch = newBatch
                 session_data.append(newBatch.batchNumber)
-                session_data.append(newBatch.probeType)
+                session_data.append(newBatch.probe_type)
                 
             
             with open('file.ptt', 'wb') as file:
@@ -256,7 +256,7 @@ class NewSessionWindow(tk.Frame):
                 
             with open("file_batch", "wb") as file:
                     batch_data.append(self.batchNumber.get())
-                    batch_data.append(self.probeType.get())
+                    batch_data.append(self.probe_type.get())
                     batch_data.append(self.batchQty.get())
                     pickle.dump(batch_data, file)
             file.close()
@@ -272,8 +272,8 @@ class ContinueSessionWindow(tk.Frame):
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
-        self.textArea = tk.Text(self, height=5, width=38)
-        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
+        self.text_area = tk.Text(self, height=5, width=38)
+        self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
         
         
         self.Label1 = ttk.Label(self, text='Choose a session to resume')
@@ -288,9 +288,9 @@ class ContinueSessionWindow(tk.Frame):
         self.sessionListBox.place(relx=0.4, rely=0.4, anchor=CENTER)
         self.sessionListBox.config(height=2, width=20)
         
-        self.probeTypeListBox = Listbox(self)
-        self.probeTypeListBox.place(relx=0.6, rely=0.4, anchor=CENTER)
-        self.probeTypeListBox.config(height=2, width=15)
+        self.probe_typeListBox = Listbox(self)
+        self.probe_typeListBox.place(relx=0.6, rely=0.4, anchor=CENTER)
+        self.probe_typeListBox.config(height=2, width=15)
         
 
         self.continue_btn = ttk.Button(
@@ -307,35 +307,35 @@ class ContinueSessionWindow(tk.Frame):
     def refresh_window(self):
         # #create a list of the current users using the dictionary of users
         sessionList = []
-        probeTypeList = []
+        probe_typeList = []
         with open('file.ptt', 'rb') as file:
         # Call load method to deserialze
             session_info = pickle.load(file)
         file.close()
-        self.textArea.insert('1.0',session_info[0])
-        self.textArea.insert('3.3','\n\nPlease select a batch number\nto continue testing.')
-        self.textArea.config(state=DISABLED)
+        self.text_area.insert('1.0',session_info[0])
+        self.text_area.insert('3.3','\n\nPlease select a batch number\nto continue testing.')
+        self.text_area.config(state=DISABLED)
 
         for item in BM.GetAvailableBatches():
             sessionList.append(item)
             
-            batchObj = BM.GetBatchObject(item)
-            probeTypeList.append(batchObj.probeType)
+            batch_obj = BM.GetBatchObject(item)
+            probe_typeList.append(batch_obj.probe_type)
             
-            batchObj = None
+            batch_obj = None
         
        
         
         # clear the listbox
         self.sessionListBox.delete(0, END)
-        self.probeTypeListBox.delete(0, END)
+        self.probe_typeListBox.delete(0, END)
 
         # fill the listbox with the list of users
         for item in sessionList:
             self.sessionListBox.insert(END, item)
             
-        for item in probeTypeList:
-            self.probeTypeListBox.insert(END, item)
+        for item in probe_typeList:
+            self.probe_typeListBox.insert(END, item)
         
 
     def continue_btn_clicked(self, controller):
@@ -356,7 +356,7 @@ class ContinueSessionWindow(tk.Frame):
             file.close()
             
             session_data.append(lstBatch)
-            session_data.append(batch.probeType)
+            session_data.append(batch.probe_type)
             
             
             with open('file.ptt', 'wb') as file:
@@ -365,7 +365,7 @@ class ContinueSessionWindow(tk.Frame):
             
             with open("file_batch", "wb") as file:
                 batch_data.append(lstBatch)
-                batch_data.append(batch.probeType)
+                batch_data.append(batch.probe_type)
                 batch_data.append(batch.batchQty)
                 pickle.dump(batch_data, file)
             file.close()

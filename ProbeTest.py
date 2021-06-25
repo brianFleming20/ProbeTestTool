@@ -85,24 +85,24 @@ class TestProgramWindow(tk.Frame):
         tk.Frame.__init__(self, parent)
 
         # define variables
-        self.sessionOnGoing = False
-        self.sessionComplete = None
+        self.session_on_going = False
+        self.session_complete = None
         self.action = StringVar()
-        self.leftToTest = IntVar()
-        self.analyserResults = []
-        self.currentBatch = StringVar()
-        self.currentUser = StringVar()
-        self.probesPassed = IntVar()
-        self.deviceDetails = StringVar()
+        self.left_to_test = IntVar()
+        self.analyser_results = []
+        self.current_batch = StringVar()
+        self.current_user = StringVar()
+        self.probes_passed = IntVar()
+        self.device_details = StringVar()
         self.device = "Not connected to analyser"
-        self.probeType = StringVar()
+        self.probe_type = StringVar()
         self.SD_data = IntVar()
         self.FTc_data = IntVar()
         self.PV_data = IntVar()
-        self.userAdmin = False
+        self.user_admin = False
         self.check = 0
         self.go = False
-        self.probesPassed.set(0)
+        self.probes_passed.set(0)
         
 
         #import images
@@ -116,37 +116,37 @@ class TestProgramWindow(tk.Frame):
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
-        self.textArea = tk.Text(self, height=5, width=40)
-        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
-        timeNow = strftime("%H:%M:%p", gmtime())
-        self.textArea.delete('1.0','end')
-        if "AM" in timeNow :
-            self.textArea.insert('1.0','Good Morning ')
+        self.text_area = tk.Text(self, height=5, width=40)
+        self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
+        time_now = strftime("%H:%M:%p", gmtime())
+        self.text_area.delete('1.0','end')
+        if "AM" in time_now :
+            self.text_area.insert('1.0','Good Morning ')
             
         else:
-            self.textArea.insert('1.0','Good Afternoon ')
+            self.text_area.insert('1.0','Good Afternoon ')
         
 
         ttk.Label(self, text='Batch number: ').place(
             relx=0.1, rely=0.3, anchor='w')
-        ttk.Label(self, textvariable=self.currentBatch, relief=SUNKEN, font="bold",
+        ttk.Label(self, textvariable=self.current_batch, relief=SUNKEN, font="bold",
                  width=10).place(relx=0.3, rely=0.3, anchor='w')
 
         ttk.Label(self, text='Probe type: ').place(
             relx=0.1, rely=0.45, anchor='w')
-        ttk.Label(self, textvariable=self.probeType, relief=SUNKEN, font="bold",
+        ttk.Label(self, textvariable=self.probe_type, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.3, rely=0.45, anchor='w')
 
         # ttk.Label(self, text='User: ').place(relx=0.1, rely=0.15, anchor='w')
-        # ttk.Label(self, textvariable=self.currentUser, relief=SUNKEN, font="bold",
+        # ttk.Label(self, textvariable=self.current_user, relief=SUNKEN, font="bold",
         #           width=20).place(relx=0.3, rely=0.15, anchor='w')
 
         ttk.Label(self, text='Connected to: ').place(
             relx=0.73, rely=0.2, anchor='w')
-        ttk.Label(self, textvariable=self.deviceDetails, relief=SUNKEN,
+        ttk.Label(self, textvariable=self.device_details, relief=SUNKEN,
                   width=30).place(relx=0.7, rely=0.25, anchor='w')
         
-        ttk.Label(self, text="Probe parameter data").place(
+        ttk.Label(self, text="Data from ODM").place(
             relx=0.7, rely=0.42, anchor="w")
         ttk.Label(self, text="SD").place(relx=0.70, rely=0.46, anchor="w")
         ttk.Label(self, text="FTc").place(relx=0.77, rely=0.46, anchor="w")
@@ -165,22 +165,21 @@ class TestProgramWindow(tk.Frame):
 
         ttk.Label(self, text='Probes Passed: ').place(
             relx=0.1, rely=0.75, anchor='w')
-        ttk.Label(self, textvariable=self.probesPassed, relief=SUNKEN, font="bold",
+        ttk.Label(self, textvariable=self.probes_passed, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.28, rely=0.75, anchor='w')
         
-        self.ff_btn = ttk.Button(self, text=' Start fault finding ', command=lambda: controller.show_frame(FF.FaultFindWindow), 
+        ttk.Button(self, text=' Start fault finding ', command=lambda: controller.show_frame(FF.FaultFindWindow), 
                    width=BTN_WIDTH).place(relx=0.53, rely=0.7, anchor=CENTER)
-        
         
         ttk.Label(self, text='Probes to test: ').place(
             relx=0.7, rely=0.75, anchor='w')
-        ttk.Label(self, textvariable=self.leftToTest, relief=SUNKEN, font="bold",
+        ttk.Label(self, textvariable=self.left_to_test, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.83, rely=0.75, anchor='w')
         
         ttk.Label(self, text='Action: ').place(relx=0.1, rely=0.9, anchor='w')
+        
         ttk.Label(self, textvariable=self.action, background='yellow',
                   width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
-        self.action.set('Connect New Probe')
 
         ttk.Button(self, text='Complete Session', image=self.complete_btn, command=lambda: self.cmplt_btn_clicked(
             controller)).place(relx=0.68, rely=0.9, anchor=CENTER)
@@ -192,28 +191,29 @@ class TestProgramWindow(tk.Frame):
 
     def cmplt_btn_clicked(self, controller):
         Tk.update(self)
-        self.sessionComplete = True
-        self.sessionOnGoing = False
+        self.session_complete = True
+        self.session_on_going = False
         batch_data = []
         
-        try:
-            with open('file.ptt', 'rb') as file:
-                data = pickle.load(file)
-                currentBatch = data[2]
-            file.close()
         
-            with open("file_batch", "wb") as file:
-                batch_data.append(self.currentBatch.get())
-                batch_data.append(self.probeType.get())
-                batch_data.append(self.leftToTest.get())
-                pickle.dump(batch_data, file)
-            file.close()
-        except:
-            self.textArea.delete('3.0','end')
-            self.textArea.insert('3.0', "\nError in getting batch data...")
         
-        if self.leftToTest.get() == False:
-            BM.CompleteBatch(currentBatch)
+        if self.left_to_test.get() == 0:
+            try:
+                with open('file.ptt', 'rb') as file:
+                    data = pickle.load(file)
+                    current_batch = data[2]
+                file.close()
+        
+                with open("file_batch", "wb") as file:
+                    batch_data.append(self.current_batch.get())
+                    batch_data.append(self.probe_type.get())
+                    batch_data.append(self.left_to_test.get())
+                    pickle.dump(batch_data, file)
+                file.close()
+            except:
+                self.text_area.delete('3.0','end')
+                self.text_area.insert('3.0', "\nError in getting batch data...")
+            BM.CompleteBatch(current_batch)
             controller.show_frame(SE.SessionSelectWindow)
             
             
@@ -226,36 +226,36 @@ class TestProgramWindow(tk.Frame):
       
 
     def suspnd_btn_clicked(self, controller):
-        self.sessionComplete = False
-        self.sessionOnGoing = False
+        self.session_complete = False
+        self.session_on_going = False
         batch_data = []
         
         try:
             with open("file_batch", "wb") as file:
-                batch_data.append(self.currentBatch.get())
-                batch_data.append(self.probeType.get())
-                batch_data.append(self.leftToTest.get())
+                batch_data.append(self.current_batch.get())
+                batch_data.append(self.probe_type.get())
+                batch_data.append(self.left_to_test.get())
                 pickle.dump(batch_data, file)
             file.close()
-            BM.SuspendBatch(self.currentBatch.get())
+            BM.SuspendBatch(self.current_batch.get())
             
         
             controller.show_frame(SE.SessionSelectWindow)
         except:
-            self.textArea.delete('3.0','end')
-            self.textArea.insert('3.0', "\nError in Writting batch data...") 
+            self.text_area.delete('3.0','end')
+            self.text_area.insert('3.0', "\nError in Writting batch data...") 
    
         
 
 
     def refresh_window(self):
-        self.sessionOnGoing = True
-       
+        self.session_on_going = True
+        label = tk.ttk
         batchData = []
         serial_results = []
         analyser_data = []
         # BM.updateBatchInfo()
-        self.textArea.delete('1.0','end')
+        self.text_area.delete('1.0','end')
         # Open the file in binary mode
        
         
@@ -264,49 +264,40 @@ class TestProgramWindow(tk.Frame):
             # Call load method to deserialze
             fileData = pickle.load(file)
             analyser_port = fileData[4][2]
-            self.userAdmin = fileData[1]
+            self.user_admin = fileData[1]
         file.close()
             
-        self.textArea.insert('1.0',fileData[0])
-        self.textArea.insert('2.0','\nPlease continue testing batch ')
-        self.textArea.insert('2.30', fileData[2])
+        self.text_area.insert('1.0',fileData[0])
+        self.text_area.insert('2.0','\nPlease continue testing batch ')
+        self.text_area.insert('2.30', fileData[2])
        
-            
-      
         with open('file_batch', 'rb') as file:
-            qtyLeftToTest = pickle.load(file)
-            self.leftToTest.set(qtyLeftToTest[2])
+            qtyleft_to_test = pickle.load(file)
+            self.left_to_test.set(qtyleft_to_test[2])
         file.close()
-            
-    
-            
-        
             
         # self.root.deiconify()
-        self.probeType.set(fileData[3])
-        self.currentBatch.set(fileData[2])
-        self.currentUser.set(fileData[0])
-        self.deviceDetails.set(self.device)
+        self.probe_type.set(fileData[3])
+        self.current_batch.set(fileData[2])
+        self.current_user.set(fileData[0])
+        self.device_details.set(self.device)
         self.RLLimit = -1  # pass criteria for return loss measurement
-        
         
         ##############################
         # Collect analyser port data #
         ##############################
-        
        
             # Check to see if the analyser port is connected
             
         if NanoZND.GetAnalyserPortNumber(analyser_port):
                 # Get the analyser to generate data points and return them
             analyser_data = NanoZND.ReadAnalyserData(analyser_port)
-            self.analyserResults.append(analyser_data[3])
+            self.analyser_results.append(analyser_data[3])
                 # Print the analyser data points selected by 
                 # print("Analyser data {}".format(analyser_data[3:10]))
                 # Set the device connected name
             self.device = " NanoNVA "
-            self.deviceDetails.set(self.device)
-        
+            self.device_details.set(self.device)
         
         #######################
         # Collect serial data #
@@ -333,52 +324,57 @@ class TestProgramWindow(tk.Frame):
         
         with open('file.admin', 'rb') as fileAd:
             myAdmin = pickle.load(fileAd)
-        self.textArea.config(state=NORMAL)
+        self.text_area.config(state=NORMAL)
         if myAdmin[0] == 1:
-                self.textArea.delete('3.0','end')
-                self.textArea.insert('3.0', "\n\nProbe re-programming enabled.")
+                self.text_area.delete('3.0','end')
+                self.text_area.insert('3.0', "\n\nProbe re-programming enabled.")
                 
         else:
-                self.textArea.delete('3.0','end')
-                self.textArea.insert('3.0', "\n\nProbe re-programming disabled")
-        self.textArea.config(state=DISABLED)
+                self.text_area.delete('3.0','end')
+                self.text_area.insert('3.0', "\n\nProbe re-programming disabled")
+        self.text_area.config(state=DISABLED)
         fileAd.close()  
              
         # Detect if probe is present.        
-        while(self.sessionOnGoing == True):
+        while(self.session_on_going == True):
             Tk.update(self) 
-            if self.leftToTest.get() == False and self.check == False:
+            if self.left_to_test.get() == False and self.check == False:
                 tm.showinfo("Batch complete.","\nPlease press the Complete Session button.")
                 self.check = 1
             self.go = False  
             
+            if PM.ProbePresent() == False:
+                self.action.set('Connect New Probe')
+                ttk.Label(self, textvariable=self.action, background='yellow',
+                    width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')   
+            
             if PM.ProbePresent() == True:
                 self.action.set('Probe connected')
-                ProbeIsProgrammed = PM.ProbeIsProgrammed()  
-                
-                Tk.update(self) 
+                ProbeIsProgrammed = PM.ProbeIsProgrammed() 
+                 
+                if PM.ProbePresent() == True:
+                    ttk.Label(self, textvariable=self.action, background='#CAFF70',
+                        width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
                 
                 if myAdmin[0] == 0:
-                    self.textArea.config(state=NORMAL)
-                    self.textArea.delete('3.0','end')
-                    self.textArea.insert('3.0', "\n\nYou can't re-program this probe.")   
-                    self.textArea.config(state=DISABLED)
+                    self.text_area.config(state=NORMAL)
+                    self.text_area.delete('3.0','end')
+                    self.text_area.insert('3.0', "\n\nYou can't re-program this probe.")   
+                    self.text_area.config(state=DISABLED)
                     self.go = False
-                Tk.update(self) 
                 
                 if ProbeIsProgrammed == True and myAdmin[0] == 1:
                     self.go = tm.askyesno('Programmed Probe Detected', 'This probe is already programmed.\nDo you wish to re-program and test?')
                     self.status_image.configure(image=self.amberlight) 
-                Tk.update(self)    
-                
+                   
                 if ProbeIsProgrammed == False:
                     self.go = True
                     self.status_image.configure(image=self.amberlight) 
+                Tk.update(self) 
                 if self.go == True:  
                     self.action.set('Programming probe')
-                    serialNumber = PM.ProgramProbe(self.probeType.get())
+                    serialNumber = PM.ProgramProbe(self.probe_type.get())
                     snum = str(codecs.decode(serialNumber, "hex"),'utf-8')[1:16]
-                    
                     
                     with open("file_temp", "wb") as file:
                         batchData.append(snum)
@@ -395,17 +391,17 @@ class TestProgramWindow(tk.Frame):
                         self.action.set('Testing probe...')
                             
                         results = PM.TestProbe(
-                            serialNumber, self.currentBatch.get(), self.currentUser.get())
+                            serialNumber, self.current_batch.get(), self.current_user.get())
                         self.action.set('Testing complete. Disconnect probe')
                         
                         # if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
                         if self.RLLimit == -1: #check for crystal pass value, now pass every time
                             BM.UpdateResults(
-                                results, self.currentBatch.get())
-                            self.probesPassed.set(self.probesPassed.get() + 1)
-                            self.leftToTest.set(self.leftToTest.get() - 1)
+                                results, self.current_batch.get())
+                            self.probes_passed.set(self.probes_passed.get() + 1)
+                            self.left_to_test.set(self.left_to_test.get() - 1)
                             self.status_image.configure(image=self.greenlight)
-                            BM.saveProbeInfoToCSVFile(snum,self.analyserResults,self.currentUser.get(), self.currentBatch.get())
+                            BM.saveProbeInfoToCSVFile(snum,self.analyser_results,self.current_user.get(), self.current_batch.get())
                             Tk.update(self)
                         else:
                             self.status_image.configure(image=self.redlight)
@@ -435,16 +431,13 @@ class TestProgramWindow(tk.Frame):
                             
                         
                 while 1:
-                    if PM.ProbePresent() == False:
+                    self.probePresent = PM.ProbePresent()
+                    if self.probePresent == False:
                         
                         self.status_image.configure(image=self.greylight)
                         self.action.set('Connect New Probe')
                         break
-        
-       
-                        
-        
-        if self.sessionComplete == True:
-            BM.CompleteBatch(BM.currentBatch)
+                    
+        if self.session_complete == True:
+            BM.CompleteBatch(BM.current_batch)
             
-

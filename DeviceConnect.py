@@ -57,18 +57,18 @@ def ignore():
 class ConnectionWindow(tk.Frame):
     def __init__(self, parent, controller):
         # define variables
-        self.Monitor = StringVar()
-        self.comPort = StringVar()
-        self.AnalyserUSB = StringVar()
-        self.moveProbe = StringVar()
-        self.connectedToCom = False
-        self.connectedToAnalyser = False
+        self.monitor = StringVar()
+        self.com_port = StringVar()
+        self.analyser_usb = StringVar()
+        self.move_probe = StringVar()
+        self.connected_to_com = False
+        self.connected_to_analyser = False
         self.odm_connection = False
-        self.AnalyserUSB.set('COM4')
-        self.comPort.set('COM3')
-        self.Monitor.set('COM5')
-        self.moveProbe.set('Not Set')
-        self.isAdmin = []
+        self.analyser_usb.set('COM4')
+        self.com_port.set('COM3')
+        self.monitor.set('COM5')
+        self.move_probe.set('Not Set')
+        self.is_admin = []
         
         
         
@@ -86,42 +86,33 @@ class ConnectionWindow(tk.Frame):
             self, text="Cancel",  command=lambda: controller.show_frame(SE.SessionSelectWindow))
         self.cancelBtn.place(relx=0.6, rely=0.82, anchor=CENTER)
         
-        self.textArea = tk.Text(self, height=5, width=38)
-        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
-        timeNow = strftime("%H:%M:%p", gmtime())
+        self.text_area = tk.Text(self, height=5, width=38)
+        self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
+        time_now = strftime("%H:%M:%p", gmtime())
         
-        # if "AM" in timeNow :
-        #     self.textArea.insert('1.0','Good Morning ', font=('bold',12))
-            
-        # else:
-        #     self.textArea.insert('1.0','Good Afternoon ')
-        
-        
-      
-    
     def refresh_window(self):
         try:
             with open('file.ptt', 'rb') as file:
                 fileData = pickle.load(file)
-                self.isAdmin.append(fileData[1])
+                self.is_admin.append(fileData[1])
             
             file.close()  
         except:
-            self.textArea.delete('3.0','end')
-            self.textArea.insert('3.0', "\nError in getting Admin data...")
+            self.text_area.delete('3.0','end')
+            self.text_area.insert('3.0', "\nError in getting Admin data...")
         
         
-        if True in self.isAdmin:
+        if True in self.is_admin:
             self.label_1 = ttk.Label(self, text="ODM monitor port")
             self.label_2 = ttk.Label(self, text="Probe Interface Port")
             self.label_3 = ttk.Label(self, text="Analyser port")
         
             self.label_5 = ttk.Label(self, text="Probe Movement Interface")
-            self.entry_1 = ttk.Entry(self, textvariable=self.Monitor,)
-            self.entry_2 = ttk.Entry(self, textvariable=self.comPort, )
-            self.entry_3 = ttk.Entry(self, textvariable=self.AnalyserUSB, )
+            self.entry_1 = ttk.Entry(self, textvariable=self.monitor,)
+            self.entry_2 = ttk.Entry(self, textvariable=self.com_port, )
+            self.entry_3 = ttk.Entry(self, textvariable=self.analyser_usb, )
         
-            self.entry_5 = ttk.Entry(self, textvariable=self.moveProbe)
+            self.entry_5 = ttk.Entry(self, textvariable=self.move_probe)
             self.deltex = (PhotoImage(file="deltex.gif"))
             self.label_8 = ttk.Label(self, text=" ", image=self.deltex)
             self.label_8.place(relx=0.9, rely=0.2, anchor=CENTER)
@@ -138,15 +129,19 @@ class ConnectionWindow(tk.Frame):
             self.entry_5.place(relx=0.5, rely=0.6, anchor=CENTER)
 
             self.entry_1.focus_set()
-        self.textArea.insert('2.0',fileData[0])
-        self.textArea.insert('2.0','\n\nPlease connect the external devices\nand progress to the testing screen.')
-        self.textArea.config(state=DISABLED)
+        else:
+            self.label_9 = ttk.Label(self, text=" Please press connect to continue. ")
+            self.label_9.place(relx=0.5, rely=0.5, anchor=CENTER)
+            
+        self.text_area.insert('2.0',fileData[0])
+        self.text_area.insert('2.0','\n\nPlease connect the external devices\nand progress to the testing screen.')
+        self.text_area.config(state=DISABLED)
             
 
     def _connect_btn_clicked(self, controller):
-        cp = self.comPort.get()
-        odm = self.Monitor.get()
-        usb = self.AnalyserUSB.get()
+        cp = self.com_port.get()
+        odm = self.monitor.get()
+        usb = self.analyser_usb.get()
         session_data = []
         connection_data = []
         
@@ -154,7 +149,7 @@ class ConnectionWindow(tk.Frame):
             with open('file.ptt', 'rb') as file:
                 myvar = pickle.load(file)
                 session_data.extend(myvar)
-                self.isAdmin.append(myvar)
+                self.is_admin.append(myvar)
 
             file.close()
         
@@ -164,8 +159,8 @@ class ConnectionWindow(tk.Frame):
             connection_data.append(usb)
             session_data.append(connection_data)
         except:
-            self.textArea.delete('3.0','end')
-            self.textArea.insert('3.0', "\nError in getting batch data in Connections...")
+            self.text_area.delete('3.0','end')
+            self.text_area.insert('3.0', "\nError in getting batch data in Connections...")
         
         try:    
             with open('file.ptt', 'wb') as file:
@@ -173,12 +168,12 @@ class ConnectionWindow(tk.Frame):
                 
             file.close()
         except:
-            self.textArea.delete('3.0','end')
-            self.textArea.insert('3.0', "\nError in writting batch data in connections...")
+            self.text_area.delete('3.0','end')
+            self.text_area.insert('3.0', "\nError in writting batch data in connections...")
         
         try:
             if NanoZND.GetAnalyserPortNumber(usb):
-                self.connectedToAnalyser = True
+                self.connected_to_analyser = True
         except:
             tm.showerror(
                 'Connection Error', 'Unable to connect to analyser\nPlease check the NanoVNA is on and connected.')
@@ -189,11 +184,11 @@ class ConnectionWindow(tk.Frame):
                 self.odm_connection = True
         except:
             tm.showerror(
-                'Connection Error', 'Unable to connect to ODM Monitor\nPlease check the ODM is on and connected.')
+                'Connection Error', 'Unable to connect to ODM monitor\nPlease check the ODM is on and connected.')
            
         try:
             PM.ConnectToProbeInterface(cp)
-            self.connectedToCom = True
+            self.connected_to_com = True
         except:
             tm.showerror(
                 'Connection Error', 'Unable to connect to Probe Interface\nPlease check the Probe interface port is correct.')
@@ -202,5 +197,5 @@ class ConnectionWindow(tk.Frame):
   
         
 
-        if self.connectedToCom and self.odm_connection == True and self.connectedToAnalyser == True :
+        if self.connected_to_com and self.odm_connection == True and self.connected_to_analyser == True :
             controller.show_frame(PT.TestProgramWindow)

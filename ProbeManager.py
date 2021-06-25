@@ -35,12 +35,12 @@ class ProbeManager(object):
         
      
   
-    def ConnectToProbeInterface(self, comPort):
+    def ConnectToProbeInterface(self, com_port):
         '''
-        Pass in a com port ID (COMX) and connect to that comport.
+        Pass in a com port ID (COMX) and connect to that com_port.
         '''
         
-        self.PI.Connect(comPort)
+        self.PI.Connect(com_port)
         
     
     def ConnectToAnalyzer(self, port):
@@ -71,13 +71,13 @@ class ProbeManager(object):
         
         return r
         
-    def ProgramProbe(self, probeType):
+    def ProgramProbe(self, probe_type):
         '''
         pass in a string containing the probe type
         program the probe as that type
         returns the probes serial number if programming was succesful, False if not
         '''
-        probeData = self.PD.GenerateDataString(probeType)
+        probeData = self.PD.GenerateDataString(probe_type)
         # get first two lots of 8 bights for error checking
 
         #write the data to the probe

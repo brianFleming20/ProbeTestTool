@@ -24,7 +24,7 @@ class InstrumentationManager(object):
     
 class ZND(object):
     def __init__(self):
-        self.deviceDetails = ''
+        self.device_details = ''
         self.rm = visa.ResourceManager('@py')
         self.HISLIPAddress = ''
       
@@ -51,7 +51,7 @@ class ZND(object):
         Tests the connection to the VNA, returns the VNA's ID
         '''
         # self.znd = self.rm.open_resource(self.HISLIPAddress)
-        # self.deviceDetails = self.znd.query("*IDN?")[:-2] 
+        # self.device_details = self.znd.query("*IDN?")[:-2] 
         # self.znd.close()   
         
     # def Reset(self):

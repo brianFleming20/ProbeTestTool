@@ -53,8 +53,8 @@ def ignore():
 class LogInWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
-        self.currentUser = StringVar()
-        cUser = ""
+        self.current_user = StringVar()
+        c_user = ""
         
         self.login_btn = (PhotoImage(file="login_btn.gif"))
         self.deltex = (PhotoImage(file="deltex.gif"))
@@ -68,14 +68,14 @@ class LogInWindow(tk.Frame):
         self.label_2 = ttk.Label(self, text="Password")
         self.label_5 = ttk.Label(self, text="Good morning.", font=("bold", 20))
         self.label_6 = ttk.Label(self, text="Good afternoon.", font=("bold", 20))
-        timeNow = strftime("%H:%M:%p", gmtime())
+        time_now = strftime("%H:%M:%p", gmtime())
         
        
 
-        self.entry_1 = ttk.Entry(self, textvariable=self.currentUser ,font="bold")
+        self.entry_1 = ttk.Entry(self, textvariable=self.current_user ,font="bold")
         self.entry_2 = ttk.Entry(self, show="*", font="bold")
         self.entry_1.insert(END, 'Jon')
-        cUser = str(self.currentUser.get())
+        c_user = str(self.current_user.get())
         self.entry_2.insert(END, 'Batman')
 
         self.label_1.place(relx=0.4, rely=0.4, anchor=CENTER)
@@ -104,7 +104,7 @@ class LogInWindow(tk.Frame):
         file.close()
         
         
-        if "AM" in timeNow :
+        if "AM" in time_now :
             self.label_5.place(relx=0.5, rely=0.25, anchor=CENTER)
             
         else:
@@ -139,7 +139,7 @@ class LogInWindow(tk.Frame):
             self.logbtn.config(command=lambda: self._login_btn_clicked(controller))
             
     def quit(self):
-        sys.exit()
+        quit()
         
         
 

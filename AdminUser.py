@@ -59,9 +59,9 @@ class AdminWindow(tk.Frame):
         self.label_4 = ttk.Label(self, text="NanoZND file storage location")
         self.entry_4 = ttk.Entry(self, textvariable=self.file)
         
-        self.textArea = tk.Text(self, height=5, width=38)
-        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
-        timeNow = strftime("%H:%M:%p", gmtime())
+        self.text_area = tk.Text(self, height=5, width=38)
+        self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
+        time_now = strftime("%H:%M:%p", gmtime())
 
         self.label_4.place(relx=0.59, rely=0.4, anchor=CENTER)
         self.entry_4.place(relx=0.45, rely=0.45, width=300, anchor="w")
@@ -91,11 +91,11 @@ class AdminWindow(tk.Frame):
         self.w2.place(relx=0.5, rely=0.5, anchor=CENTER)
         self.w2.pack(side='left')
         
-        if "AM" in timeNow :
-            self.textArea.insert('1.0','Good Morning ')
+        if "AM" in time_now :
+            self.text_area.insert('1.0','Good Morning ')
             
         else:
-            self.textArea.insert('1.0','Good Afternoon ')
+            self.text_area.insert('1.0','Good Afternoon ')
         
     def refresh_window(self):
            
@@ -104,16 +104,16 @@ class AdminWindow(tk.Frame):
         # Call load method to deserialze
             session_info = pickle.load(file)
         file.close()
-        self.textArea.config(state=NORMAL)
-        self.textArea.delete('1.0','end')
-        self.textArea.insert('1.0',session_info[0])
-        self.textArea.insert('2.0','\n\nPlease choose an option.')
+        self.text_area.config(state=NORMAL)
+        self.text_area.delete('1.0','end')
+        self.text_area.insert('1.0',session_info[0])
+        self.text_area.insert('2.0','\n\nPlease choose an option.')
         
         if self.w2.get() == 1:
-            self.textArea.insert('4.0','\nProbe re-programming is enabled.')
+            self.text_area.insert('4.0','\nProbe re-programming is enabled.')
         else:
-            self.textArea.insert('4.0','\nProbe re-programming is disabled.')
-        self.textArea.config(state=DISABLED)
+            self.text_area.insert('4.0','\nProbe re-programming is disabled.')
+        self.text_area.config(state=DISABLED)
         Tk.update(self) 
          
     def update(self, controller):
@@ -132,14 +132,14 @@ class AdminWindow(tk.Frame):
             # Call load method to deserialze
             pickle.dump(batch_data,file)
         file.close()
-        self.textArea.config(state=NORMAL)
-        self.textArea.delete('4.0','end')
+        self.text_area.config(state=NORMAL)
+        self.text_area.delete('4.0','end')
         if self.w2.get() == 1:
-            self.textArea.insert('4.0','\nProbe re-programming is enabled.')
+            self.text_area.insert('4.0','\nProbe re-programming is enabled.')
           
         else:
-            self.textArea.insert('4.0','\nProbe re-programming is disabled.')
-        self.textArea.config(state=DISABLED)
+            self.text_area.insert('4.0','\nProbe re-programming is disabled.')
+        self.text_area.config(state=DISABLED)
      
         
     def _browse_btn_clicked(self, controller):
@@ -162,8 +162,8 @@ class ChangePasswordWindow(tk.Frame):
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
-        self.textArea = tk.Text(self, height=5, width=38)
-        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
+        self.text_area = tk.Text(self, height=5, width=38)
+        self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
 
         self.CPWl1 = ttk.Label(self, text='Enter a new password')
         self.CPWl1.place(relx=0.35, rely=0.3, anchor=CENTER)
@@ -197,11 +197,11 @@ class ChangePasswordWindow(tk.Frame):
             self.name = myAdmin[1]
         fileAd.close()
         
-        self.textArea.config(state=NORMAL)
-        self.textArea.delete('1.0','end')
-        self.textArea.insert('1.0',session_info[0])
-        self.textArea.insert('2.0','\nChange ' + self.name + "'s password.")
-        self.textArea.config(state=DISABLED)
+        self.text_area.config(state=NORMAL)
+        self.text_area.delete('1.0','end')
+        self.text_area.insert('1.0',session_info[0])
+        self.text_area.insert('2.0','\nChange ' + self.name + "'s password.")
+        self.text_area.config(state=DISABLED)
 
     def confm_btn_clicked(self, controller):
         if self.newPassword.get() == self.confirmPassword.get():
@@ -211,9 +211,9 @@ class ChangePasswordWindow(tk.Frame):
             tm.showinfo('Changed password', 'Password change successful')
             controller.show_frame(EditUserWindow)
         else:
-            self.textArea.config(state=NORMAL)
-            self.textArea.insert('3.3','\nPlease check password spelling,\nthey are not the same.')
-            self.textArea.config(state=DISABLED)
+            self.text_area.config(state=NORMAL)
+            self.text_area.insert('3.3','\nPlease check password spelling,\nthey are not the same.')
+            self.text_area.config(state=DISABLED)
         
         
 class EditUserWindow(tk.Frame):
@@ -225,8 +225,8 @@ class EditUserWindow(tk.Frame):
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
-        self.textArea = tk.Text(self, height=5, width=38)
-        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
+        self.text_area = tk.Text(self, height=5, width=38)
+        self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
 
         self.Label1 = ttk.Label(self, text='Choose a user to edit')
         self.Label1.place(relx=0.5, rely=0.07, anchor=CENTER)
@@ -277,7 +277,7 @@ class EditUserWindow(tk.Frame):
         
         lstid = self.userListBox.curselection()
         lstUsr = self.userListBox.get(lstid[0])
-        deleteUser = lstUsr[:-9]
+        delete_user = lstUsr[:-9]
         sure = tm.askyesno(
                 'Delete confirm', 'Are you sure you want to Delete this user?')
         
@@ -285,7 +285,7 @@ class EditUserWindow(tk.Frame):
             if sure == True:
                 if lstUsr != session_info[0]:
                     
-                    SM.deleteUser(SM.GetUserObject(deleteUser))
+                    SM.delete_user(SM.GetUserObject(delete_user))
                     self.refresh_window()
                 else:
                     tm.showerror('Error', 'Cannot delete yourself')
@@ -306,11 +306,11 @@ class EditUserWindow(tk.Frame):
         # Call load method to deserialze
             session_info = pickle.load(file)
         file.close()
-        self.textArea.config(state=NORMAL)
-        self.textArea.delete('1.0','end')
-        self.textArea.insert('1.0',session_info[0])
-        self.textArea.insert('2.0','\n\nPlease choose an option.')
-        self.textArea.config(state=DISABLED)
+        self.text_area.config(state=NORMAL)
+        self.text_area.delete('1.0','end')
+        self.text_area.insert('1.0',session_info[0])
+        self.text_area.insert('2.0','\n\nPlease choose an option.')
+        self.text_area.config(state=DISABLED)
         userList = []
         
         for item in SM.GetUserList():
@@ -340,13 +340,13 @@ class AddUserWindow(tk.Frame):
         self.newusername = StringVar()
         self.newpassword = StringVar()
         self.confpassword = StringVar()
-        self.isAdmin = StringVar()
+        self.is_admin = StringVar()
         self.allow_add = False
         self._setDefaults()
         
-        self.textArea = tk.Text(self, height=5, width=38)
-        self.textArea.place(relx=0.25, rely=0.15, anchor=CENTER)
-        self.textArea.config(state=NORMAL)
+        self.text_area = tk.Text(self, height=5, width=38)
+        self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
+        self.text_area.config(state=NORMAL)
         
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
@@ -361,10 +361,10 @@ class AddUserWindow(tk.Frame):
         self.AUWe3 = ttk.Entry(self, textvariable=self.confpassword, show="*", font="bold")
 
         self.rb1 = ttk.Radiobutton(
-            self, text='Admin', variable=self.isAdmin, value='true')
+            self, text='Admin', variable=self.is_admin, value='true')
         self.rb1.place(relx=0.5, rely=0.55, anchor=CENTER)
         self.rb2 = ttk.Radiobutton(
-            self, text='Non-Admin', variable=self.isAdmin, value='false')
+            self, text='Non-Admin', variable=self.is_admin, value='false')
         self.rb2.place(relx=0.5, rely=0.65, anchor=CENTER)
 
         self.AUWl1.place(relx=0.4, rely=0.25, anchor=CENTER)
@@ -385,15 +385,15 @@ class AddUserWindow(tk.Frame):
     def _confm_btn_clicked(self, controller):
         self.confm_btn.config(command=ignore)
         self.cancl_btn.config(command=ignore)
-        self.textArea.config(state=NORMAL)
+        self.text_area.config(state=NORMAL)
         if self.allow_add == False:
             print(self.allow_add)
-            self.textArea.insert('4.30','\nThere are 2 administrators already,\nNo nore allowed')
+            self.text_area.insert('4.30','\nThere are 2 administrators already,\nNo nore allowed')
         if self.newpassword.get() == self.confpassword.get():
             
             # create user object
             admin = False
-            if self.isAdmin.get() == 'true' and self.allow_add == True:
+            if self.is_admin.get() == 'true' and self.allow_add == True:
                 admin = True
                 newUser = User(self.newusername.get(), self.newpassword.get(), admin)
             
@@ -413,8 +413,8 @@ class AddUserWindow(tk.Frame):
             self.cancl_btn.config(
                 command=lambda: controller.show_frame(AdminWindow))
         else:
-            self.textArea.insert('3.3','\nPlease check password spelling,\nthey are not the same.')
-        self.textArea.config(state=DISABLED)
+            self.text_area.insert('3.3','\nPlease check password spelling,\nthey are not the same.')
+        self.text_area.config(state=DISABLED)
         
     def refresh_window(self):
          # create a list of the current users using the dictionary of users
@@ -424,9 +424,9 @@ class AddUserWindow(tk.Frame):
             session_info = pickle.load(file)
         file.close()
     
-        self.textArea.delete('1.0','end')
-        self.textArea.insert('1.0',session_info[0])
-        self.textArea.insert('2.0','\n\nPlease complete the form.')
+        self.text_area.delete('1.0','end')
+        self.text_area.insert('1.0',session_info[0])
+        self.text_area.insert('2.0','\n\nPlease complete the form.')
         self.allow_add = True
         admins = 0
         admin_names = []
@@ -442,6 +442,6 @@ class AddUserWindow(tk.Frame):
         
 
     def _setDefaults(self):
-        self.isAdmin.set('false')
+        self.is_admin.set('false')
         self.newusername.set("")
         self.newpassword.set("")

@@ -20,7 +20,7 @@ class BatchManager(object):
         Constructor
         '''
         self.CSVM = CSVManager()
-        self.currentBatch = None
+        self.current_batch = None
         self.batchQty = 0
         
         self.availableBatchs = []
@@ -42,11 +42,11 @@ class BatchManager(object):
         #check the new batch number does not already exist
         if batch.batchNumber not in self.CSVM.GetFileNamesInProgress() and batch.batchNumber not in self.CSVM.GetFileNamesComplete():
             #set the current batch to this batch
-            self.currentBatch = batch
+            self.current_batch = batch
             #create the info list for the first row
-            timeNow = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-            StimeNow = str(timeNow)
-            info = [batch.batchNumber, batch.probeType, batch.batchQty, user, StimeNow]
+            time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            Stime_now = str(time_now)
+            info = [batch.batchNumber, batch.probe_type, batch.batchQty, user, Stime_now]
             testBatch = "222test"
             
             self.CSVM.WriteCSVTitles(batch.batchNumber)    #create header
@@ -61,12 +61,12 @@ class BatchManager(object):
         '''
         tick
         check if batch object is the current batch
-        makes the currentBatch False
+        makes the current_batch False
         '''
         with open("file_batch", "rb") as file:
             myvar = pickle.load(file)
             batchNumber = myvar[0]
-            probetype = myvar[1]
+            probe_type = myvar[1]
             probesleft = myvar[2]
         file.close()
         with open('file.ptt','rb') as file:
@@ -75,12 +75,12 @@ class BatchManager(object):
             user = myvar[0]
         file.close()    
         if batchnumber == batchNumber:
-            timeNow = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-            StimeNow = str(timeNow)
-            info = [batchnumber, probetype, probesleft, user, timeNow]
+            time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            Stime_now = str(time_now)
+            info = [batchnumber, probe_type, probesleft, user, time_now]
            
             self.CSVM.WriteListOfListsCSV(info, batchnumber) 
-        self.currentBatch = False
+        self.current_batch = False
         
     def updateBatchInfo(self):
         session_data = []
@@ -89,7 +89,7 @@ class BatchManager(object):
         session_data.extend(myvar)
         file.close()
        
-        self.currentBatch = self.GetBatchObject(session_data[2])
+        self.current_batch = self.GetBatchObject(session_data[2])
         
     def saveProbeInfoToCSVFile(self, serialNumber, analyserData, user, batchNumber):
        
@@ -99,17 +99,17 @@ class BatchManager(object):
         '''
         tick
         pass in a batch object, check if this is in the availableBatchs list , if so: 
-        make the batch the currentBatch
+        make the batch the current_batch
         '''
         if batch.batchNumber in self.CSVM.GetFileNames():
             
-            self.currentBatch = batch
+            self.current_batch = batch
         
     def CompleteBatch(self, batch):
         '''
         tick
         pass in a batch object, check this is the current batch, if so: 
-        set currentBatch = False, 
+        set current_batch = False, 
         move the batch file into the 'complete' folder 
         refresh the current batch list
         '''  
@@ -119,13 +119,13 @@ class BatchManager(object):
       
         # Call load method to deserialze
             myvar = pickle.load(file)
-            self.currentBatch = ''.join(myvar[2])
+            self.current_batch = ''.join(myvar[2])
             
         file.close()
       
         
-        if self.currentBatch == batch:
-            self.CSVM.MoveToCompleted(self.currentBatch)        #move the batch file to the complete folder
+        if self.current_batch == batch:
+            self.CSVM.MoveToCompleted(self.current_batch)        #move the batch file to the complete folder
             self.availableBatchs = self.CSVM.GetFileNamesInProgress()     #update the availableBaths list
         else:
             return False
@@ -158,14 +158,14 @@ class BatchManager(object):
            
         
         #get the batch's probe type
-        probeType = info[1]
+        probe_type = info[1]
         batchQty = info[2]
         
         #get the batch's probes programmed value
         #probesProgrammed = int(info[2])
         
         batch = Batch(batchNumber)
-        batch.probeType = probeType
+        batch.probe_type = probe_type
         batch.batchQty = batchQty
         
         return batch
@@ -403,7 +403,7 @@ class Batch(object):
         self.batchNumber = batchNumber
         self.probesProgrammed = 0
         self.batchQty = 0
-        self.probeType = ''
+        self.probe_type = ''
        
 
 

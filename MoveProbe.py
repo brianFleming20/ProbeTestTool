@@ -7,7 +7,7 @@ Created on 24 Apr 2017
 import pyvisa as visa
 import serial
 
-class MoveProbe():
+class move_probe():
     
     def __init__(self):
         self.patient = ["name", "age", "height", "weight"]
@@ -17,7 +17,7 @@ class MoveProbe():
         self.Probe_grip = False
         self.probe_in_place = True
         
-    def MoveProbeClockwise(self):
+    def move_probeClockwise(self):
         # Check port access in 10 degrees
         step_acheved = False
         g_code_setup = "G90 G21 G17"
@@ -42,7 +42,7 @@ class MoveProbe():
         return step_acheved
     
     
-    def MoveProbeAnticlockwise(self):
+    def move_probeAnticlockwise(self):
         # Check port access in 10 degrees
         step_acheved = False
         g_code_move = "G68 X0 Y0 R-5"
