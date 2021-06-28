@@ -111,7 +111,7 @@ class TestProgramWindow(tk.Frame):
         self.redlight = (PhotoImage(file="red128.gif"))
         self.greylight = (PhotoImage(file="grey128.gif"))
         self.deltex = (PhotoImage(file="deltex.gif"))
-        self.complete_btn = (PhotoImage(file="Completesession.gif"))
+        self.complete_btn = (PhotoImage(file="completetesting.gif"))
         self.suspend_btn = (PhotoImage(file="suspend.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
@@ -231,12 +231,12 @@ class TestProgramWindow(tk.Frame):
         batch_data = []
         
         try:
-            with open("file_batch", "wb") as file:
+            with open("file_batch", "wb") as data_file:
                 batch_data.append(self.current_batch.get())
                 batch_data.append(self.probe_type.get())
                 batch_data.append(self.left_to_test.get())
-                pickle.dump(batch_data, file)
-            file.close()
+                pickle.dump(batch_data, data_file)
+            data_file.close()
             BM.SuspendBatch(self.current_batch.get())
             
         
@@ -259,17 +259,18 @@ class TestProgramWindow(tk.Frame):
         # Open the file in binary mode
        
         
-        with open('file.ptt', 'rb') as file:
+        with open('file.ptt', 'rb') as load_file:
       
             # Call load method to deserialze
-            fileData = pickle.load(file)
-            analyser_port = fileData[4][2]
-            self.user_admin = fileData[1]
-        file.close()
+            file_data = pickle.load(load_file)
             
-        self.text_area.insert('1.0',fileData[0])
+            analyser_port = file_data[4][2]
+            self.user_admin = file_data[1]
+        load_file.close()
+            
+        self.text_area.insert('1.0',file_data[0])
         self.text_area.insert('2.0','\nPlease continue testing batch ')
-        self.text_area.insert('2.30', fileData[2])
+        self.text_area.insert('2.30', file_data[2])
        
         with open('file_batch', 'rb') as file:
             qtyleft_to_test = pickle.load(file)
@@ -277,9 +278,9 @@ class TestProgramWindow(tk.Frame):
         file.close()
             
         # self.root.deiconify()
-        self.probe_type.set(fileData[3])
-        self.current_batch.set(fileData[2])
-        self.current_user.set(fileData[0])
+        self.probe_type.set(file_data[3])
+        self.current_batch.set(file_data[2])
+        self.current_user.set(file_data[0])
         self.device_details.set(self.device)
         self.RLLimit = -1  # pass criteria for return loss measurement
         
@@ -302,17 +303,19 @@ class TestProgramWindow(tk.Frame):
         #######################
         # Collect serial data #
         #######################
-        
-        serial_results = ODM.ReadSerialODM()
+        try:
+            serial_results = ODM.ReadSerialODM()
             # serial_results = IM.GetPatientParamerts()
             # self.SD_data.set(serial_results[0])
             # self.FTc_data.set(serial_results[1])
             # self.PV_data.set(serial_results[2])
            
-        self.SD_data.set(serial_results[0][5])
-        self.FTc_data.set(serial_results[0][6])
-        self.PV_data.set(serial_results[0][9])
-        Tk.update(self)
+            self.SD_data.set(serial_results[0][5])
+            self.FTc_data.set(serial_results[0][6])
+            self.PV_data.set(serial_results[0][9])
+            Tk.update(self)
+        except:
+            tm.showerror("ODM Error", "Chech ODM is running...")
         
         control_data = []
         with open('file.ptt', 'rb') as file:
@@ -353,7 +356,7 @@ class TestProgramWindow(tk.Frame):
                 ProbeIsProgrammed = PM.ProbeIsProgrammed() 
                  
                 if PM.ProbePresent() == True:
-                    ttk.Label(self, textvariable=self.action, background='#CAFF70',
+                    ttk.Label(self, textvariable=self.action, background='#1fff1f',
                         width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
                 
                 if myAdmin[0] == 0:

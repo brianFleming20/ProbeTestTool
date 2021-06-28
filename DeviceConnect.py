@@ -146,27 +146,28 @@ class ConnectionWindow(tk.Frame):
         connection_data = []
         
         try:
-            with open('file.ptt', 'rb') as file:
-                myvar = pickle.load(file)
+            with open('file.ptt', 'rb') as read_file:
+                myvar = pickle.load(read_file)
                 session_data.extend(myvar)
                 self.is_admin.append(myvar)
 
-            file.close()
-        
-        
+            read_file.close()
+            
             connection_data.append(cp)
             connection_data.append(odm)
             connection_data.append(usb)
             session_data.append(connection_data)
+           
         except:
             self.text_area.delete('3.0','end')
             self.text_area.insert('3.0', "\nError in getting batch data in Connections...")
         
         try:    
-            with open('file.ptt', 'wb') as file:
-                pickle.dump(session_data, file)
+            with open('file.ptt', 'wb') as write_file:
+                pickle.dump(session_data, write_file)
                 
-            file.close()
+            write_file.close()
+           
         except:
             self.text_area.delete('3.0','end')
             self.text_area.insert('3.0', "\nError in writting batch data in connections...")
@@ -179,16 +180,17 @@ class ConnectionWindow(tk.Frame):
                 'Connection Error', 'Unable to connect to analyser\nPlease check the NanoVNA is on and connected.')
            
         try:
-            if ODM.checkODMPort(odm):
-                
+            if ODM.checkODMPort(odm) == True:
                 self.odm_connection = True
+            else:
+                tm.showerror('ODM data errror','Chech ODM is running...')
         except:
             tm.showerror(
                 'Connection Error', 'Unable to connect to ODM monitor\nPlease check the ODM is on and connected.')
            
         try:
-            PM.ConnectToProbeInterface(cp)
-            self.connected_to_com = True
+            if PM.ConnectToProbeInterface(cp):
+                self.connected_to_com = True
         except:
             tm.showerror(
                 'Connection Error', 'Unable to connect to Probe Interface\nPlease check the Probe interface port is correct.')

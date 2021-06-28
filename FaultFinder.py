@@ -199,7 +199,7 @@ class FaultFindWindow(tk.Frame):
                         self.analyser_results.append(analyser_data[3])
                         # Print the analyser data points selected by 
                         self.analyserData.set(self.analyser_results[0])
-                        # print("Analyser data {}".format(analyser_data[3:10]))
+                        print("Analyser data {}".format(analyser_data[3:10]))
                         # Set the device connected name
                         self.device = " NanoNVA "
                         self.device_details.set(self.device) 
@@ -208,8 +208,9 @@ class FaultFindWindow(tk.Frame):
                     
                 
                 
-                self.text_area.delete('3.0','end')
+                
                 try:
+                    self.text_area.delete('3.0','end')
                     serial_results = ODM.ReadSerialODM()
                    
                     self.SD_data.set(serial_results[0][5])

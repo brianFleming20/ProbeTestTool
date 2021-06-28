@@ -204,7 +204,15 @@ class ODMData(object):
         return self.monitor_port
     
     def checkODMPort(self, port):
-        self.AccessSerialControl(port)
-        if self.GetODMPortNumber() == port:
-            return True
+        port_recieved = self.AccessSerialControl(port)
+        
+        if port_recieved.port == port:
+            if self.ReadSerialODM() == None:
+                return False
+            else:
+                print("serial odm {}".format(self.ReadSerialODM()))
+                return True
+        else:
+            return False
+       
         
