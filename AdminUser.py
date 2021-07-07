@@ -277,7 +277,10 @@ class EditUserWindow(tk.Frame):
         
         lstid = self.userListBox.curselection()
         lstUsr = self.userListBox.get(lstid[0])
-        delete_user = lstUsr[:-9]
+        if "--> Admin" in lstUsr:
+            deleteUser = lstUsr[:-9]
+        else:
+            deleteUser = lstUsr
         sure = tm.askyesno(
                 'Delete confirm', 'Are you sure you want to Delete this user?')
         
@@ -341,7 +344,8 @@ class AddUserWindow(tk.Frame):
         self.newpassword = StringVar()
         self.confpassword = StringVar()
         self.is_admin = StringVar()
-        self.allow_add = False
+        self.allow_add_admin = False
+        self.allow_add = True
         self._setDefaults()
         
         self.text_area = tk.Text(self, height=5, width=38)
@@ -386,26 +390,27 @@ class AddUserWindow(tk.Frame):
         self.confm_btn.config(command=ignore)
         self.cancl_btn.config(command=ignore)
         self.text_area.config(state=NORMAL)
-        if self.allow_add == False:
-            print(self.allow_add)
-            self.text_area.insert('4.30','\nThere are 2 administrators already,\nNo nore allowed')
         if self.newpassword.get() == self.confpassword.get():
-            
+                
             # create user object
-            admin = False
-            if self.is_admin.get() == 'true' and self.allow_add == True:
+            if self.isAdmin.get() == 'false':
+                admin = False
+            else:
                 admin = True
-                newUser = User(self.newusername.get(), self.newpassword.get(), admin)
+                
+            newUser = User(self.newusername.get(), self.newpassword.get(), admin)
             
-            
+            if self.isAdmin.get() == 'true' and self.allow_add_admin == False:
+                admin = False
+                self.textArea.insert('4.30','\nThere are 2 administrators already,\nNo nore allowed')
 
             # try adding it to the list of users
-            if self.allow_add == True:
-                if SM.addUser(newUser):
+           
+            if SM.addUser(newUser):
                     tm.showinfo('New User', 'New user added')
                     self._setDefaults()
                     controller.show_frame(AdminWindow)
-                else:
+            else:
                     tm.showerror('Error', 'User already exsists')
            
             self.confm_btn.config(
@@ -427,7 +432,7 @@ class AddUserWindow(tk.Frame):
         self.text_area.delete('1.0','end')
         self.text_area.insert('1.0',session_info[0])
         self.text_area.insert('2.0','\n\nPlease complete the form.')
-        self.allow_add = True
+        self.allow_add_admin = True
         admins = 0
         admin_names = []
         for item in SM.GetUserList():
@@ -436,9 +441,7 @@ class AddUserWindow(tk.Frame):
         admins = len(admin_names)
         
         if admins >= 2:
-            
-            print("number of admins {}".format(admins))
-            self.allow_add = False
+            self.allow_add_admin = False
         
 
     def _setDefaults(self):

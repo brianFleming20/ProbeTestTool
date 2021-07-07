@@ -39,7 +39,7 @@ import DeviceConnect as DC
 import ProbeTest as PT
 import AdminUser as AU
 import FaultFinder as FF
-
+import Connection as CO
 
 
 
@@ -87,6 +87,8 @@ class WindowController(tk.Tk):
                   SE.NewSessionWindow,
                   SE.ContinueSessionWindow,
                   DC.ConnectionWindow,
+                  DC.ConnectionAdmin,
+                  CO.Connection,
                   AU.AdminWindow,
                   AU.AddUserWindow,
                   AU.ChangePasswordWindow,

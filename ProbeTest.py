@@ -267,7 +267,7 @@ class TestProgramWindow(tk.Frame):
             analyser_port = file_data[4][2]
             self.user_admin = file_data[1]
         load_file.close()
-            
+        print("file_data {}".format(file_data[4]))
         self.text_area.insert('1.0',file_data[0])
         self.text_area.insert('2.0','\nPlease continue testing batch ')
         self.text_area.insert('2.30', file_data[2])

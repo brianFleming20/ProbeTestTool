@@ -84,6 +84,7 @@ class SessionSelectWindow(tk.Frame):
             
         else:
             self.text_area.insert('1.0','Good Afternoon ')
+        self.text_area.config(state=DISABLED)
             
         self.SSW_b3 = ttk.Button(self, text='Log Out', command=lambda: controller.show_frame(
             UL.LogInWindow), width=BTN_WIDTH)
@@ -93,10 +94,11 @@ class SessionSelectWindow(tk.Frame):
     def refresh_window(self):
        
        # Open the file in binary mode
-        with open('file.ptt', 'rb') as file:
+        with open('file.ptt', 'rb') as file1:
         # Call load method to deserialze
-            session_info = pickle.load(file)
-        file.close()
+            session_info = pickle.load(file1)
+           
+        file1.close()
         
         if False in session_info:
             self.SSW_b4.config(state=DISABLED)
@@ -108,7 +110,7 @@ class SessionSelectWindow(tk.Frame):
         else:
             self.SSW_b2.config(state=NORMAL)
             
-        
+        self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
         self.text_area.insert('2.0',session_info[0])
         self.text_area.insert('3.3','\n\nPlease choose an option.')
@@ -312,6 +314,7 @@ class ContinueSessionWindow(tk.Frame):
         # Call load method to deserialze
             session_info = pickle.load(file)
         file.close()
+        self.text_area.config(state=NORMAL)
         self.text_area.insert('1.0',session_info[0])
         self.text_area.insert('3.3','\n\nPlease select a batch number\nto continue testing.')
         self.text_area.config(state=DISABLED)
@@ -348,29 +351,37 @@ class ContinueSessionWindow(tk.Frame):
             lstBatch = self.sessionListBox.get(lstid[0])
             batch = BM.GetBatchObject(lstBatch)
             # Open the file in binary mode
-            with open('file.ptt', 'rb') as file:
+            with open('file.ptt', 'rb') as system_file:
       
             # Call load method to deserialze
-                myvar = pickle.load(file)
+                myvar = pickle.load(system_file)
                 session_data.extend(myvar)
-            file.close()
-            
+                admin = str(session_data[1])
+                print(admin)
+            system_file.close()
+      
             session_data.append(lstBatch)
             session_data.append(batch.probe_type)
             
             
-            with open('file.ptt', 'wb') as file:
-                pickle.dump(session_data, file)
-            file.close()
+            with open('file.ptt', 'wb') as system_file:
+                pickle.dump(session_data, system_file)
+            system_file.close()
             
-            with open("file_batch", "wb") as file:
+            with open("file_batch", "wb") as batch_file:
                 batch_data.append(lstBatch)
                 batch_data.append(batch.probe_type)
                 batch_data.append(batch.batchQty)
-                pickle.dump(batch_data, file)
-            file.close()
+                pickle.dump(batch_data, batch_file)
+              
+            batch_file.close()
             
+            if admin == 'False':
+                controller.show_frame(DC.ConnectionWindow)
+                
+            if admin == 'True':
+                controller.show_frame(DC.ConnectionAdmin)
             
-            controller.show_frame(DC.ConnectionWindow)
         except:
+         
             tm.showerror('Error', 'Please select a batch from the batch list')

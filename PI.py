@@ -185,7 +185,7 @@ class SerialManager(object):
         
     def ConfigurePort(self, port):
         session_data = []
-        
+       
         with open('file.ptt', 'rb') as file:
       
             # Call load method to deserialze
@@ -200,16 +200,14 @@ class SerialManager(object):
             bytesize  = serial.EIGHTBITS, \
             timeout  = 0, \
              )
-        
         session_data.append(self.ser)
         
         self.ser.close()
         
-        
-        
         with open('file.ptt', 'wb') as file:
             pickle.dump(session_data, file)
         file.close()
+        
         
     def Send(self, input):
         '''

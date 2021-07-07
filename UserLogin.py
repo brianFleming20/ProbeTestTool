@@ -89,19 +89,9 @@ class LogInWindow(tk.Frame):
         ttk.Button(self, text="Exit", width=20,command=lambda: self.quit()).place(relx=0.7, rely=0.75 ,anchor=CENTER)
         
         self.bind('<Return>', lambda: self._login_btn_clicked(controller))
-        with open('file.ptt','wb') as file:
-            pickle.dump([],file)
-        file.close()
         
-        with open('file_batch','wb') as file:
-            pickle.dump([],file)
-        file.close()
         
-        with open('file.admin', 'wb') as file:
-            
-            # Call load method to deserialze
-            pickle.dump(['0'],file)
-        file.close()
+        
         
         
         if "AM" in time_now :
@@ -118,6 +108,33 @@ class LogInWindow(tk.Frame):
 
     def _login_btn_clicked(self, controller):
         self.logbtn.config(command=ignore)
+        
+        with open('file.ptt','wb') as file:
+            pickle.dump([],file)
+        file.close()
+        
+        with open('file_batch','wb') as file:
+            pickle.dump([],file)
+        file.close()
+        
+        with open('file.admin', 'wb') as file:
+            pickle.dump(['0'],file)
+        file.close()
+        
+        # with open('file_batch','rb') as read_file:
+        #     file_data = pickle.load(read_file)
+        #     print(file_data)
+        # read_file.close()
+        
+        # with open('file.ptt','rb') as read_file:
+        #     file_data = pickle.load(read_file)
+        #     print(file_data)
+        # read_file.close()
+        
+        # with open('file.admin','rb') as read_file:
+        #     file_data = pickle.load(read_file)
+        #     print(file_data)
+        # read_file.close()
         
         if '(' in self.entry_1.get() or ')' in self.entry_1.get() or '(' in self.entry_2.get() or ')' in self.entry_2.get():
             tm.showerror("Login error", "Incorrect characters used.")

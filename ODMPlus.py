@@ -37,6 +37,7 @@ class ODMData(object):
                 session_data.extend(myvar)
             file.close()
             port = session_data[4][1]
+            
         except:
             tm.showerror(
                 'Connection Error', 'Unable to connect to ODM monitor\nPlease check the ODM is on and connected.')
@@ -44,11 +45,10 @@ class ODMData(object):
         # ======================
         # Set up port connection
         #=======================
-        try:
-            serial_port = self.AccessSerialControl(port)
-        except:
-            return None
         
+        serial_port = self.AccessSerialControl(port)
+        
+     
         # ===========================
         # Access the ODM via the port
         # ===========================
@@ -72,7 +72,6 @@ class ODMData(object):
 
     
     def AccessSerialControl(self, port_number):
-        port_number = port_number
         
         serial_port_control = serial.Serial(port = port_number,
                                     baudrate=9600,
@@ -80,7 +79,9 @@ class ODMData(object):
                                     timeout=1,
                                     parity= serial.PARITY_NONE,
                                     stopbits=serial.STOPBITS_ONE)
-        self.monitor_port = serial_port_control.port
+        # self.monitor_port = serial_port_control.port
+       
+        
         return serial_port_control
     
     
@@ -207,11 +208,7 @@ class ODMData(object):
         port_recieved = self.AccessSerialControl(port)
         
         if port_recieved.port == port:
-            if self.ReadSerialODM() == None:
-                return False
-            else:
-                print("serial odm {}".format(self.ReadSerialODM()))
-                return True
+            return True
         else:
             return False
        

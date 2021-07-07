@@ -39,8 +39,11 @@ class ProbeManager(object):
         '''
         Pass in a com port ID (COMX) and connect to that com_port.
         '''
-        
-        self.PI.Connect(com_port)
+        try:
+            self.PI.Connect(com_port)
+            return True
+        except:
+            return False
         
     
     def ConnectToAnalyzer(self, port):
