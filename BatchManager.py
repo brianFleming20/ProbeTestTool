@@ -10,6 +10,9 @@ import os
 from time import gmtime, strftime
 import pickle
 import pdb
+import datastore
+
+DS = datastore.DataStore()
 
 
 class BatchManager(object):
@@ -63,17 +66,20 @@ class BatchManager(object):
         check if batch object is the current batch
         makes the current_batch False
         '''
-        with open("file_batch", "rb") as file:
-            myvar = pickle.load(file)
-            batchNumber = myvar[0]
-            probe_type = myvar[1]
-            probesleft = myvar[2]
-        file.close()
-        with open('file.ptt','rb') as file:
-            myvar = pickle.load(file)
-        
-            user = myvar[0]
-        file.close()    
+        # with open("file_batch", "rb") as file:
+        #     myvar = pickle.load(file)
+            
+        # file.close()
+        batch_data = DS.get_batch()
+        batchNumber = batch_data[0]
+        probe_type = batch_data[1]
+        probesleft = batch_data[2]
+        # with open('file.ptt','rb') as file:
+        #     myvar = pickle.load(file)
+        myvar = DS.get_main()
+        user = myvar[0]
+        # file.close() 
+           
         if batchnumber == batchNumber:
             time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             Stime_now = str(time_now)
@@ -84,12 +90,15 @@ class BatchManager(object):
         
     def updateBatchInfo(self):
         session_data = []
-        with open('file.ptt', 'rb') as file:
-            myvar = pickle.load(file)
-        session_data.extend(myvar)
-        file.close()
+        # with open('file.ptt', 'rb') as file:
+        #     myvar = pickle.load(file)
+        # session_data.extend(myvar)
+        # file.close()
+        
+        session_data.append(DS.get_batch())
+        
        
-        self.current_batch = self.GetBatchObject(session_data[2])
+        self.current_batch = self.GetBatchObject(session_data[0])
         
     def saveProbeInfoToCSVFile(self, serialNumber, analyserData, user, batchNumber):
        
@@ -115,13 +124,15 @@ class BatchManager(object):
         '''  
         
         
-        with open('file.ptt', 'rb') as file:
+        # with open('file.ptt', 'rb') as file:
       
-        # Call load method to deserialze
-            myvar = pickle.load(file)
-            self.current_batch = ''.join(myvar[2])
+        # # Call load method to deserialze
+        #     myvar = pickle.load(file)
+        #     self.current_batch = ''.join(myvar[2])
             
-        file.close()
+        # file.close()
+        main_data = DS.get_batch()
+        self.current_batch = main_data[0]
       
         
         if self.current_batch == batch:
@@ -181,12 +192,11 @@ class BatchManager(object):
         fullPathTest = os.path.abspath(self.inProgressPathTest + batchNumber + '.csv')
         with open(fullPathTest, 'rb') as csvfile:
             datareader = csv.reader(csvfile)
-            print("data in {}".format(datareader))
         csvfile.close()
         
     def ReadProbeSerialNumber(self, batchNumber):
         info = self.GetBatchObject(batchNumber)
-        print("serial Number = {}".format(info))
+        
         
         
 class CSVManager(object):

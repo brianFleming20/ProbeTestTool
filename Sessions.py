@@ -36,13 +36,15 @@ import SecurityManager
 from SecurityManager import User
 import UserLogin as UL
 import DeviceConnect as DC
+import Connection as CO
 import AdminUser as AU
+import datastore
 import pickle
 from time import gmtime, strftime
 
 BM = BatchManager.BatchManager()
 SM = SecurityManager.SecurityManager()
-
+DS = datastore.DataStore()
 
 def ignore():
     return 'break'
@@ -93,14 +95,11 @@ class SessionSelectWindow(tk.Frame):
 
     def refresh_window(self):
        
-       # Open the file in binary mode
-        with open('file.ptt', 'rb') as file1:
-        # Call load method to deserialze
-            session_info = pickle.load(file1)
-           
-        file1.close()
+        DS.write_to_batch_file("")
+        user_info = DS.get_user()
+       
         
-        if False in session_info:
+        if False in user_info:
             self.SSW_b4.config(state=DISABLED)
         else:
             self.SSW_b4.config(state=NORMAL)
@@ -109,10 +108,10 @@ class SessionSelectWindow(tk.Frame):
             self.SSW_b2.config(state=DISABLED)
         else:
             self.SSW_b2.config(state=NORMAL)
-            
+         
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
-        self.text_area.insert('2.0',session_info[0])
+        self.text_area.insert('2.0',user_info[0])
         self.text_area.insert('3.3','\n\nPlease choose an option.')
         self.text_area.config(state=DISABLED)
         
@@ -195,19 +194,12 @@ class NewSessionWindow(tk.Frame):
 
         self.bind('<Return>', self.confm_btn_clicked)
         
-        # if "AM" in time_now :
-        #     self.text_area.insert('1.0','Good Morning ', font=('bold',12))
-            
-        # else:
-        #     self.text_area.insert('1.0','Good Afternoon ')
+  
         
     def refresh_window(self):
            
-       # Open the file in binary mode
-        with open('file.ptt', 'rb') as file:
-        # Call load method to deserialze
-            session_info = pickle.load(file)
-        file.close()
+     
+        session_info = DS.get_user()
         self.text_area.config(state=NORMAL)
         self.text_area.insert('1.0',session_info[0])
         self.text_area.insert('3.3','\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
@@ -231,37 +223,23 @@ class NewSessionWindow(tk.Frame):
             DAnswer = tm.askyesno('Confirm', 'Are batch details correct?' )
         if DAnswer == True and self.batchQty.get() > 0:
             # create the batch file
-            # Open the file in binary mode
-            
-               
         
-            with open('file.ptt', 'rb') as file:
-
-            # Call load method to deserialze
-                myvar = pickle.load(file)
-                
-            session_data.extend(myvar)
-            file.close()
-            name = session_data[0]
+            temp_var = DS.get_user()
+            
+            name = temp_var[0]
             if BM.CreateBatch(newBatch, name) == False:
                 tm.showerror('Error', 'Batch number not unique')
             else:
                 BM.current_batch = newBatch
                 session_data.append(newBatch.batchNumber)
                 session_data.append(newBatch.probe_type)
-                
+                batch_data.append(self.batchNumber.get())
+                batch_data.append(self.probe_type.get())
+                batch_data.append(self.batchQty.get())
             
-            with open('file.ptt', 'wb') as file:
-                    pickle.dump(session_data, file)
-                    
-            file.close()
-                
-            with open("file_batch", "wb") as file:
-                    batch_data.append(self.batchNumber.get())
-                    batch_data.append(self.probe_type.get())
-                    batch_data.append(self.batchQty.get())
-                    pickle.dump(batch_data, file)
-            file.close()
+            print("add batch = {}".format(temp_var))
+            DS.add_to_batch_file(batch_data)
+            
             self.NSWE1.delete(0, 'end')
             controller.show_frame(DC.ConnectionWindow)
 
@@ -310,12 +288,14 @@ class ContinueSessionWindow(tk.Frame):
         # #create a list of the current users using the dictionary of users
         sessionList = []
         probe_typeList = []
-        with open('file.ptt', 'rb') as file:
-        # Call load method to deserialze
-            session_info = pickle.load(file)
-        file.close()
+        user_info = []
+    
+   
+        user_info = DS.get_user()
+       
+       
         self.text_area.config(state=NORMAL)
-        self.text_area.insert('1.0',session_info[0])
+        self.text_area.insert('1.0',user_info[0])
         self.text_area.insert('3.3','\n\nPlease select a batch number\nto continue testing.')
         self.text_area.config(state=DISABLED)
 
@@ -342,46 +322,20 @@ class ContinueSessionWindow(tk.Frame):
         
 
     def continue_btn_clicked(self, controller):
-     
-        lstid = self.sessionListBox.curselection()
-        session_data = []
         batch_data = []
+        session_data = []
+        lstid = self.sessionListBox.curselection()
         
-        try:
-            lstBatch = self.sessionListBox.get(lstid[0])
-            batch = BM.GetBatchObject(lstBatch)
-            # Open the file in binary mode
-            with open('file.ptt', 'rb') as system_file:
+        lstBatch = self.sessionListBox.get(lstid[0])
+        batch = BM.GetBatchObject(lstBatch)
       
-            # Call load method to deserialze
-                myvar = pickle.load(system_file)
-                session_data.extend(myvar)
-                admin = str(session_data[1])
-                print(admin)
-            system_file.close()
-      
-            session_data.append(lstBatch)
-            session_data.append(batch.probe_type)
-            
-            
-            with open('file.ptt', 'wb') as system_file:
-                pickle.dump(session_data, system_file)
-            system_file.close()
-            
-            with open("file_batch", "wb") as batch_file:
-                batch_data.append(lstBatch)
-                batch_data.append(batch.probe_type)
-                batch_data.append(batch.batchQty)
-                pickle.dump(batch_data, batch_file)
-              
-            batch_file.close()
-            
-            if admin == 'False':
-                controller.show_frame(DC.ConnectionWindow)
-                
-            if admin == 'True':
-                controller.show_frame(DC.ConnectionAdmin)
-            
-        except:
+        DS.add_to_user_file(batch.batchNumber)
+       
+        batch_data.append(batch.batchNumber)
+        batch_data.append(batch.probe_type)
+        batch_data.append(batch.batchQty)
          
-            tm.showerror('Error', 'Please select a batch from the batch list')
+        DS.write_to_batch_file(batch_data)
+       
+        
+        controller.show_frame(CO.Connection)

@@ -31,20 +31,14 @@ class NanoZND(object):
         self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
     
     
-    def ReadAnalyserData(self, usb):
-        port = str(usb)
+    def ReadAnalyserData(self, analyser_port):
+        port = str(analyser_port)
         line = ''
-        analyser_port = self.SetAnalyserPort(usb)
-        # self.port_info = serial.Serial(port = port, 
-        #                            baudrate=1152000,
-        #                            bytesize=8,
-        #                            timeout=0.05,
-        #                            parity = serial.PARITY_NONE,
-        #                            stopbits=serial.STOPBITS_ONE)
+        analyser_port = self.SetAnalyserPort(port)
         
-        self.port_info.write("data\r".encode('ascii'))
+        analyser_port.write("data\r".encode('ascii'))
         while True:
-            c = self.port_info.read().decode('utf-8')
+            c = analyser_port.read().decode('utf-8')
             if c == chr(13):
                 c=''
                 next # ignore CR
@@ -68,15 +62,15 @@ class NanoZND(object):
     
     # # Set analyser port details
     def SetAnalyserPort(self, port):
-      
-        self.port_info = serial.Serial(port = port, 
+       
+        port_info = serial.Serial(port = port, 
                                    baudrate=1152000,
                                    bytesize=8,
                                    timeout=0.05,
                                    parity = serial.PARITY_NONE,
                                    stopbits=serial.STOPBITS_ONE)
-        
-        return self.port_info
+
+        return port_info
         # Set the analyser port connection status to true to show connection is available
         
         
@@ -87,7 +81,6 @@ class NanoZND(object):
         analyser_port_info = self.SetAnalyserPort(usb)
         analyser_port_info.close()
         if analyser_port_info.port == sentport:
-            
             return True
         else:
             return False
@@ -117,7 +110,8 @@ class NanoZND(object):
     
     # Collect the data points and send to a .csv file
     def CVSOutPut(self, batch):
-        data = self.GetAnalyserData()
+        data = []
+        data = self.analyser_data
         b = []
         b.append(batch)
         

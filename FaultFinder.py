@@ -35,6 +35,7 @@ import ProbeManager
 import BatchManager
 from ProbeManager import Probe
 from ProbeManager import ProbeManager
+import datastore
 import codecs
 import PI
 import NanoZND
@@ -47,6 +48,7 @@ BM = BatchManager.BatchManager()
 NanoZND = NanoZND.NanoZND()
 ODM = ODMPlus.ODMData()
 PI = PI.PI()
+DS = datastore.DataStore()
 
 
 def ignore():
@@ -140,24 +142,28 @@ class FaultFindWindow(tk.Frame):
         # Open the file in binary mode
         self.RLLimit = -1  # pass criteria for return loss measurement
         try:
-            with open('file.ptt', 'rb') as file:
+            # with open('file.ptt', 'rb') as file:
       
-                # Call load method to deserialze
-                fileData = pickle.load(file)
-                analyser_port = fileData[4][2]
-                self.user_admin = fileData[1]
-            file.close()
+            #     # Call load method to deserialze
+            #     fileData = pickle.load(file)
+            #     analyser_port = fileData[4][2]
+            #     self.user_admin = fileData[1]
+            # file.close()
+            file_data = DS.add_to_batch_file()
+            user_data = DS.add_to_user_file()
+            self.user_admin = DS.get_user_admin_status()
+            analyser_port = file_data[3][0]
         except:
            self.text_area.insert('3.0','\nFault finding data ') 
             
         
-        self.text_area.insert('1.0',fileData[0])
+        self.text_area.insert('1.0',user_data[0])
         self.text_area.insert('2.0','\nFault finding batch ')
-        self.text_area.insert('2.30', fileData[2])
+        self.text_area.insert('2.30', file_data[0])
         
-        self.probe_type.set(fileData[3])
-        self.current_batch.set(fileData[2])
-        self.current_user.set(fileData[0])
+        self.probe_type.set(file_data[1])
+        self.current_batch.set(file_data[0])
+        self.current_user.set(user_data[0])
         self.device_details.set(self.device)
         self.serialNumber.set(" ")
         self.readSerialNumber.set(" ")
@@ -182,7 +188,7 @@ class FaultFindWindow(tk.Frame):
                     self.action.set('Programmed Probe connected')
                     
                 # Collect serial number written to file   
-                serial_number = BM.CSVM.ReadLastLine(fileData[2])
+                serial_number = BM.CSVM.ReadLastLine(file_data[0])
                 self.serialNumber.set(serial_number[0][0])
                 # Collect serial number read from probe
                 pcb_serial_number = PI.ReadSerialNumber()

@@ -35,6 +35,7 @@ from SecurityManager import User
 import BatchManager
 import Sessions as SE
 import AdminUser as AU
+import datastore
 import NanoZND
 import sys
 import io
@@ -44,6 +45,7 @@ from time import gmtime, strftime
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
 NanoZND = NanoZND.NanoZND()
+DS = datastore.DataStore()
 
 def ignore():
     return 'break'
@@ -55,6 +57,7 @@ class LogInWindow(tk.Frame):
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
         self.current_user = StringVar()
         c_user = ""
+        
         
         self.login_btn = (PhotoImage(file="login_btn.gif"))
         self.deltex = (PhotoImage(file="deltex.gif"))
@@ -74,9 +77,9 @@ class LogInWindow(tk.Frame):
 
         self.entry_1 = ttk.Entry(self, textvariable=self.current_user ,font="bold")
         self.entry_2 = ttk.Entry(self, show="*", font="bold")
-        self.entry_1.insert(END, 'Jon')
+        self.entry_1.insert(END, 'Jack')
         c_user = str(self.current_user.get())
-        self.entry_2.insert(END, 'Batman')
+        self.entry_2.insert(END, 'password')
 
         self.label_1.place(relx=0.4, rely=0.4, anchor=CENTER)
         self.label_2.place(relx=0.4, rely=0.5, anchor=CENTER)
@@ -86,13 +89,10 @@ class LogInWindow(tk.Frame):
         self.logbtn = ttk.Button(
             self, text="Login",image=self.login_btn, width=20,command=lambda: self._login_btn_clicked(controller))
         self.logbtn.place(relx=0.5, rely=0.75 ,anchor=CENTER)
+        
         ttk.Button(self, text="Exit", width=20,command=lambda: self.quit()).place(relx=0.7, rely=0.75 ,anchor=CENTER)
         
         self.bind('<Return>', lambda: self._login_btn_clicked(controller))
-        
-        
-        
-        
         
         if "AM" in time_now :
             self.label_5.place(relx=0.5, rely=0.25, anchor=CENTER)
@@ -100,41 +100,17 @@ class LogInWindow(tk.Frame):
         else:
             self.label_6.place(relx=0.5, rely=0.25, anchor=CENTER)
             
-        
         self.entry_1.focus_set()
-        
-        
         
 
     def _login_btn_clicked(self, controller):
         self.logbtn.config(command=ignore)
+        blank_data = [""]
+    
+        DS.write_to_user_file(blank_data)
+        DS.write_to_batch_file(blank_data)
+        DS.write_to_admin_file('0')
         
-        with open('file.ptt','wb') as file:
-            pickle.dump([],file)
-        file.close()
-        
-        with open('file_batch','wb') as file:
-            pickle.dump([],file)
-        file.close()
-        
-        with open('file.admin', 'wb') as file:
-            pickle.dump(['0'],file)
-        file.close()
-        
-        # with open('file_batch','rb') as read_file:
-        #     file_data = pickle.load(read_file)
-        #     print(file_data)
-        # read_file.close()
-        
-        # with open('file.ptt','rb') as read_file:
-        #     file_data = pickle.load(read_file)
-        #     print(file_data)
-        # read_file.close()
-        
-        # with open('file.admin','rb') as read_file:
-        #     file_data = pickle.load(read_file)
-        #     print(file_data)
-        # read_file.close()
         
         if '(' in self.entry_1.get() or ')' in self.entry_1.get() or '(' in self.entry_2.get() or ')' in self.entry_2.get():
             tm.showerror("Login error", "Incorrect characters used.")
@@ -143,7 +119,7 @@ class LogInWindow(tk.Frame):
             username = self.entry_1.get()
             password = self.entry_2.get()
             user = User(username, password)
-                
+              
         
             #self.entry_1.delete(0, 'end')
             self.entry_2.delete(0, 'end')

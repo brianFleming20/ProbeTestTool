@@ -9,6 +9,9 @@ import tkinter.messagebox as tm
 import pyvisa as visa
 import serial
 import pickle
+import datastore
+
+DS= datastore.DataStore()
 
 class ODMData(object):
     
@@ -18,6 +21,7 @@ class ODMData(object):
         self.port_read = ""
         self.port_control = ""
         self.monitor_port = ""
+      
         
     def ReadSerialODM(self):
             
@@ -30,13 +34,9 @@ class ODMData(object):
         session_data = []
         temp = ""
         try:
-            with open('file.ptt', 'rb') as file:
-      
-            # Call load method to deserialze
-                myvar = pickle.load(file)
-                session_data.extend(myvar)
-            file.close()
-            port = session_data[4][1]
+          
+            session_data = DS.get_batch()
+            port = session_data[3][2]
             
         except:
             tm.showerror(
@@ -79,7 +79,6 @@ class ODMData(object):
                                     timeout=1,
                                     parity= serial.PARITY_NONE,
                                     stopbits=serial.STOPBITS_ONE)
-        # self.monitor_port = serial_port_control.port
        
         
         return serial_port_control
@@ -208,6 +207,7 @@ class ODMData(object):
         port_recieved = self.AccessSerialControl(port)
         
         if port_recieved.port == port:
+            port_recieved.close()
             return True
         else:
             return False

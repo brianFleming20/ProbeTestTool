@@ -40,24 +40,31 @@ from time import gmtime, strftime
 import ProbeTest as PT
 import Sessions as SE
 import DeviceConnect as DC
+import datastore
 import os
 
 BM = BatchManager.BatchManager()
 PM = ProbeManager.ProbeManager()
 NanoZND = NanoZND.NanoZND()
 ODM = ODMPlus.ODMData()
+DS = datastore.DataStore()
 
 def ignore():
     return 'break'
 
 class Connection(tk.Frame):
     def __init__(self, parent, controller):
-        self.usb = ""
-        self.odm = ""
-        self.cp = ""
-        self.is_admin = ""
-        self.test = False
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
+        
+        self.analyser = "COM4"
+        self.odm = "COM5"
+        self.cp = "COM3"
+        
+        # self.is_admin = ""
+        self.connected_to_analyser = False
+        self.odm_connection = False
+        self.connected_to_com = False
+        
         self.text_area = tk.Text(self, height=5, width=38)
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
         
@@ -67,7 +74,7 @@ class Connection(tk.Frame):
         
         self.confm_btn = tk.Button(self, text='Continue', padx=2, pady=3,
                                    width=25, command=lambda: self.test_connections(controller))
-        self.confm_btn.place(relx=0.3, rely=0.8, anchor=CENTER)
+        self.confm_btn.place(relx=0.5, rely=0.8, anchor=CENTER)
 
         self.bind('<Return>', self.test_connections)
         self.text_area.insert('1.0', "\nPlease continue to the next screen..")      
@@ -75,54 +82,40 @@ class Connection(tk.Frame):
         
             
     def refresh_window(self):
+        connect_data = []
+        user_data = []
+       
+        connect_data.append(self.cp)
+        connect_data.append(self.analyser)
+        connect_data.append(self.odm)
         
-        try:
-            with open('file.ptt', 'rb') as file:
-                fileData = pickle.load(file)
-                self.is_admin = fileData[1]
-            file.close() 
-            self.usb = fileData[4][2]
-            self.odm = fileData[4][1]
-            self.cp = fileData[4][0]
-            self.test = True
-            print("test in {}".format(self.test))
-            
-            
-        except:
-            self.text_area.delete('3.0','end')
-            self.text_area.insert('3.0', "\nError in getting Connection data...")
-      
-        
+        DS.add_to_batch_file(connect_data)
+       
+       
     
     def test_connections(self, controller):
          # Test the connection to the analyser
         
-        print("Trying connection")
-        try:
-            if NanoZND.GetAnalyserPortNumber(self.usb):
+        if NanoZND.GetAnalyserPortNumber(self.analyser):
                 self.connected_to_analyser = True
-        except:
+        else:
             tm.showerror(
                 'Connection Error', 'Unable to connect to analyser\nPlease check the NanoVNA is on and connected.')
-            controller.show_frame(DC.ConnectionWindow)
+           
         # Test connection to the ODM monitor
-        try:
-            if ODM.checkODMPort(self.odm) == True:
+    
+        if ODM.checkODMPort(self.odm) == True:
                 self.odm_connection = True  
-            else:
+        else:
                 tm.showerror('ODM data errror','Chech ODM is running...')
-                controller.show_frame(DC.ConnectionWindow)
-        except:
-            tm.showerror(
-                'Connection Error', 'Unable to connect to ODM monitor\nPlease check the ODM is on and connected.')
-        # test the connection to the probe interface  
-        try:
-            if PM.ConnectToProbeInterface(self.cp):
+     
+        print("probe = {}".format(PM.ConnectToProbeInterface(self.cp)))
+        if PM.ConnectToProbeInterface(self.cp) == True:
                 self.connected_to_com = True
-        except:
+        else:
             tm.showerror(
                 'Connection Error', 'Unable to connect to Probe Interface\nPlease check the Probe interface port is correct.')
-            controller.show_frame(DC.ConnectionWindow)
+            
 
         # Check if all connections are true
         if self.connected_to_analyser == True and self.odm_connection == True and self.connected_to_com == True:

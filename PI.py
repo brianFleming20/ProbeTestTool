@@ -11,9 +11,11 @@ from time import gmtime, strftime
 import time
 from bitstring import BitArray
 import pickle
+import datastore
 import pyvisa as visa
 import pdb
 
+DS = datastore.DataStore()
 
 
 class PI(object):
@@ -41,7 +43,9 @@ class PI(object):
 
     
     def Connect(self, com_port):
+        
         self.ser = self.SM.ConfigurePort(com_port)
+        print("ser {}".self.ser)
             
     def ProbeWrite(self, data):
         '''
@@ -184,29 +188,21 @@ class SerialManager(object):
         self.ser = False
         
     def ConfigurePort(self, port):
-        session_data = []
-       
-        with open('file.ptt', 'rb') as file:
-      
-            # Call load method to deserialze
-            myvar = pickle.load(file)
-        session_data.extend(myvar)
-        
-        file.close()
-        
+    
         self.ser = serial.Serial(port = port, baudrate = 9600, \
             parity = serial.PARITY_NONE, \
             stopbits = serial.STOPBITS_ONE, \
             bytesize  = serial.EIGHTBITS, \
             timeout  = 0, \
              )
-        session_data.append(self.ser)
+        
+        print("barch info = {}".format(self.ser))
+        
+        DS.add_to_batch_file(self.ser)
         
         self.ser.close()
         
-        with open('file.ptt', 'wb') as file:
-            pickle.dump(session_data, file)
-        file.close()
+        
         
         
     def Send(self, input):
@@ -242,17 +238,11 @@ class SerialManager(object):
         self.ser = False
         session_data = []
 
-        try:
-            with open('file.ptt', 'rb') as file:
-      
-            # Call load method to deserialze
-                myvar = pickle.load(file)
-                session_data.extend(myvar)
-                self.ser = session_data[5]
-            file.close()
-            
-        except:
-            self.ConfigurePort('COM3')
+        session_data.append(DS.get_batch())
+        self.ser = session_data[-1]
+        print("serial {}".format(self.ser)) 
+        # except:
+        #     self.ConfigurePort('COM3')
        
         
         self.ser.open()

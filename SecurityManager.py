@@ -15,7 +15,10 @@ Change a users password
 set a user to be logged in or out
 
 '''
+import datastore
 import pickle
+
+DS = datastore.DataStore()
 
 
 
@@ -57,18 +60,12 @@ class SecurityManager(object):
             
             if nuser.password == user.password: #is the password correct?
                 self.loggedInUser = nuser.admin
-               
-                myvar = [nuser.name, nuser.admin]
-                
-                # Open a file and use dump()
-                with open('file.ptt', 'wb') as file:
-      
-                # A new file will be created
-                    pickle.dump(myvar, file)
-            
-                file.close()
                 
                
+                user_data = [nuser.name, nuser.admin]
+               
+                DS.write_to_user_file(user_data)
+             
                 
                 return True
 
@@ -110,11 +107,8 @@ class SecurityManager(object):
         checks to see if the user is in the user dict and the logged in user has admin privelages. if so, changes the password accordingly
         """
         
-        with open('file.ptt', 'rb') as file:
-        # Call load method to deserialze
-            session_info = pickle.load(file)
-            
-        file.close()
+       
+        session_info = DS.get_user()
         
         if self.SMDB.getUser(user.name) and session_info[1] == True:
             self.SMDB.removeUser(user)

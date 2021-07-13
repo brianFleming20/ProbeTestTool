@@ -35,6 +35,7 @@ from SecurityManager import User
 import BatchManager
 from time import gmtime, strftime
 import Sessions as SE
+import datastore
 import NanoZND
 import random
 import io
@@ -43,6 +44,7 @@ import pickle
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
 NanoZND = NanoZND.NanoZND()
+DS = datastore.DataStore()
 
 def ignore():
     return 'break'
@@ -99,11 +101,8 @@ class AdminWindow(tk.Frame):
         
     def refresh_window(self):
            
-       # Open the file in binary mode
-        with open('file.ptt', 'rb') as file:
-        # Call load method to deserialze
-            session_info = pickle.load(file)
-        file.close()
+        session_info = DS.get_user()
+        
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
         self.text_area.insert('1.0',session_info[0])
@@ -117,21 +116,20 @@ class AdminWindow(tk.Frame):
         Tk.update(self) 
          
     def update(self, controller):
-        batch_data = [self.w2.get()]
+        admin_data = str([self.w2.get()])
         
-        with open('file.admin', 'wb') as file:
+       
+        DS.write_to_admin_file(admin_data)
+        
+        # admin_data.append(self.w2.get())
+        
+        # with open('file.admin', 'wb') as file:
       
-            # Call load method to deserialze
-            pickle.dump(batch_data,file)
-        file.close()
+        #     # Call load method to deserialze
+        #     pickle.dump(admin_data,file)
+        # file.close()
+        # DS.write_to_admin_file(admin_data)
         
-        batch_data.append(self.w2.get())
-        
-        with open('file.admin', 'wb') as file:
-      
-            # Call load method to deserialze
-            pickle.dump(batch_data,file)
-        file.close()
         self.text_area.config(state=NORMAL)
         self.text_area.delete('4.0','end')
         if self.w2.get() == 1:
@@ -187,15 +185,18 @@ class ChangePasswordWindow(tk.Frame):
         
     def refresh_window(self):
         # create a list of the current users using the dictionary of users
-        with open('file.ptt', 'rb') as file:
-        # Call load method to deserialze
-            session_info = pickle.load(file)
-        file.close()
+        # with open('file.ptt', 'rb') as file:
+        # # Call load method to deserialze
+        #     session_info = pickle.load(file)
+        # file.close()
+        session_info = DS.get_user()
         
-        with open('file.admin', 'rb') as fileAd:
-            myAdmin = pickle.load(fileAd)
-            self.name = myAdmin[1]
-        fileAd.close()
+        # with open('file.admin', 'rb') as fileAd:
+        #     myAdmin = pickle.load(fileAd)
+        #     self.name = myAdmin[1]
+        # fileAd.close()
+        my_admin = DS.get_admin()
+        self.name = my_admin[1]
         
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
@@ -247,21 +248,23 @@ class EditUserWindow(tk.Frame):
         self.finished_btn.place(relx=0.6, rely=0.55, anchor=CENTER)
         
     def _getSelectedUser(self, controller):
-        updateFile = []
+        update_file = []
         selectedId = self.userListBox.curselection()
         selectedUser = self.userListBox.get(selectedId[0])
         
         # Get admin file
-        with open('file.admin', 'rb') as fileAd:
-            myAdmin = pickle.load(fileAd)
-        fileAd.close()
+        # with open('file.admin', 'rb') as fileAd:
+        #     myAdmin = pickle.load(fileAd)
+        # fileAd.close()
+        my_admin = DS.get_admin()
         # Update admin file
-        updateFile.extend(myAdmin)
-        updateFile.append(selectedUser)
+        update_file.extend(my_admin)
+        update_file.append(selectedUser)
         # Save new admin file with selected user to edit
-        with open('file.admin', 'wb') as file:
-            pickle.dump(updateFile,file)
-        file.close()
+        # with open('file.admin', 'wb') as file:
+        #     pickle.dump(updateFile,file)
+        # file.close()
+        DS.add_to_admin_file(update_file)
 
         controller.show_frame(ChangePasswordWindow)
 
@@ -270,17 +273,18 @@ class EditUserWindow(tk.Frame):
         self.finished_btn.config(command=ignore)
         self.CngPWrd_btn.config(command=ignore)
         
-        with open('file.ptt', 'rb') as file:
-        # Call load method to deserialze
-            session_info = pickle.load(file)
-        file.close()
+        # with open('file.ptt', 'rb') as file:
+        # # Call load method to deserialze
+        #     session_info = pickle.load(file)
+        # file.close()
+        session_info = DS.get_user()
         
         lstid = self.userListBox.curselection()
         lstUsr = self.userListBox.get(lstid[0])
         if "--> Admin" in lstUsr:
-            deleteUser = lstUsr[:-9]
+            delete_user = lstUsr[:-9]
         else:
-            deleteUser = lstUsr
+            delete_user = lstUsr
         sure = tm.askyesno(
                 'Delete confirm', 'Are you sure you want to Delete this user?')
         
@@ -305,10 +309,12 @@ class EditUserWindow(tk.Frame):
 
     def refresh_window(self):
         # create a list of the current users using the dictionary of users
-        with open('file.ptt', 'rb') as file:
-        # Call load method to deserialze
-            session_info = pickle.load(file)
-        file.close()
+        # with open('file.ptt', 'rb') as file:
+        # # Call load method to deserialze
+        #     session_info = pickle.load(file)
+        # file.close()
+        
+        session_info = DS.get_user()
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
         self.text_area.insert('1.0',session_info[0])
@@ -424,10 +430,11 @@ class AddUserWindow(tk.Frame):
     def refresh_window(self):
          # create a list of the current users using the dictionary of users
         
-        with open('file.ptt', 'rb') as file:
-        # Call load method to deserialze
-            session_info = pickle.load(file)
-        file.close()
+        # with open('file.ptt', 'rb') as file:
+        # # Call load method to deserialze
+        #     session_info = pickle.load(file)
+        # file.close()
+        session_info = DS.get_user()
     
         self.text_area.delete('1.0','end')
         self.text_area.insert('1.0',session_info[0])

@@ -40,6 +40,7 @@ from time import gmtime, strftime
 import ProbeTest as PT
 import Sessions as SE
 import Connection
+import datastore
 import os
 
 BM = BatchManager.BatchManager()
@@ -47,6 +48,7 @@ PM = ProbeManager.ProbeManager()
 NanoZND = NanoZND.NanoZND()
 ODM = ODMPlus.ODMData()
 CO = Connection
+DS = datastore.DataStore()
 
 def ignore():
     return 'break'
@@ -55,17 +57,17 @@ def ignore():
 class ConnectionWindow(tk.Frame):
     def __init__(self, parent, controller):
         # define variables
-        self.monitor = StringVar()
-        self.com_port = StringVar()
-        self.analyser_usb = StringVar()
-        self.move_probe = StringVar()
-        self.connected_to_com = False
-        self.connected_to_analyser = False
-        self.odm_connection = False
-        self.analyser_usb.set('COM4')
-        self.com_port.set('COM3')
-        self.monitor.set('COM5')
-        self.move_probe.set('Not Set')
+        # self.monitor = StringVar()
+        # self.com_port = StringVar()
+        # self.analyser_usb = StringVar()
+        # self.move_probe = StringVar()
+        # self.connected_to_com = False
+        # self.connected_to_analyser = False
+        # self.odm_connection = False
+        # self.analyser_usb.set('COM4')
+        # self.com_port.set('COM3')
+        # self.monitor.set('COM5')
+        # self.move_probe.set('Not Set')
         self.is_admin = ""
         
         # create the window and frame
@@ -90,44 +92,52 @@ class ConnectionWindow(tk.Frame):
           
     def refresh_window(self):
         try:
-            with open('file.ptt', 'rb') as file:
-                fileData = pickle.load(file)
-                self.is_admin = fileData[1]
-            file.close()  
+            # with open('file.ptt', 'rb') as file:
+            #     fileData = pickle.load(file)
+            #     self.is_admin = fileData[1]
+            # file.close()  
+            admin_data = DS.get_user()
+            self.is_admin = admin_data[1]
         except:
             self.text_area.delete('3.0','end')
             self.text_area.insert('3.0', "\nError in getting Admin data...")
         
         self.text_area.config(state=NORMAL)   
-        self.text_area.insert('2.0',fileData[0])
+        self.text_area.insert('2.0',admin_data[0])
         self.text_area.insert('2.0','\n\nPlease connect the external devices\nand progress to the testing screen.')
         self.text_area.config(state=DISABLED)
         
             
 
     def _connect_btn_clicked(self, controller):
-        cp = self.com_port.get()
-        odm = self.monitor.get()
-        usb = self.analyser_usb.get()
-        session_data = []
-        connection_data = []
+        # cp = 'COM3'
+        # odm = 'COM5'
+        # usb = 'COM4'
+        # session_data = []
+        # connection_data = []
         
         # Collect system data and add the port info to it
         
         
-        with open('file.ptt', 'rb') as read_file:
-                myvar = pickle.load(read_file)
-                session_data.extend(myvar)
-                self.is_admin = myvar[1]
+        # with open('file.ptt', 'rb') as read_file:
+        #         myvar = pickle.load(read_file)
+        #         session_data.extend(myvar)
+        #         self.is_admin = myvar[1]
 
-        read_file.close()
-            
-        connection_data.append(cp)
-        connection_data.append(odm)
-        connection_data.append(usb)
-        session_data.append(connection_data)
+        # read_file.close()
+        # main_data = DS.get_main()
         
-           
+        # # self.is_admin = main_data[1]
+        self.is_admin = DS.get_user_admin_status()
+        # connection_data.append(cp)
+        # connection_data.append(odm)
+        # connection_data.append(usb)
+        # session_data.append(connection_data)
+        # DS.add_to_batch_file(session_data)
+        if self.is_admin == True:
+             controller.show_frame()
+        else:
+            controller.show_frame(CO.Connection)
         # except:
             
         #     self.text_area.delete('3.0','end')
@@ -136,17 +146,18 @@ class ConnectionWindow(tk.Frame):
             
         self.text_area.config(state=NORMAL)  
         # Write the port info to the system data
-        try:    
-            with open('file.ptt', 'wb') as write_file:
-                pickle.dump(session_data, write_file)
-            write_file.close()
-            self.text_area.insert('1.0','Continue to check device connections...')
-        except:
             
-            self.text_area.delete('3.0','end')
-            self.text_area.insert('3.0', "\nError in writting batch data...")
+            # with open('file.ptt', 'wb') as write_file:
+            #     pickle.dump(session_data, write_file)
+            # write_file.close()
+            # DS.add_to_main_file(session_data)
+        self.text_area.insert('1.0','Continue to check device connections...')
+        # except:
+            
+        #     self.text_area.delete('3.0','end')
+        #     self.text_area.insert('3.0', "\nError in writting batch data...")
         self.text_area.config(state=DISABLED)   
-        controller.show_frame(CO.Connection)
+        
         
             
             
@@ -160,7 +171,6 @@ class ConnectionAdmin(tk.Frame):
         self.com_port.set('COM3')
         self.monitor.set('COM5')
         self.move_probe.set('Not Set') 
-        self.is_admin = ""
         
         tk.Frame.__init__(self, parent, bg='#E0FFFF')   
         self.label_1 = ttk.Label(self, text="ODM monitor port")
@@ -201,21 +211,19 @@ class ConnectionAdmin(tk.Frame):
         
         self.text_area = tk.Text(self, height=5, width=38)
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
-        time_now = strftime("%H:%M:%p", gmtime())
+       
         
         def refresh_window(self):
-            try:
-                with open('file.ptt', 'rb') as file:
-                    fileData = pickle.load(file)
-                    self.is_admin = fileData[1]
-                file.close()  
-                
-            except:
-                self.text_area.delete('3.0','end')
-                self.text_area.insert('3.0', "\nError in getting Admin data...")
+            user_data = []
+            user_data.append(DS.get_user())
+            self.is_admin = user_data[1]
+            print("Connect user {}".format(user_data))
+            # except:
+            #     self.text_area.delete('3.0','end')
+            #     self.text_area.insert('3.0', "\nError in getting Admin data...")
         
             self.text_area.config(state=NORMAL)   
-            self.text_area.insert('2.0',fileData[0])
+            self.text_area.insert('2.0',user_data[0])
             self.text_area.insert('2.0','\n\nPlease check any external devices\nand press continue...')
             self.text_area.config(state=DISABLED)
             
@@ -227,33 +235,14 @@ class ConnectionAdmin(tk.Frame):
         session_data = []
         connection_data = []
         
-        # Collect system data and add the port info to it
-        try:
-            with open('file.ptt', 'rb') as read_file:
-                myvar = pickle.load(read_file)
-                session_data.extend(myvar)
-
-            read_file.close()
-            
-            connection_data.append(cp)
-            connection_data.append(odm)
-            connection_data.append(usb)
-            session_data.append(connection_data)
+        
            
-        except:
-            self.text_area.config(state=NORMAL)
-            self.text_area.delete('3.0','end')
-            self.text_area.insert('3.0', "\nError in getting batch data in Connections...")
-            
-        # Write the port info to the system data
-        try:    
-            with open('file.ptt', 'wb') as write_file:
-                pickle.dump(session_data, write_file)
-            write_file.close()
-            self.text_area.insert('3.0','Continue to device connection..')
-        except:
-            self.text_area.delete('3.0','end')
-            self.text_area.insert('3.0', "\nError in writting batch data in connections...")
-        self.text_area.config(state=DISABLED)   
+        connection_data.append(cp)
+        connection_data.append(odm)
+        connection_data.append(usb)
+        session_data.append(connection_data)
+     
+        DS.add_to_batch_file(session_data)
+        
         controller.show_frame(CO.Connection)
             

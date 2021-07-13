@@ -56,6 +56,7 @@ import ODMPlus
 import UserLogin as UL
 import Sessions as SE
 import FaultFinder as FF
+import datastore
 
 # create instances
 SM = SecurityManager.SecurityManager()
@@ -64,6 +65,7 @@ BM = BatchManager.BatchManager()
 PM = ProbeManager()
 NanoZND = NanoZND.NanoZND()
 ODM = ODMPlus.ODMData()
+DS = datastore.DataStore()
 
 
 
@@ -137,10 +139,6 @@ class TestProgramWindow(tk.Frame):
         ttk.Label(self, textvariable=self.probe_type, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.3, rely=0.45, anchor='w')
 
-        # ttk.Label(self, text='User: ').place(relx=0.1, rely=0.15, anchor='w')
-        # ttk.Label(self, textvariable=self.current_user, relief=SUNKEN, font="bold",
-        #           width=20).place(relx=0.3, rely=0.15, anchor='w')
-
         ttk.Label(self, text='Connected to: ').place(
             relx=0.73, rely=0.2, anchor='w')
         ttk.Label(self, textvariable=self.device_details, relief=SUNKEN,
@@ -199,17 +197,16 @@ class TestProgramWindow(tk.Frame):
         
         if self.left_to_test.get() == 0:
             try:
-                with open('file.ptt', 'rb') as file:
-                    data = pickle.load(file)
-                    current_batch = data[2]
-                file.close()
+              
+                current_batch = DS.get_batch()[0]
         
-                with open("file_batch", "wb") as file:
-                    batch_data.append(self.current_batch.get())
-                    batch_data.append(self.probe_type.get())
-                    batch_data.append(self.left_to_test.get())
-                    pickle.dump(batch_data, file)
-                file.close()
+                # with open("file_batch", "wb") as file:
+                # batch_data.append(self.current_batch.get())
+                # batch_data.append(self.probe_type.get())
+                # batch_data.append(self.left_to_test.get())
+                #     pickle.dump(batch_data, file)
+                # file.close()
+                # DS.write_to_batch_file(batch_data)
             except:
                 self.text_area.delete('3.0','end')
                 self.text_area.insert('3.0', "\nError in getting batch data...")
@@ -231,21 +228,20 @@ class TestProgramWindow(tk.Frame):
         batch_data = []
         
         try:
-            with open("file_batch", "wb") as data_file:
-                batch_data.append(self.current_batch.get())
-                batch_data.append(self.probe_type.get())
-                batch_data.append(self.left_to_test.get())
-                pickle.dump(batch_data, data_file)
-            data_file.close()
-            BM.SuspendBatch(self.current_batch.get())
+            # with open("file_batch", "wb") as data_file:
+            batch_data.append(self.current_batch.get())
+            batch_data.append(self.probe_type.get())
+            batch_data.append(self.left_to_test.get())
+            DS.write_to_batch_file(batch_data)
+            # pickle.dump(batch_data, data_file)
+            # data_file.close()
             
-        
-            controller.show_frame(SE.SessionSelectWindow)
+            BM.SuspendBatch(self.current_batch.get())
         except:
             self.text_area.delete('3.0','end')
             self.text_area.insert('3.0', "\nError in Writting batch data...") 
+        controller.show_frame(SE.SessionSelectWindow)
    
-        
 
 
     def refresh_window(self):
@@ -254,40 +250,35 @@ class TestProgramWindow(tk.Frame):
         batchData = []
         serial_results = []
         analyser_data = []
-        # BM.updateBatchInfo()
+       
+        self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
-        # Open the file in binary mode
-       
+     
+        file_data = DS.get_batch()
+        user_data = DS.get_user()
         
-        with open('file.ptt', 'rb') as load_file:
-      
-            # Call load method to deserialze
-            file_data = pickle.load(load_file)
-            
-            analyser_port = file_data[4][2]
-            self.user_admin = file_data[1]
-        load_file.close()
-        print("file_data {}".format(file_data[4]))
-        self.text_area.insert('1.0',file_data[0])
+        analyser_port = file_data[3][1]
+        
+        self.user_admin = DS.get_user_admin_status()
+    
+        self.text_area.insert('1.0',user_data[0])
         self.text_area.insert('2.0','\nPlease continue testing batch ')
-        self.text_area.insert('2.30', file_data[2])
+        self.text_area.insert('2.30', file_data[0])
        
-        with open('file_batch', 'rb') as file:
-            qtyleft_to_test = pickle.load(file)
-            self.left_to_test.set(qtyleft_to_test[2])
-        file.close()
-            
+      
+        self.left_to_test.set(file_data[2])
+     
         # self.root.deiconify()
-        self.probe_type.set(file_data[3])
-        self.current_batch.set(file_data[2])
-        self.current_user.set(file_data[0])
+        self.probe_type.set(file_data[1])
+        self.current_batch.set(file_data[0])
+        self.current_user.set(user_data[0])
         self.device_details.set(self.device)
         self.RLLimit = -1  # pass criteria for return loss measurement
         
         ##############################
         # Collect analyser port data #
         ##############################
-       
+      
             # Check to see if the analyser port is connected
             
         if NanoZND.GetAnalyserPortNumber(analyser_port):
@@ -317,18 +308,17 @@ class TestProgramWindow(tk.Frame):
         except:
             tm.showerror("ODM Error", "Chech ODM is running...")
         
-        control_data = []
-        with open('file.ptt', 'rb') as file:
-      
-            # Call load method to deserialze
-                control = pickle.load(file)
-                control_data.extend(control)
-        file.close()
         
-        with open('file.admin', 'rb') as fileAd:
-            myAdmin = pickle.load(fileAd)
+        # with open('file.ptt', 'rb') as file:
+      
+        #     # Call load method to deserialze
+        #         control = pickle.load(file)
+        #         control_data.extend(control)
+        # file.close()
+      
+        
         self.text_area.config(state=NORMAL)
-        if myAdmin[0] == 1:
+        if DS.get_user_admin_status() == True:
                 self.text_area.delete('3.0','end')
                 self.text_area.insert('3.0', "\n\nProbe re-programming enabled.")
                 
@@ -336,8 +326,8 @@ class TestProgramWindow(tk.Frame):
                 self.text_area.delete('3.0','end')
                 self.text_area.insert('3.0', "\n\nProbe re-programming disabled")
         self.text_area.config(state=DISABLED)
-        fileAd.close()  
-             
+      
+       
         # Detect if probe is present.        
         while(self.session_on_going == True):
             Tk.update(self) 
@@ -359,14 +349,14 @@ class TestProgramWindow(tk.Frame):
                     ttk.Label(self, textvariable=self.action, background='#1fff1f',
                         width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
                 
-                if myAdmin[0] == 0:
+                if DS.get_user_admin_status == False:
                     self.text_area.config(state=NORMAL)
                     self.text_area.delete('3.0','end')
                     self.text_area.insert('3.0', "\n\nYou can't re-program this probe.")   
                     self.text_area.config(state=DISABLED)
                     self.go = False
                 
-                if ProbeIsProgrammed == True and myAdmin[0] == 1:
+                if ProbeIsProgrammed == True and DS.get_user_admin_status == True:
                     self.go = tm.askyesno('Programmed Probe Detected', 'This probe is already programmed.\nDo you wish to re-program and test?')
                     self.status_image.configure(image=self.amberlight) 
                    
