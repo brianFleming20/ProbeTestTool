@@ -166,11 +166,14 @@ class BatchManager(object):
         
         
         
-           
+        try:  
+            #get the batch's probe type
+            probe_type = info[1]
+            batchQty = info[2]
         
-        #get the batch's probe type
-        probe_type = info[1]
-        batchQty = info[2]
+        except:
+            probe_type = "unable to read"
+            batchQty = 0    
         
         #get the batch's probes programmed value
         #probesProgrammed = int(info[2])

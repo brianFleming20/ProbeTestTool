@@ -109,7 +109,7 @@ class Connection(tk.Frame):
         else:
                 tm.showerror('ODM data errror','Chech ODM is running...')
      
-        print("probe = {}".format(PM.ConnectToProbeInterface(self.cp)))
+        
         if PM.ConnectToProbeInterface(self.cp) == True:
                 self.connected_to_com = True
         else:

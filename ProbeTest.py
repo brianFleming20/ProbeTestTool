@@ -246,6 +246,7 @@ class TestProgramWindow(tk.Frame):
 
     def refresh_window(self):
         self.session_on_going = True
+        self.analyser_serial = None
         label = tk.ttk
         batchData = []
         serial_results = []
@@ -257,7 +258,7 @@ class TestProgramWindow(tk.Frame):
         file_data = DS.get_batch()
         user_data = DS.get_user()
         
-        analyser_port = file_data[3][1]
+        self.analyser_serial = file_data[3][1]
         
         self.user_admin = DS.get_user_admin_status()
     
@@ -281,10 +282,11 @@ class TestProgramWindow(tk.Frame):
       
             # Check to see if the analyser port is connected
             
-        if NanoZND.GetAnalyserPortNumber(analyser_port):
+        if NanoZND.GetAnalyserPortNumber(self.analyser_serial):
                 # Get the analyser to generate data points and return them
-            analyser_data = NanoZND.ReadAnalyserData(analyser_port)
-            self.analyser_results.append(analyser_data[3])
+            analyser_data = NanoZND.ReadAnalyserData(self.analyser_serial)
+            print("Analyser data before test {}".format(analyser_data[3:8]))
+            # self.analyser_results.append(analyser_data[3:8])
                 # Print the analyser data points selected by 
                 # print("Analyser data {}".format(analyser_data[3:10]))
                 # Set the device connected name
@@ -307,18 +309,10 @@ class TestProgramWindow(tk.Frame):
             Tk.update(self)
         except:
             tm.showerror("ODM Error", "Chech ODM is running...")
-        
-        
-        # with open('file.ptt', 'rb') as file:
-      
-        #     # Call load method to deserialze
-        #         control = pickle.load(file)
-        #         control_data.extend(control)
-        # file.close()
       
         
         self.text_area.config(state=NORMAL)
-        if DS.get_user_admin_status() == True:
+        if DS.get_programme_status() == True:
                 self.text_area.delete('3.0','end')
                 self.text_area.insert('3.0', "\n\nProbe re-programming enabled.")
                 
@@ -337,6 +331,7 @@ class TestProgramWindow(tk.Frame):
             self.go = False  
             
             if PM.ProbePresent() == False:
+                
                 self.action.set('Connect New Probe')
                 ttk.Label(self, textvariable=self.action, background='yellow',
                     width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')   
@@ -349,26 +344,38 @@ class TestProgramWindow(tk.Frame):
                     ttk.Label(self, textvariable=self.action, background='#1fff1f',
                         width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
                 
-                if DS.get_user_admin_status == False:
+                if DS.get_programme_status() == False:
                     self.text_area.config(state=NORMAL)
                     self.text_area.delete('3.0','end')
                     self.text_area.insert('3.0', "\n\nYou can't re-program this probe.")   
                     self.text_area.config(state=DISABLED)
                     self.go = False
                 
-                if ProbeIsProgrammed == True and DS.get_user_admin_status == True:
+                if ProbeIsProgrammed == True and DS.get_programme_status() == True:
                     self.go = tm.askyesno('Programmed Probe Detected', 'This probe is already programmed.\nDo you wish to re-program and test?')
                     self.status_image.configure(image=self.amberlight) 
+                else:
+                    self.text_area.config(state=NORMAL)
+                    if DS.get_programme_status() == True:
+                        self.text_area.delete('3.0','end')
+                        self.text_area.insert('3.0', "\n\nProbe re-programming enabled.")
+                
+                    else:
+                        self.text_area.delete('3.0','end')
+                        self.text_area.insert('3.0', "\n\nProbe re-programming disabled")
+                    self.text_area.config(state=DISABLED)
                    
                 if ProbeIsProgrammed == False:
                     self.go = True
                     self.status_image.configure(image=self.amberlight) 
                 Tk.update(self) 
+                
                 if self.go == True:  
                     self.action.set('Programming probe')
                     serialNumber = PM.ProgramProbe(self.probe_type.get())
-                    snum = str(codecs.decode(serialNumber, "hex"),'utf-8')[1:16]
                     
+                    snum = str(codecs.decode(serialNumber, "hex"),'utf-8')[1:16]
+                    print("probe serial number = {}".format(snum))
                     with open("file_temp", "wb") as file:
                         batchData.append(snum)
                         pickle.dump(batchData, file)
@@ -386,7 +393,8 @@ class TestProgramWindow(tk.Frame):
                         results = PM.TestProbe(
                             serialNumber, self.current_batch.get(), self.current_user.get())
                         self.action.set('Testing complete. Disconnect probe')
-                        
+                        analyser_data = NanoZND.ReadAnalyserData(self.analyser_serial)
+                        print("Analyser results {}".format(analyser_data[:]))
                         # if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
                         if self.RLLimit == -1: #check for crystal pass value, now pass every time
                             BM.UpdateResults(

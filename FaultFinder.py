@@ -69,6 +69,7 @@ class FaultFindWindow(tk.Frame):
         self.serialNumber = StringVar()
         self.readSerialNumber = StringVar()
         self.analyserData = StringVar()
+        self.analyserData1 = StringVar()
         self.action = StringVar()
         self.analyser_results = []
         self.SD_data = IntVar()
@@ -101,6 +102,7 @@ class FaultFindWindow(tk.Frame):
                   width=30).place(relx=0.2, rely=0.44, anchor='w')
         ttk.Label(self, textvariable=self.analyserData, relief=SUNKEN,
                   width=40).place(relx=0.3, rely=0.48, anchor='w')
+       
         
         ttk.Label(self, text='Serial Number: ').place(
             relx=0.78, rely=0.18, anchor='w')
@@ -125,9 +127,9 @@ class FaultFindWindow(tk.Frame):
         ttk.Label(self, textvariable=self.PV_data, relief=SUNKEN, font="bold",
                   width=5).place(relx=0.84, rely=0.51, anchor='w')
         
-        ttk.Label(self, text='Action: ').place(relx=0.1, rely=0.55, anchor='w')
+        ttk.Label(self, text='Action: ').place(relx=0.1, rely=0.65, anchor='w')
         ttk.Label(self, textvariable=self.action, background='#99c2ff',
-                  width=40, relief=GROOVE).place(relx=0.2, rely=0.55, anchor='w')
+                  width=40, relief=GROOVE).place(relx=0.2, rely=0.65, anchor='w')
         
         self.cancel_btn = ttk.Button(
             self, text='Cancel', command=lambda: controller.show_frame(PT.TestProgramWindow))
@@ -135,28 +137,19 @@ class FaultFindWindow(tk.Frame):
         
         
     def refresh_window(self):
+        label = tk.ttk
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
         test = False
         
         # Open the file in binary mode
         self.RLLimit = -1  # pass criteria for return loss measurement
-        try:
-            # with open('file.ptt', 'rb') as file:
-      
-            #     # Call load method to deserialze
-            #     fileData = pickle.load(file)
-            #     analyser_port = fileData[4][2]
-            #     self.user_admin = fileData[1]
-            # file.close()
-            file_data = DS.add_to_batch_file()
-            user_data = DS.add_to_user_file()
-            self.user_admin = DS.get_user_admin_status()
-            analyser_port = file_data[3][0]
-        except:
-           self.text_area.insert('3.0','\nFault finding data ') 
-            
-        
+     
+        file_data = DS.get_batch()
+        user_data = DS.get_user()
+        self.user_admin = DS.get_user_admin_status()
+        analyser_port = file_data[3][1]
+       
         self.text_area.insert('1.0',user_data[0])
         self.text_area.insert('2.0','\nFault finding batch ')
         self.text_area.insert('2.30', file_data[0])
@@ -172,20 +165,25 @@ class FaultFindWindow(tk.Frame):
             if PM.ProbePresent() == False:
                 test = False
                 self.action.set('No probe connected...')
+                ttk.Label(self, textvariable=self.action, background='#99c2ff',
+                        width=40, relief=GROOVE).place(relx=0.2, rely=0.65, anchor='w')
             else:
                 self.action.set('Probe connected')
                 test = True
-                break
+                break  
             Tk.update(self)
-                
             
        
         while test == True:  
                 ProbeIsProgrammed = PM.ProbeIsProgrammed()
                 if ProbeIsProgrammed == False: 
                     self.action.set('Probe not programmed...')
+                    ttk.Label(self, textvariable=self.action, background='#99c2ff',
+                        width=40, relief=GROOVE).place(relx=0.2, rely=0.65, anchor='w')
                 else:
                     self.action.set('Programmed Probe connected')
+                    ttk.Label(self, textvariable=self.action, background='#1fff1f',
+                        width=40, relief=GROOVE).place(relx=0.2, rely=0.65, anchor='w')
                     
                 # Collect serial number written to file   
                 serial_number = BM.CSVM.ReadLastLine(file_data[0])
@@ -193,27 +191,27 @@ class FaultFindWindow(tk.Frame):
                 # Collect serial number read from probe
                 pcb_serial_number = PI.ReadSerialNumber()
                 binary_str = codecs.decode(pcb_serial_number, "hex")
-                self.readSerialNumber.set(str(binary_str,'utf-8')[:15])
-                   
+                self.readSerialNumber.set(str(binary_str,'utf-8')[:15])  
                     
-                try:
-                    # Check to see if the analyser port is connected
-                    self.text_area.delete('3.0','end')
-                    if NanoZND.GetAnalyserPortNumber(analyser_port):
+                self.text_area.config(state=NORMAL)
+                # Check to see if the analyser port is connected
+                self.text_area.delete('3.0','end')
+                if NanoZND.GetAnalyserPortNumber(analyser_port):
+                    print("analyser port {}".format(analyser_port))
+                         # Set the device connected name
+                    self.device = " NanoNVA "
                         # Get the analyser to generate data points and return them
-                        analyser_data = NanoZND.ReadAnalyserData(analyser_port)
-                        self.analyser_results.append(analyser_data[3])
+                    analyser_data = NanoZND.ReadAnalyserData(analyser_port)
+                        # self.analyser_results.append(analyser_data[3])
                         # Print the analyser data points selected by 
-                        self.analyserData.set(self.analyser_results[0])
-                        print("Analyser data {}".format(analyser_data[3:10]))
-                        # Set the device connected name
-                        self.device = " NanoNVA "
-                        self.device_details.set(self.device) 
-                except:
-                    self.text_area.insert('3.30', '\nAnalyser error..')
-                    
-                
-                
+                    for data in analyser_data[2:20]:
+                        self.analyserData.set(data)
+                       
+                        
+                    print("Analyser data {}".format(analyser_data[1:2]))
+                        
+                    self.device_details.set(self.device) 
+          
                 
                 try:
                     self.text_area.delete('3.0','end')

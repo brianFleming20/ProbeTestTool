@@ -7,6 +7,7 @@ Created on 24 Apr 2017
 import pyvisa as visa
 import serial
 import os
+import time
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
@@ -31,14 +32,16 @@ class NanoZND(object):
         self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
     
     
-    def ReadAnalyserData(self, analyser_port):
-        port = str(analyser_port)
+    def ReadAnalyserData(self, port_in):
+        port = str(port_in)
         line = ''
+        c = ""
         analyser_port = self.SetAnalyserPort(port)
         
         analyser_port.write("data\r".encode('ascii'))
+        time.sleep(0.05) #allow time for the data to be received  
         while True:
-            c = analyser_port.read().decode('utf-8')
+            c = analyser_port.read().decode("utf-8")
             if c == chr(13):
                 c=''
                 next # ignore CR

@@ -102,7 +102,8 @@ class AdminWindow(tk.Frame):
     def refresh_window(self):
            
         session_info = DS.get_user()
-        
+        DS.write_to_admin_file(str([self.w2.get()]))
+    
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
         self.text_area.insert('1.0',session_info[0])
@@ -120,23 +121,18 @@ class AdminWindow(tk.Frame):
         
        
         DS.write_to_admin_file(admin_data)
-        
-        # admin_data.append(self.w2.get())
-        
-        # with open('file.admin', 'wb') as file:
-      
-        #     # Call load method to deserialze
-        #     pickle.dump(admin_data,file)
-        # file.close()
-        # DS.write_to_admin_file(admin_data)
+     
         
         self.text_area.config(state=NORMAL)
         self.text_area.delete('4.0','end')
         if self.w2.get() == 1:
             self.text_area.insert('4.0','\nProbe re-programming is enabled.')
-          
+            DS.write_to_admin_file(str([self.w2.get()]))
+           
         else:
             self.text_area.insert('4.0','\nProbe re-programming is disabled.')
+            DS.write_to_admin_file(str([self.w2.get()]))
+            
         self.text_area.config(state=DISABLED)
      
         

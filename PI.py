@@ -15,6 +15,7 @@ import datastore
 import pyvisa as visa
 import pdb
 
+
 DS = datastore.DataStore()
 
 
@@ -45,7 +46,9 @@ class PI(object):
     def Connect(self, com_port):
         
         self.ser = self.SM.ConfigurePort(com_port)
-        print("ser {}".self.ser)
+        self.SM.ClosePort()
+        return self.ser
+       
             
     def ProbeWrite(self, data):
         '''
@@ -85,9 +88,10 @@ class PI(object):
         '''
         Returns True if a probe is present, False if not
         '''   
-              
+        packet_select = bytearray()    
         #get the IO byte
         self.SM.OpenPort()
+       
         self.SM.Send(b'4950')   
         time.sleep(0.05) #allow time for the data to be received  
         IOByte = self.SM.Read()
@@ -95,6 +99,7 @@ class PI(object):
         #get the relevant bit
         bits = BitArray(hex=IOByte)
         bit = bits.bin[2:3]
+     
         #check to see if the pin is pulled low by the probe
         if bit == '0':
             return True
@@ -188,7 +193,8 @@ class SerialManager(object):
         self.ser = False
         
     def ConfigurePort(self, port):
-    
+      
+        
         self.ser = serial.Serial(port = port, baudrate = 9600, \
             parity = serial.PARITY_NONE, \
             stopbits = serial.STOPBITS_ONE, \
@@ -196,12 +202,8 @@ class SerialManager(object):
             timeout  = 0, \
              )
         
-        print("barch info = {}".format(self.ser))
-        
-        DS.add_to_batch_file(self.ser)
-        
-        self.ser.close()
-        
+        # self.ser.close()
+        return self.ser
         
         
         
@@ -235,17 +237,12 @@ class SerialManager(object):
         '''
         Opens the port, readying it for communication
         '''
-        self.ser = False
-        session_data = []
-
-        session_data.append(DS.get_batch())
-        self.ser = session_data[-1]
-        print("serial {}".format(self.ser)) 
-        # except:
-        #     self.ConfigurePort('COM3')
+        batch_info = DS.get_batch()
+        self.ser = self.ConfigurePort(batch_info[3][0])
        
+        return self.ser
         
-        self.ser.open()
+        
     
     def ClosePort(self):
         '''
@@ -293,7 +290,7 @@ class ProbeData(object):
         
         # if probe_type == 'Blank':
         #     return probezeros
-        print("Probe type {}".format(probe_type))
+       
         #set the correct probe type bytes
         if probe_type == 'DP240':
             typeBytes = self.DP240TypeBytes

@@ -64,6 +64,7 @@ class DataStore():
         with open('file.admin', 'rb') as load_admin_file:
             admin_load = pickle.load(load_admin_file)
         load_admin_file.close()
+        print("admin reprogramme {}".format(admin_load))
         return admin_load
     
     #######################################
@@ -127,6 +128,15 @@ class DataStore():
         return user[0]
     
     #########################################
+    
+    def get_programme_status(self):
+        ok = []
+        ok.extend(self.get_admin())
+        print(ok[0])
+        if "1" in ok:
+            return True
+        else:
+            return False
     
     def show_all_data(self):
         print(f"all data = main {self.get_main()}, batch {self.get_batch()}, admin {self.get_admin()}")
