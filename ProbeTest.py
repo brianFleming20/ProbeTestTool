@@ -193,23 +193,10 @@ class TestProgramWindow(tk.Frame):
         self.session_on_going = False
         batch_data = []
         
-        
-        
         if self.left_to_test.get() == 0:
-            try:
-              
-                current_batch = DS.get_batch()[0]
-        
-                # with open("file_batch", "wb") as file:
-                # batch_data.append(self.current_batch.get())
-                # batch_data.append(self.probe_type.get())
-                # batch_data.append(self.left_to_test.get())
-                #     pickle.dump(batch_data, file)
-                # file.close()
-                # DS.write_to_batch_file(batch_data)
-            except:
-                self.text_area.delete('3.0','end')
-                self.text_area.insert('3.0', "\nError in getting batch data...")
+            
+            current_batch = DS.get_batch()[0]
+
             BM.CompleteBatch(current_batch)
             controller.show_frame(SE.SessionSelectWindow)
             
@@ -225,21 +212,9 @@ class TestProgramWindow(tk.Frame):
     def suspnd_btn_clicked(self, controller):
         self.session_complete = False
         self.session_on_going = False
-        batch_data = []
-        
-        try:
-            # with open("file_batch", "wb") as data_file:
-            batch_data.append(self.current_batch.get())
-            batch_data.append(self.probe_type.get())
-            batch_data.append(self.left_to_test.get())
-            DS.write_to_batch_file(batch_data)
-            # pickle.dump(batch_data, data_file)
-            # data_file.close()
-            
-            BM.SuspendBatch(self.current_batch.get())
-        except:
-            self.text_area.delete('3.0','end')
-            self.text_area.insert('3.0', "\nError in Writting batch data...") 
+      
+        BM.SuspendBatch(self.current_batch.get())
+    
         controller.show_frame(SE.SessionSelectWindow)
    
 
@@ -259,6 +234,8 @@ class TestProgramWindow(tk.Frame):
         user_data = DS.get_user()
         
         self.analyser_serial = file_data[3][1]
+        NanoZND.set_vna_controls(self.analyser_serial)
+        NanoZND.flush_analyser_port(self.analyser_serial)
         
         self.user_admin = DS.get_user_admin_status()
     
@@ -285,11 +262,6 @@ class TestProgramWindow(tk.Frame):
         if NanoZND.GetAnalyserPortNumber(self.analyser_serial):
                 # Get the analyser to generate data points and return them
             analyser_data = NanoZND.ReadAnalyserData(self.analyser_serial)
-            print("Analyser data before test {}".format(analyser_data[3:8]))
-            # self.analyser_results.append(analyser_data[3:8])
-                # Print the analyser data points selected by 
-                # print("Analyser data {}".format(analyser_data[3:10]))
-                # Set the device connected name
             self.device = " NanoNVA "
             self.device_details.set(self.device)
         
@@ -298,11 +270,6 @@ class TestProgramWindow(tk.Frame):
         #######################
         try:
             serial_results = ODM.ReadSerialODM()
-            # serial_results = IM.GetPatientParamerts()
-            # self.SD_data.set(serial_results[0])
-            # self.FTc_data.set(serial_results[1])
-            # self.PV_data.set(serial_results[2])
-           
             self.SD_data.set(serial_results[0][5])
             self.FTc_data.set(serial_results[0][6])
             self.PV_data.set(serial_results[0][9])
@@ -374,12 +341,13 @@ class TestProgramWindow(tk.Frame):
                     self.action.set('Programming probe')
                     serialNumber = PM.ProgramProbe(self.probe_type.get())
                     
-                    snum = str(codecs.decode(serialNumber, "hex"),'utf-8')[1:16]
-                    print("probe serial number = {}".format(snum))
-                    with open("file_temp", "wb") as file:
-                        batchData.append(snum)
-                        pickle.dump(batchData, file)
-                    file.close()
+                    try:
+                        snum = str(codecs.decode(serialNumber, "hex"),'utf-8')[1:16]
+                    except:
+                        snum = "unable to get serial number"
+                
+                   
+                  
                     
                     if serialNumber == False:
                         tm.showerror('Programming Error',
@@ -394,7 +362,7 @@ class TestProgramWindow(tk.Frame):
                             serialNumber, self.current_batch.get(), self.current_user.get())
                         self.action.set('Testing complete. Disconnect probe')
                         analyser_data = NanoZND.ReadAnalyserData(self.analyser_serial)
-                        print("Analyser results {}".format(analyser_data[:]))
+                    
                         # if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
                         if self.RLLimit == -1: #check for crystal pass value, now pass every time
                             BM.UpdateResults(
@@ -402,7 +370,7 @@ class TestProgramWindow(tk.Frame):
                             self.probes_passed.set(self.probes_passed.get() + 1)
                             self.left_to_test.set(self.left_to_test.get() - 1)
                             self.status_image.configure(image=self.greenlight)
-                            BM.saveProbeInfoToCSVFile(snum,self.analyser_results,self.current_user.get(), self.current_batch.get())
+                            BM.saveProbeInfoToCSVFile(snum,analyser_data[1:2],self.current_user.get(), self.current_batch.get(),serial_results[0][9])
                             Tk.update(self)
                         else:
                             self.status_image.configure(image=self.redlight)
@@ -415,12 +383,6 @@ class TestProgramWindow(tk.Frame):
                                 # serial_results = IM.GetPatientParamerts()
                             try:
                                 serial_results = ODM.ReadSerialODM()
-                                # print(serial_results)
-                                # self.SD_data.set(serial_results[0])
-                                # self.FTc_data.set(serial_results[1])
-                                # self.PV_data.set(serial_results[2])
-                                # Tk.update(self)
-                            
                                 self.SD_data.set(serial_results[0][5])
                                 self.FTc_data.set(serial_results[0][6])
                                 self.PV_data.set(serial_results[0][9])

@@ -91,13 +91,13 @@ class SessionSelectWindow(tk.Frame):
         self.SSW_b3 = ttk.Button(self, text='Log Out', command=lambda: controller.show_frame(
             UL.LogInWindow), width=BTN_WIDTH)
         self.SSW_b3.place(relx=0.75, rely=0.8, anchor=CENTER)
-            
+        
 
     def refresh_window(self):
        
-        DS.write_to_batch_file("")
+        # DS.write_to_batch_file("")
         user_info = DS.get_user()
-       
+      
         
         if False in user_info:
             self.SSW_b4.config(state=DISABLED)
@@ -266,11 +266,11 @@ class ContinueSessionWindow(tk.Frame):
 
         self.sessionListBox = Listbox(self)
         self.sessionListBox.place(relx=0.4, rely=0.4, anchor=CENTER)
-        self.sessionListBox.config(height=2, width=20)
+        self.sessionListBox.config(height=3, width=20)
         
         self.probe_typeListBox = Listbox(self)
         self.probe_typeListBox.place(relx=0.6, rely=0.4, anchor=CENTER)
-        self.probe_typeListBox.config(height=2, width=15)
+        self.probe_typeListBox.config(height=3, width=15)
         
 
         self.continue_btn = ttk.Button(
@@ -289,7 +289,7 @@ class ContinueSessionWindow(tk.Frame):
         sessionList = []
         probe_typeList = []
         user_info = []
-    
+        
    
         user_info = DS.get_user()
        
@@ -306,9 +306,7 @@ class ContinueSessionWindow(tk.Frame):
             probe_typeList.append(batch_obj.probe_type)
             
             batch_obj = None
-        
-       
-        
+
         # clear the listbox
         self.sessionListBox.delete(0, END)
         self.probe_typeListBox.delete(0, END)
@@ -319,9 +317,11 @@ class ContinueSessionWindow(tk.Frame):
             
         for item in probe_typeList:
             self.probe_typeListBox.insert(END, item)
+        self.probe_typeListBox.config(state=DISABLED)
         
 
     def continue_btn_clicked(self, controller):
+        self.probe_typeListBox.config(state=NORMAL)
         batch_data = []
         session_data = []
         lstid = self.sessionListBox.curselection()
@@ -329,7 +329,7 @@ class ContinueSessionWindow(tk.Frame):
         lstBatch = self.sessionListBox.get(lstid[0])
         batch = BM.GetBatchObject(lstBatch)
       
-        DS.add_to_user_file(batch.batchNumber)
+        # DS.add_to_user_file(batch.batchNumber)
        
         batch_data.append(batch.batchNumber)
         batch_data.append(batch.probe_type)

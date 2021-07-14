@@ -42,6 +42,7 @@ import NanoZND
 import ODMPlus
 import pickle
 
+
 from time import gmtime, strftime
 PM = ProbeManager()
 BM = BatchManager.BatchManager()
@@ -68,14 +69,21 @@ class FaultFindWindow(tk.Frame):
         self.device_details = StringVar()
         self.serialNumber = StringVar()
         self.readSerialNumber = StringVar()
-        self.analyserData = StringVar()
-        self.analyserData1 = StringVar()
+        self.analyserData1 = IntVar()
+        self.analyserData2 = IntVar()
+        self.fault_message = StringVar()
         self.action = StringVar()
         self.analyser_results = []
         self.SD_data = IntVar()
         self.FTc_data = IntVar()
         self.PV_data = IntVar()
         self.device = "Not connected to analyser"
+        
+        # List of fault messages
+        self.no_fault = "No Faults"
+        self.tx_fault = "Black or Red wire not connected"
+        self.rx_fault = "Green or Blue wire not connected"
+        self.screen_fault = "Check screen wires"
         
         # Import images
         self.deltex = (PhotoImage(file="deltex.gif"))
@@ -100,9 +108,12 @@ class FaultFindWindow(tk.Frame):
             relx=0.1, rely=0.44, anchor='w')
         ttk.Label(self, textvariable=self.device_details, relief=SUNKEN,
                   width=30).place(relx=0.2, rely=0.44, anchor='w')
-        ttk.Label(self, textvariable=self.analyserData, relief=SUNKEN,
-                  width=40).place(relx=0.3, rely=0.48, anchor='w')
-       
+        ttk.Label(self, textvariable=self.analyserData1, relief=SUNKEN,
+                  width=18).place(relx=0.25, rely=0.48, anchor='w')
+        ttk.Label(self, textvariable=self.analyserData2, relief=SUNKEN,
+                  width=18).place(relx=0.25, rely=0.53, anchor='w')
+        ttk.Label(self,text="Ohms.").place(relx=0.2, rely=0.48, anchor='w')
+        ttk.Label(self,text="DBs. ").place(relx=0.2, rely=0.53, anchor='w')
         
         ttk.Label(self, text='Serial Number: ').place(
             relx=0.78, rely=0.18, anchor='w')
@@ -134,7 +145,10 @@ class FaultFindWindow(tk.Frame):
         self.cancel_btn = ttk.Button(
             self, text='Cancel', command=lambda: controller.show_frame(PT.TestProgramWindow))
         self.cancel_btn.place(relx=0.6, rely=0.75, anchor=CENTER)
-        
+        ttk.Label(self, text='Faults found: ').place(
+            relx=0.1, rely=0.75, anchor='w')
+        self.message_display = ttk.Label(self, textvariable=self.fault_message, relief=SUNKEN, font="bold", 
+                                         width=30).place(relx=0.2, rely=0.75, anchor='w')
         
     def refresh_window(self):
         label = tk.ttk
@@ -149,7 +163,8 @@ class FaultFindWindow(tk.Frame):
         user_data = DS.get_user()
         self.user_admin = DS.get_user_admin_status()
         analyser_port = file_data[3][1]
-       
+        
+        NanoZND.flush_analyser_port(analyser_port)
         self.text_area.insert('1.0',user_data[0])
         self.text_area.insert('2.0','\nFault finding batch ')
         self.text_area.insert('2.30', file_data[0])
@@ -176,6 +191,7 @@ class FaultFindWindow(tk.Frame):
        
         while test == True:  
                 ProbeIsProgrammed = PM.ProbeIsProgrammed()
+                self.fault_message.set("")
                 if ProbeIsProgrammed == False: 
                     self.action.set('Probe not programmed...')
                     ttk.Label(self, textvariable=self.action, background='#99c2ff',
@@ -191,42 +207,66 @@ class FaultFindWindow(tk.Frame):
                 # Collect serial number read from probe
                 pcb_serial_number = PI.ReadSerialNumber()
                 binary_str = codecs.decode(pcb_serial_number, "hex")
-                self.readSerialNumber.set(str(binary_str,'utf-8')[:15])  
-                    
+                try:
+                    self.readSerialNumber.set(str(binary_str,'utf-8')[:15])  
+                except:
+                    self.readSerialNumber.set("Connot read probe")
+                self.device_details.set(self.device)    
                 self.text_area.config(state=NORMAL)
                 # Check to see if the analyser port is connected
                 self.text_area.delete('3.0','end')
+                
                 if NanoZND.GetAnalyserPortNumber(analyser_port):
-                    print("analyser port {}".format(analyser_port))
                          # Set the device connected name
                     self.device = " NanoNVA "
                         # Get the analyser to generate data points and return them
                     analyser_data = NanoZND.ReadAnalyserData(analyser_port)
-                        # self.analyser_results.append(analyser_data[3])
-                        # Print the analyser data points selected by 
-                    for data in analyser_data[2:20]:
-                        self.analyserData.set(data)
+                      
+                    count = 0
+                    ohms_av = 0
+                    dbs_av = 0
+                    for data in analyser_data[1:7]:
+                        first,second = data.split(' ')
+                        ohms_num = float(first)
+                        dbs_num = float(second)
+                        count += 1
+                        ohms_av = ohms_av + ohms_num / count
+                        dbs_av = dbs_av + dbs_num / count
+                        
+                        self.analyserData1.set(round(ohms_av,3))
+                        self.analyserData2.set(round(dbs_av,3))
+                        try:
+                            self.text_area.delete('3.0','end')
+                            serial_results = ODM.ReadSerialODM()
+                            self.SD_data.set(serial_results[0][5])
+                            self.FTc_data.set(serial_results[0][6])
+                            self.PV_data.set(serial_results[0][9])
+                        except:
+                             self.text_area.insert('3.30', '\nODM monitor error..')
                        
+                        if ohms_num*100 < 75.0:
+                            self.fault_message.set(self.tx_fault)
+                        else:
+                            self.fault_message.set(self.no_fault)
+                        if dbs_num*100 > -75.0:
+                            self.fault_message.set(self.rx_fault)
+                        else:
+                            self.fault_message.set(self.no_fault)
                         
-                    print("Analyser data {}".format(analyser_data[1:2]))
+                        if PM.ProbePresent() == False:
+                            self.fault_message.set("")
+                            self.refresh_window()
                         
-                    self.device_details.set(self.device) 
+                        Tk.update(self)
+                        
+                    
           
                 
-                try:
-                    self.text_area.delete('3.0','end')
-                    serial_results = ODM.ReadSerialODM()
-                   
-                    self.SD_data.set(serial_results[0][5])
-                    self.FTc_data.set(serial_results[0][6])
-                    self.PV_data.set(serial_results[0][9])
-                except:
-                    self.text_area.insert('3.30', '\nODM monitor error..')
+                
                  
-                if PM.ProbePresent() == False:
-                    self.refresh_window()
+                
             
-                Tk.update(self) 
+             
       
             
    

@@ -217,7 +217,7 @@ class ConnectionAdmin(tk.Frame):
             user_data = []
             user_data.append(DS.get_user())
             self.is_admin = user_data[1]
-            print("Connect user {}".format(user_data))
+       
             # except:
             #     self.text_area.delete('3.0','end')
             #     self.text_area.insert('3.0', "\nError in getting Admin data...")

@@ -37,11 +37,14 @@ class NanoZND(object):
         line = ''
         c = ""
         analyser_port = self.SetAnalyserPort(port)
-        
+      
         analyser_port.write("data\r".encode('ascii'))
+       
         time.sleep(0.05) #allow time for the data to be received  
+        
         while True:
             c = analyser_port.read().decode("utf-8")
+
             if c == chr(13):
                 c=''
                 next # ignore CR
@@ -72,11 +75,18 @@ class NanoZND(object):
                                    timeout=0.05,
                                    parity = serial.PARITY_NONE,
                                    stopbits=serial.STOPBITS_ONE)
-
+        
         return port_info
         # Set the analyser port connection status to true to show connection is available
         
+    def set_vna_controls(self, port):
+        serial_port = self.SetAnalyserPort(port) 
+        serial_port.write(f"sweep 3000000 5000000 101\n".encode('ascii'))  
         
+       
+    def flush_analyser_port(self, port):
+        serial_port = self.SetAnalyserPort(port) 
+        serial_port.write("\r\n\r\n".encode("ascii")) # flush serial port  
         
     # Return the analyser port number   
     def GetAnalyserPortNumber(self, usb):

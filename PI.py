@@ -194,15 +194,17 @@ class SerialManager(object):
         
     def ConfigurePort(self, port):
       
+        try:
+            self.ser = serial.Serial(port = port, baudrate = 9600, \
+                parity = serial.PARITY_NONE, \
+                stopbits = serial.STOPBITS_ONE, \
+                bytesize  = serial.EIGHTBITS, \
+                timeout  = 0, \
+                )
+        except:
+            return False
         
-        self.ser = serial.Serial(port = port, baudrate = 9600, \
-            parity = serial.PARITY_NONE, \
-            stopbits = serial.STOPBITS_ONE, \
-            bytesize  = serial.EIGHTBITS, \
-            timeout  = 0, \
-             )
-        
-        # self.ser.close()
+    
         return self.ser
         
         
@@ -211,10 +213,12 @@ class SerialManager(object):
         '''
         pass in hex bytes, send the whole lot down the serial port.
         '''
-        
-        #flush the buffers
-        self.ser.flushInput()   
-        self.ser.flushOutput() 
+        try:
+            #flush the buffers
+            self.ser.flushInput()   
+            self.ser.flushOutput() 
+        except:
+            pass
         
         #convert the input to ASCII characters and send it
         self.ser.write(codecs.decode(input, "hex_codec"))
@@ -238,7 +242,10 @@ class SerialManager(object):
         Opens the port, readying it for communication
         '''
         batch_info = DS.get_batch()
+       
+   
         self.ser = self.ConfigurePort(batch_info[3][0])
+       
        
         return self.ser
         

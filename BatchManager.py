@@ -66,21 +66,17 @@ class BatchManager(object):
         check if batch object is the current batch
         makes the current_batch False
         '''
-        # with open("file_batch", "rb") as file:
-        #     myvar = pickle.load(file)
-            
-        # file.close()
+     
         batch_data = DS.get_batch()
-        batchNumber = batch_data[0]
+        batch_number = batch_data[0]
         probe_type = batch_data[1]
         probesleft = batch_data[2]
-        # with open('file.ptt','rb') as file:
-        #     myvar = pickle.load(file)
-        myvar = DS.get_main()
+       
+        myvar = DS.get_user()
         user = myvar[0]
-        # file.close() 
+
            
-        if batchnumber == batchNumber:
+        if batchnumber == batch_number:
             time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             Stime_now = str(time_now)
             info = [batchnumber, probe_type, probesleft, user, time_now]
@@ -90,19 +86,16 @@ class BatchManager(object):
         
     def updateBatchInfo(self):
         session_data = []
-        # with open('file.ptt', 'rb') as file:
-        #     myvar = pickle.load(file)
-        # session_data.extend(myvar)
-        # file.close()
+  
         
         session_data.append(DS.get_batch())
         
        
         self.current_batch = self.GetBatchObject(session_data[0])
         
-    def saveProbeInfoToCSVFile(self, serialNumber, analyserData, user, batchNumber):
-       
-        self.CSVM.WriteProbeDataToFile(serialNumber,analyserData,user, batchNumber)
+    def saveProbeInfoToCSVFile(self, serialNumber, analyserData, user, filename, pv_reading):
+        time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        self.CSVM.WriteProbeDataToFile(serialNumber,analyserData,user, filename, pv_reading, time_now)
         
     def ResumeBatch(self, batch):
         '''
@@ -123,14 +116,9 @@ class BatchManager(object):
         refresh the current batch list
         '''  
         
-        
-        # with open('file.ptt', 'rb') as file:
       
         # # Call load method to deserialze
-        #     myvar = pickle.load(file)
-        #     self.current_batch = ''.join(myvar[2])
-            
-        # file.close()
+    
         main_data = DS.get_batch()
         self.current_batch = main_data[0]
       
@@ -175,8 +163,7 @@ class BatchManager(object):
             probe_type = "unable to read"
             batchQty = 0    
         
-        #get the batch's probes programmed value
-        #probesProgrammed = int(info[2])
+  
         
         batch = Batch(batchNumber)
         batch.probe_type = probe_type
@@ -247,18 +234,8 @@ class CSVManager(object):
         tick
         return a list of batchs in the in progress folder
         '''
-        #get a list of all the files in the in_progress folder
-        # list = os.listdir(self.inProgressPath)
-        
         batches = []
-        #strip the '.csv' bit off the end
-        # newList = []
-        
-        # for item in list:
-        #     newItem = item[:-4]
-        #     newList.append(newItem)
-            
-        
+    
         list = os.listdir(self.inProgressPath) 
        
         for item in list:
@@ -300,16 +277,12 @@ class CSVManager(object):
             datawriter.writerow(inputList)
         file.close()
         
-    def WriteProbeDataToFile(self, serialNumber, analyserData, user, fileName):
-        # print("saved")    
-        # print("serial number {}".format(serialNumber))
-        # print("analyser data {}".format(analyserData))
-        # print("user {}".format(user))
-        # print("batch {}".format(fileName))
+    def WriteProbeDataToFile(self, serialNumber, analyserData, user, fileName, pv_data,time):
+    
         
         
         fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
-        inputList = [serialNumber,fileName,analyserData,user]
+        inputList = [serialNumber,fileName,analyserData,user,pv_data,time]
         with open(fullPath, 'a', newline='') as file:
             
             # write pribe data to existing in-progress file
@@ -357,9 +330,7 @@ class CSVManager(object):
         with open(fullPath) as f:
             lis=[line.split() for line in f] 
         return lis[0]
-#             print(lis)       # create a list of lists
-#             for i,x in enumerate(lis):              #print the list items 
-#                 print (i,x)
+#
 
 
     def ReadLastLine(self, fileName):

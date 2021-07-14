@@ -180,17 +180,9 @@ class ChangePasswordWindow(tk.Frame):
         self.confm_btn.place(relx=0.65, rely=0.6, anchor=CENTER)
         
     def refresh_window(self):
-        # create a list of the current users using the dictionary of users
-        # with open('file.ptt', 'rb') as file:
-        # # Call load method to deserialze
-        #     session_info = pickle.load(file)
-        # file.close()
+     
         session_info = DS.get_user()
         
-        # with open('file.admin', 'rb') as fileAd:
-        #     myAdmin = pickle.load(fileAd)
-        #     self.name = myAdmin[1]
-        # fileAd.close()
         my_admin = DS.get_admin()
         self.name = my_admin[1]
         
@@ -247,19 +239,12 @@ class EditUserWindow(tk.Frame):
         update_file = []
         selectedId = self.userListBox.curselection()
         selectedUser = self.userListBox.get(selectedId[0])
-        
-        # Get admin file
-        # with open('file.admin', 'rb') as fileAd:
-        #     myAdmin = pickle.load(fileAd)
-        # fileAd.close()
+   
         my_admin = DS.get_admin()
         # Update admin file
         update_file.extend(my_admin)
         update_file.append(selectedUser)
-        # Save new admin file with selected user to edit
-        # with open('file.admin', 'wb') as file:
-        #     pickle.dump(updateFile,file)
-        # file.close()
+      
         DS.add_to_admin_file(update_file)
 
         controller.show_frame(ChangePasswordWindow)
@@ -269,10 +254,7 @@ class EditUserWindow(tk.Frame):
         self.finished_btn.config(command=ignore)
         self.CngPWrd_btn.config(command=ignore)
         
-        # with open('file.ptt', 'rb') as file:
-        # # Call load method to deserialze
-        #     session_info = pickle.load(file)
-        # file.close()
+
         session_info = DS.get_user()
         
         lstid = self.userListBox.curselection()
@@ -305,10 +287,7 @@ class EditUserWindow(tk.Frame):
 
     def refresh_window(self):
         # create a list of the current users using the dictionary of users
-        # with open('file.ptt', 'rb') as file:
-        # # Call load method to deserialze
-        #     session_info = pickle.load(file)
-        # file.close()
+       
         
         session_info = DS.get_user()
         self.text_area.config(state=NORMAL)
@@ -425,11 +404,7 @@ class AddUserWindow(tk.Frame):
         
     def refresh_window(self):
          # create a list of the current users using the dictionary of users
-        
-        # with open('file.ptt', 'rb') as file:
-        # # Call load method to deserialze
-        #     session_info = pickle.load(file)
-        # file.close()
+      
         session_info = DS.get_user()
     
         self.text_area.delete('1.0','end')
