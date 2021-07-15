@@ -35,6 +35,7 @@ from SecurityManager import User
 import BatchManager
 from time import gmtime, strftime
 import Sessions as SE
+import AdminPortControl as AP
 import datastore
 import NanoZND
 import random
@@ -76,15 +77,19 @@ class AdminWindow(tk.Frame):
             self, text='Edit a current user', command=lambda: controller.show_frame(EditUserWindow))
         self.AW_editUsrBtn.place(relx=0.62, rely=0.65, anchor=CENTER)
         
+        self.AW_editUsrBtn = ttk.Button(
+            self, text='Edit a device port number', command=lambda: controller.show_frame(AP.AdminPorts))
+        self.AW_editUsrBtn.place(relx=0.42, rely=0.80, anchor=CENTER)
+        
         self.AW_adminLogoutBtn = ttk.Button(
             self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))
-        self.AW_adminLogoutBtn.place(relx=0.8, rely=0.65, anchor=CENTER)
+        self.AW_adminLogoutBtn.place(relx=0.62, rely=0.80, anchor=CENTER)
         
         self.browseBtn = ttk.Button(
             self, text="Browse", command=lambda: self._browse_btn_clicked(controller))
         self.browseBtn.grid(row=2, column=1)
         self.browseBtn.place(relx=0.8, rely=0.45, anchor=CENTER)
-        self.bind('<Return>', self.update)
+       
         
         self.label = ttk.Label(self, text="Probe re-program Off / On")
         self.label.place(relx=0.08, rely=0.42, anchor=CENTER)

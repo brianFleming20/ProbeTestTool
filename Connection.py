@@ -56,9 +56,7 @@ class Connection(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
         
-        self.analyser = "COM4"
-        self.odm = "COM5"
-        self.cp = "COM3"
+      
         
         # self.is_admin = ""
         self.connected_to_analyser = False
@@ -83,20 +81,22 @@ class Connection(tk.Frame):
             
     def refresh_window(self):
         connect_data = []
-        user_data = []
-       
-        connect_data.append(self.cp)
-        connect_data.append(self.analyser)
-        connect_data.append(self.odm)
         
-        DS.add_to_batch_file(connect_data)
+        connect_data.extend(DS.get_ports())
+       
+        self.cp = connect_data[0]
+        self.analyser = connect_data[1]
+        self.odm = connect_data[2]
+        
+        
        
        
     
     def test_connections(self, controller):
-         # Test the connection to the analyser
-        
-        if NanoZND.GetAnalyserPortNumber(self.analyser):
+         # Test the connection to the analyser#
+       
+        print("probe port = {}".format(PM.ConnectToProbeInterface(self.cp)))
+        if NanoZND.GetAnalyserPortNumber(self.analyser) == True:
                 self.connected_to_analyser = True
         else:
             tm.showerror(
@@ -116,7 +116,7 @@ class Connection(tk.Frame):
             tm.showerror(
                 'Connection Error', 'Unable to connect to Probe Interface\nPlease check the Probe interface port is correct.')
             
-
+        controller.show_frame(PT.TestProgramWindow)
         # Check if all connections are true
         if self.connected_to_analyser == True and self.odm_connection == True and self.connected_to_com == True:
             

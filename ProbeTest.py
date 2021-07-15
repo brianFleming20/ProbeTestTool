@@ -224,16 +224,19 @@ class TestProgramWindow(tk.Frame):
         self.analyser_serial = None
         label = tk.ttk
         batchData = []
+        port_data = []
         serial_results = []
         analyser_data = []
+        data_list_to_file = []
        
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
      
         file_data = DS.get_batch()
         user_data = DS.get_user()
+        port_data = DS.get_ports()
         
-        self.analyser_serial = file_data[3][1]
+        self.analyser_serial = port_data[1]
         NanoZND.set_vna_controls(self.analyser_serial)
         NanoZND.flush_analyser_port(self.analyser_serial)
         
@@ -370,7 +373,12 @@ class TestProgramWindow(tk.Frame):
                             self.probes_passed.set(self.probes_passed.get() + 1)
                             self.left_to_test.set(self.left_to_test.get() - 1)
                             self.status_image.configure(image=self.greenlight)
-                            BM.saveProbeInfoToCSVFile(snum,analyser_data[1:2],self.current_user.get(), self.current_batch.get(),serial_results[0][9])
+                            data_list_to_file.append(snum)
+                            data_list_to_file.append(analyser_data[1:2])
+                            data_list_to_file.append(self.current_user.get())
+                            data_list_to_file.append(self.current_batch.get())
+                            data_list_to_file.append(serial_results[0][9])
+                            BM.saveProbeInfoToCSVFile(data_list_to_file)
                             Tk.update(self)
                         else:
                             self.status_image.configure(image=self.redlight)
@@ -399,6 +407,7 @@ class TestProgramWindow(tk.Frame):
                         
                         self.status_image.configure(image=self.greylight)
                         self.action.set('Connect New Probe')
+                        data_list_to_file = []
                         break
                     
         if self.session_complete == True:

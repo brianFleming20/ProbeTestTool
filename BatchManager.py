@@ -93,9 +93,11 @@ class BatchManager(object):
        
         self.current_batch = self.GetBatchObject(session_data[0])
         
-    def saveProbeInfoToCSVFile(self, serialNumber, analyserData, user, filename, pv_reading):
+    def saveProbeInfoToCSVFile(self, data_list):
+        
         time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        self.CSVM.WriteProbeDataToFile(serialNumber,analyserData,user, filename, pv_reading, time_now)
+        data_list.append(time_now)
+        self.CSVM.WriteProbeDataToFile(data_list)
         
     def ResumeBatch(self, batch):
         '''
@@ -277,18 +279,19 @@ class CSVManager(object):
             datawriter.writerow(inputList)
         file.close()
         
-    def WriteProbeDataToFile(self, serialNumber, analyserData, user, fileName, pv_data,time):
+    def WriteProbeDataToFile(self, data_list):
     
+        filename = DS.get_batch()[0]
         
+        fullPath = os.path.abspath(self.inProgressPath + filename + '.csv')
+        # inputList = [serialNumber,fileName,analyserData,user,pv_data,time]
         
-        fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
-        inputList = [serialNumber,fileName,analyserData,user,pv_data,time]
         with open(fullPath, 'a', newline='') as file:
             
             # write pribe data to existing in-progress file
             datawriter = csv.writer(file)
             
-            datawriter.writerow(inputList)
+            datawriter.writerow(data_list)
         file.close()
 
     def WriteCSVTitles(self, fileName):

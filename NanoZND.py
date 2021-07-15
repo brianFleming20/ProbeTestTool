@@ -26,7 +26,6 @@ class NanoZND(object):
     def __init__(self):
         self.device_details = ''
         self.analyser_data = []
-        self.analyser_port = ""
         self.analyser_status = False
         self.port_info = None
         self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
@@ -35,13 +34,14 @@ class NanoZND(object):
     def ReadAnalyserData(self, port_in):
         port = str(port_in)
         line = ''
+        result = ""
         c = ""
         analyser_port = self.SetAnalyserPort(port)
       
-        analyser_port.write("data\r".encode('ascii'))
+        analyser_port.write("data %d\r".encode('ascii'))
        
         time.sleep(0.05) #allow time for the data to be received  
-        
+        analyser_port.readline() # discard empty line
         while True:
             c = analyser_port.read().decode("utf-8")
 
@@ -50,11 +50,13 @@ class NanoZND(object):
                 next # ignore CR
             line += c
             if c == chr(10):
+                # result += line
                 c=''
                 if line == 'data\n':
                     line='' # ignore data tag
                     next
                 self.analyser_data.append(line[:-1])
+                
                 line = ''
                 c = ''
                 next
@@ -63,13 +65,14 @@ class NanoZND(object):
                 break
         analyser_port.close() # Close port 
         return self.analyser_data  
+        # return result
         
 
     
     # # Set analyser port details
-    def SetAnalyserPort(self, port):
+    def SetAnalyserPort(self, analyser_port):
        
-        port_info = serial.Serial(port = port, 
+        port_info = serial.Serial(port = analyser_port, 
                                    baudrate=1152000,
                                    bytesize=8,
                                    timeout=0.05,
@@ -89,11 +92,11 @@ class NanoZND(object):
         serial_port.write("\r\n\r\n".encode("ascii")) # flush serial port  
         
     # Return the analyser port number   
-    def GetAnalyserPortNumber(self, usb):
-        sentport = usb
-        analyser_port_info = self.SetAnalyserPort(usb)
+    def GetAnalyserPortNumber(self, port):
+        analyser_port_info = self.SetAnalyserPort(port)
+        analyser_port = analyser_port_info.port
         analyser_port_info.close()
-        if analyser_port_info.port == sentport:
+        if analyser_port == port:
             return True
         else:
             return False

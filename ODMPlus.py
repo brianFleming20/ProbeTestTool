@@ -35,8 +35,8 @@ class ODMData(object):
         temp = ""
         try:
           
-            session_data = DS.get_batch()
-            port = session_data[3][2]
+            session_data = DS.get_ports()
+            port = session_data[2]
             
         except:
             tm.showerror(

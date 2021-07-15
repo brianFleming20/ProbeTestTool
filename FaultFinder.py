@@ -81,8 +81,8 @@ class FaultFindWindow(tk.Frame):
         
         # List of fault messages
         self.no_fault = "No Faults"
-        self.tx_fault = "Black or Red wire not connected"
-        self.rx_fault = "Green or Blue wire not connected"
+        self.tx_fault = "Black or Red wire connected"
+        self.rx_fault = "Screen wires touching"
         self.screen_fault = "Check screen wires"
         
         # Import images
@@ -155,14 +155,16 @@ class FaultFindWindow(tk.Frame):
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
         test = False
-        
+        ohms_num = 0.0
+        dbs_num = 0.0
         # Open the file in binary mode
         self.RLLimit = -1  # pass criteria for return loss measurement
      
         file_data = DS.get_batch()
         user_data = DS.get_user()
+        port_data = DS.get_ports()
         self.user_admin = DS.get_user_admin_status()
-        analyser_port = file_data[3][1]
+        analyser_port = port_data[1]
         
         NanoZND.flush_analyser_port(analyser_port)
         self.text_area.insert('1.0',user_data[0])
@@ -192,6 +194,7 @@ class FaultFindWindow(tk.Frame):
         while test == True:  
                 ProbeIsProgrammed = PM.ProbeIsProgrammed()
                 self.fault_message.set("")
+               
                 if ProbeIsProgrammed == False: 
                     self.action.set('Probe not programmed...')
                     ttk.Label(self, textvariable=self.action, background='#99c2ff',
@@ -221,43 +224,43 @@ class FaultFindWindow(tk.Frame):
                     self.device = " NanoNVA "
                         # Get the analyser to generate data points and return them
                     analyser_data = NanoZND.ReadAnalyserData(analyser_port)
-                      
-                    count = 0
-                    ohms_av = 0
-                    dbs_av = 0
-                    for data in analyser_data[1:7]:
+                    print("---------------------------")
+                
+                    for data in analyser_data[51:52]:
                         first,second = data.split(' ')
                         ohms_num = float(first)
                         dbs_num = float(second)
-                        count += 1
-                        ohms_av = ohms_av + ohms_num / count
-                        dbs_av = dbs_av + dbs_num / count
-                        
-                        self.analyserData1.set(round(ohms_av,3))
-                        self.analyserData2.set(round(dbs_av,3))
-                        try:
+                   
+                    print(dbs_num)
+                    self.analyserData1.set(round(ohms_num,3))
+                    self.analyserData2.set(round(dbs_num,3))
+                    try:
                             self.text_area.delete('3.0','end')
                             serial_results = ODM.ReadSerialODM()
                             self.SD_data.set(serial_results[0][5])
                             self.FTc_data.set(serial_results[0][6])
                             self.PV_data.set(serial_results[0][9])
-                        except:
+                    except:
                              self.text_area.insert('3.30', '\nODM monitor error..')
                        
-                        if ohms_num*100 < 75.0:
+                    if dbs_num*100 > -20.0:
                             self.fault_message.set(self.tx_fault)
-                        else:
+                    else:
                             self.fault_message.set(self.no_fault)
-                        if dbs_num*100 > -75.0:
-                            self.fault_message.set(self.rx_fault)
-                        else:
-                            self.fault_message.set(self.no_fault)
+                    if ohms_num*100 > 70:
+                        self.fault_message.set(self.rx_fault)
+                    else:
+                        self.fault_message.set(self.no_fault)
                         
-                        if PM.ProbePresent() == False:
+                    if PM.ProbePresent() == False:
                             self.fault_message.set("")
+                            ohms_num = 0.0
+                            dbs_num = 0.0
+                            self.analyserData1.set(round(ohms_num,3))
+                            self.analyserData2.set(round(dbs_num,3))
                             self.refresh_window()
                         
-                        Tk.update(self)
+                    Tk.update(self)
                         
                     
           

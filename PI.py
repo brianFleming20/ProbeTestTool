@@ -241,10 +241,10 @@ class SerialManager(object):
         '''
         Opens the port, readying it for communication
         '''
-        batch_info = DS.get_batch()
+        batch_info = DS.get_ports()
        
    
-        self.ser = self.ConfigurePort(batch_info[3][0])
+        self.ser = self.ConfigurePort(batch_info[0])
        
        
         return self.ser

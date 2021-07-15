@@ -40,6 +40,7 @@ import ProbeTest as PT
 import AdminUser as AU
 import FaultFinder as FF
 import Connection as CO
+import AdminPortControl as AP
 
 
 
@@ -91,6 +92,7 @@ class WindowController(tk.Tk):
                   CO.Connection,
                   AU.AdminWindow,
                   AU.AddUserWindow,
+                  AP.AdminPorts,
                   AU.ChangePasswordWindow,
                   AU.EditUserWindow,
                   PT.TestProgramWindow,

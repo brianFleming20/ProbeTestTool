@@ -55,6 +55,7 @@ class DataStore():
         with open("file.batch", "rb") as load_batch_file:
             temp_load = pickle.load(load_batch_file)
         load_batch_file.close()
+        print("batch = {}".format(temp_load))
         return temp_load
     
         ###########################
@@ -66,6 +67,15 @@ class DataStore():
         load_admin_file.close()
       
         return admin_load
+    
+    #######################################
+    
+    def get_ports(self):
+        with open('file.ports', 'rb') as load_ports_file:
+            port_load = pickle.load(load_ports_file)
+        load_ports_file.close()
+     
+        return port_load
     
     #######################################
         
@@ -89,6 +99,14 @@ class DataStore():
         file.close()
         
     #########################################
+    
+    def write_to_port_file(self, ports):
+   
+        with open('file.ports', 'wb') as port_file:
+            pickle.dump(ports, port_file)
+        port_file.close()
+        
+    ##########################################
     
     def add_to_user_file(self, user_data):
         user_load = []
