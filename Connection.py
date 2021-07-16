@@ -95,7 +95,7 @@ class Connection(tk.Frame):
     def test_connections(self, controller):
          # Test the connection to the analyser#
        
-        print("probe port = {}".format(PM.ConnectToProbeInterface(self.cp)))
+      
         if NanoZND.GetAnalyserPortNumber(self.analyser) == True:
                 self.connected_to_analyser = True
         else:
@@ -116,7 +116,7 @@ class Connection(tk.Frame):
             tm.showerror(
                 'Connection Error', 'Unable to connect to Probe Interface\nPlease check the Probe interface port is correct.')
             
-        controller.show_frame(PT.TestProgramWindow)
+        
         # Check if all connections are true
         if self.connected_to_analyser == True and self.odm_connection == True and self.connected_to_com == True:
             

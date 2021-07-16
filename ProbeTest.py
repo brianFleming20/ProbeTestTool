@@ -57,6 +57,7 @@ import UserLogin as UL
 import Sessions as SE
 import FaultFinder as FF
 import datastore
+import numpy as np
 
 # create instances
 SM = SecurityManager.SecurityManager()
@@ -228,7 +229,7 @@ class TestProgramWindow(tk.Frame):
         serial_results = []
         analyser_data = []
         data_list_to_file = []
-       
+        
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
      
@@ -239,7 +240,7 @@ class TestProgramWindow(tk.Frame):
         self.analyser_serial = port_data[1]
         NanoZND.set_vna_controls(self.analyser_serial)
         NanoZND.flush_analyser_port(self.analyser_serial)
-        
+      
         self.user_admin = DS.get_user_admin_status()
     
         self.text_area.insert('1.0',user_data[0])
@@ -261,16 +262,17 @@ class TestProgramWindow(tk.Frame):
         ##############################
       
             # Check to see if the analyser port is connected
-            
+      
         if NanoZND.GetAnalyserPortNumber(self.analyser_serial):
                 # Get the analyser to generate data points and return them
-            analyser_data = NanoZND.ReadAnalyserData(self.analyser_serial)
+       
             self.device = " NanoNVA "
             self.device_details.set(self.device)
         
         #######################
         # Collect serial data #
         #######################
+        self.text_area.config(state=NORMAL)
         try:
             serial_results = ODM.ReadSerialODM()
             self.SD_data.set(serial_results[0][5])
@@ -278,10 +280,12 @@ class TestProgramWindow(tk.Frame):
             self.PV_data.set(serial_results[0][9])
             Tk.update(self)
         except:
-            tm.showerror("ODM Error", "Chech ODM is running...")
+          
+            self.text_area.delete('3.0','end')
+            self.text_area.insert('3.0','\nGetting monitor data, please wait...')
       
         
-        self.text_area.config(state=NORMAL)
+        
         if DS.get_programme_status() == True:
                 self.text_area.delete('3.0','end')
                 self.text_area.insert('3.0', "\n\nProbe re-programming enabled.")
@@ -296,7 +300,8 @@ class TestProgramWindow(tk.Frame):
         while(self.session_on_going == True):
             Tk.update(self) 
             if self.left_to_test.get() == False and self.check == False:
-                tm.showinfo("Batch complete.","\nPlease press the Complete Session button.")
+                self.session_on_going == False
+                self.session_complete == True
                 self.check = 1
             self.go = False  
             
@@ -364,8 +369,14 @@ class TestProgramWindow(tk.Frame):
                         results = PM.TestProbe(
                             serialNumber, self.current_batch.get(), self.current_user.get())
                         self.action.set('Testing complete. Disconnect probe')
-                        analyser_data = NanoZND.ReadAnalyserData(self.analyser_serial)
+                        analyser_data = NanoZND.get_marker_3_command(self.analyser_serial)
+                        x = []
                     
+                        for line in analyser_data.split('\n'):
+                            if line:
+                                x.extend([int(d, 16) for d in line.strip().split(' ')])
+                        marker_data = np.array(x, dtype=np.int16)
+                        print("markers {}".format(marker_data))
                         # if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
                         if self.RLLimit == -1: #check for crystal pass value, now pass every time
                             BM.UpdateResults(
@@ -374,7 +385,7 @@ class TestProgramWindow(tk.Frame):
                             self.left_to_test.set(self.left_to_test.get() - 1)
                             self.status_image.configure(image=self.greenlight)
                             data_list_to_file.append(snum)
-                            data_list_to_file.append(analyser_data[1:2])
+                            data_list_to_file.append(marker_data)
                             data_list_to_file.append(self.current_user.get())
                             data_list_to_file.append(self.current_batch.get())
                             data_list_to_file.append(serial_results[0][9])

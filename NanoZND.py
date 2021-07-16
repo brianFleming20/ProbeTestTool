@@ -13,9 +13,11 @@ from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox as tm
 from tkinter import filedialog
+import datastore
 import pickle
 import csv
 
+DS = datastore.DataStore()
 
 
 class NanoZND(object):
@@ -28,6 +30,7 @@ class NanoZND(object):
         self.analyser_data = []
         self.analyser_status = False
         self.port_info = None
+        self.command = ""
         self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
     
     
@@ -37,8 +40,9 @@ class NanoZND(object):
         result = ""
         c = ""
         analyser_port = self.SetAnalyserPort(port)
+        
       
-        analyser_port.write("data %d\r".encode('ascii'))
+        analyser_port.write(self.command.encode('ascii'))
        
         time.sleep(0.05) #allow time for the data to be received  
         analyser_port.readline() # discard empty line
@@ -46,28 +50,22 @@ class NanoZND(object):
             c = analyser_port.read().decode("utf-8")
 
             if c == chr(13):
-                c=''
+           
                 next # ignore CR
             line += c
             if c == chr(10):
-                # result += line
-                c=''
-                if line == 'data\n':
-                    line='' # ignore data tag
-                    next
-                self.analyser_data.append(line[:-1])
-                
+                result += line
                 line = ''
-                c = ''
                 next
+                
             if line.endswith('ch>'):
                 # stop on prompt
                 break
         analyser_port.close() # Close port 
-        return self.analyser_data  
-        # return result
+        # return self.analyser_data  
+        return result
         
-
+    
     
     # # Set analyser port details
     def SetAnalyserPort(self, analyser_port):
@@ -80,7 +78,21 @@ class NanoZND(object):
                                    stopbits=serial.STOPBITS_ONE)
         
         return port_info
-        # Set the analyser port connection status to true to show connection is available
+    
+    def get_marker_1_command(self, port_in):
+        self.command = "marker 1 on\r"
+        return self.ReadAnalyserData(port_in)
+        
+        
+    def get_marker_2_command(self, port_in):
+        self.command = "marker 2\r"
+        return self.ReadAnalyserData(port_in)
+        
+    def get_marker_3_command(self, port_in):
+        self.command = "marker 3\r"
+        return self.ReadAnalyserData(port_in)
+    
+      
         
     def set_vna_controls(self, port):
         serial_port = self.SetAnalyserPort(port) 

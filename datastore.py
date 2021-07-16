@@ -46,6 +46,7 @@ class DataStore():
         with open('file.user', 'rb') as load_user_file:
             load_data = pickle.load(load_user_file)
         load_user_file.close()
+       
         return load_data
         ###########################
         # Batch control file read #
@@ -54,8 +55,8 @@ class DataStore():
         
         with open("file.batch", "rb") as load_batch_file:
             temp_load = pickle.load(load_batch_file)
+          
         load_batch_file.close()
-        print("batch = {}".format(temp_load))
         return temp_load
     
         ###########################
@@ -73,6 +74,7 @@ class DataStore():
     def get_ports(self):
         with open('file.ports', 'rb') as load_ports_file:
             port_load = pickle.load(load_ports_file)
+          
         load_ports_file.close()
      
         return port_load

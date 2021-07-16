@@ -41,7 +41,7 @@ import PI
 import NanoZND
 import ODMPlus
 import pickle
-
+import numpy as np
 
 from time import gmtime, strftime
 PM = ProbeManager()
@@ -49,6 +49,7 @@ BM = BatchManager.BatchManager()
 NanoZND = NanoZND.NanoZND()
 ODM = ODMPlus.ODMData()
 PI = PI.PI()
+
 DS = datastore.DataStore()
 
 
@@ -71,6 +72,7 @@ class FaultFindWindow(tk.Frame):
         self.readSerialNumber = StringVar()
         self.analyserData1 = IntVar()
         self.analyserData2 = IntVar()
+        self.analyserData3 = StringVar()
         self.fault_message = StringVar()
         self.action = StringVar()
         self.analyser_results = []
@@ -112,8 +114,11 @@ class FaultFindWindow(tk.Frame):
                   width=18).place(relx=0.25, rely=0.48, anchor='w')
         ttk.Label(self, textvariable=self.analyserData2, relief=SUNKEN,
                   width=18).place(relx=0.25, rely=0.53, anchor='w')
-        ttk.Label(self,text="Ohms.").place(relx=0.2, rely=0.48, anchor='w')
-        ttk.Label(self,text="DBs. ").place(relx=0.2, rely=0.53, anchor='w')
+        ttk.Label(self, textvariable=self.analyserData3, relief=SUNKEN,
+                  width=18).place(relx=0.25, rely=0.58, anchor='w')
+        ttk.Label(self,text="1. ").place(relx=0.2, rely=0.48, anchor='w')
+        ttk.Label(self,text="2. ").place(relx=0.2, rely=0.53, anchor='w')
+        ttk.Label(self,text="3. ").place(relx=0.2, rely=0.58, anchor='w')
         
         ttk.Label(self, text='Serial Number: ').place(
             relx=0.78, rely=0.18, anchor='w')
@@ -155,14 +160,14 @@ class FaultFindWindow(tk.Frame):
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
         test = False
-        ohms_num = 0.0
-        dbs_num = 0.0
+       
         # Open the file in binary mode
         self.RLLimit = -1  # pass criteria for return loss measurement
      
         file_data = DS.get_batch()
         user_data = DS.get_user()
         port_data = DS.get_ports()
+        
         self.user_admin = DS.get_user_admin_status()
         analyser_port = port_data[1]
         
@@ -223,36 +228,61 @@ class FaultFindWindow(tk.Frame):
                          # Set the device connected name
                     self.device = " NanoNVA "
                         # Get the analyser to generate data points and return them
-                    analyser_data = NanoZND.ReadAnalyserData(analyser_port)
-                    print("---------------------------")
-                
-                    for data in analyser_data[51:52]:
-                        first,second = data.split(' ')
-                        ohms_num = float(first)
-                        dbs_num = float(second)
+    
+                    analyser_data1 = NanoZND.get_marker_1_command(analyser_port)
+                    # freq = NanoZND.get_freq_command(analyser_port)
+                    analyser_data2 = NanoZND.get_marker_2_command(analyser_port)
+                    analyser_data3 = NanoZND.get_marker_3_command(analyser_port)
+                    
+                    # for data in analyser_data[51:52]:
+                    #     first,second = data.split(' ')
+                    #     ohms_num = float(first)
+                    #     dbs_num = float(second)
+                    x = []
+
+                    for line in analyser_data1.split('\n'):
+                        if line:
+                            x.extend([int(d, 16) for d in line.strip().split(' ')])
+                    read1 = np.array(x, dtype=np.int16)           
+                    x = []
+                    for line in analyser_data2.split('\n'):
+                        if line:
+                            x.extend([int(d, 16) for d in line.strip().split(' ')])
+                    read2 = np.array(x, dtype=np.int16) 
+                    x = []   
+                    for line in analyser_data3.split('\n'):
+                        if line:
+                            x.extend([int(d, 16) for d in line.strip().split(' ')])
+                    read3 = np.array(x, dtype=np.int16)       
+                    
+                    
+
                    
-                    print(dbs_num)
-                    self.analyserData1.set(round(ohms_num,3))
-                    self.analyserData2.set(round(dbs_num,3))
-                    try:
+                    print("freq {}".format(read1)) 
+                    self.analyserData1.set(read1[1])
+                    self.analyserData2.set(read2[1])
+           
+                    self.analyserData3.set(read2[1])
+                    
+                try:
                             self.text_area.delete('3.0','end')
                             serial_results = ODM.ReadSerialODM()
                             self.SD_data.set(serial_results[0][5])
                             self.FTc_data.set(serial_results[0][6])
                             self.PV_data.set(serial_results[0][9])
-                    except:
+                except:
                              self.text_area.insert('3.30', '\nODM monitor error..')
                        
-                    if dbs_num*100 > -20.0:
-                            self.fault_message.set(self.tx_fault)
-                    else:
-                            self.fault_message.set(self.no_fault)
-                    if ohms_num*100 > 70:
-                        self.fault_message.set(self.rx_fault)
-                    else:
-                        self.fault_message.set(self.no_fault)
+                # if dbs_num*100 > -20.0:
+                #             self.fault_message.set(self.tx_fault)
+                # else:
+                #             self.fault_message.set(self.no_fault)
+                # if ohms_num*100 > 70:
+                #         self.fault_message.set(self.rx_fault)
+                # else:
+                #         self.fault_message.set(self.no_fault)
                         
-                    if PM.ProbePresent() == False:
+                if PM.ProbePresent() == False:
                             self.fault_message.set("")
                             ohms_num = 0.0
                             dbs_num = 0.0
@@ -260,7 +290,7 @@ class FaultFindWindow(tk.Frame):
                             self.analyserData2.set(round(dbs_num,3))
                             self.refresh_window()
                         
-                    Tk.update(self)
+                Tk.update(self)
                         
                     
           

@@ -192,6 +192,8 @@ class SerialManager(object):
     def __init__(self):
         self.ser = False
         
+        
+        
     def ConfigurePort(self, port):
       
         try:
@@ -204,10 +206,11 @@ class SerialManager(object):
         except:
             return False
         
-    
+       
         return self.ser
         
-        
+    def get_ports(self):
+        self.port_info = DS.get_ports()   
         
     def Send(self, input):
         '''
@@ -241,10 +244,10 @@ class SerialManager(object):
         '''
         Opens the port, readying it for communication
         '''
-        batch_info = DS.get_ports()
+        port_info = DS.get_ports()
        
    
-        self.ser = self.ConfigurePort(batch_info[0])
+        self.ser = self.ConfigurePort(port_info[0])
        
        
         return self.ser
