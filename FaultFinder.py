@@ -58,6 +58,8 @@ def ignore():
 
 BTN_WIDTH = 25
 
+REF_LEVEL = (1<<9)
+
 class FaultFindWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -71,6 +73,7 @@ class FaultFindWindow(tk.Frame):
         self.serialNumber = StringVar()
         self.readSerialNumber = StringVar()
         self.analyserData1 = IntVar()
+        self.analyser_freq3 = IntVar()
         self.analyserData2 = IntVar()
         self.analyserData3 = StringVar()
         self.fault_message = StringVar()
@@ -111,11 +114,13 @@ class FaultFindWindow(tk.Frame):
         ttk.Label(self, textvariable=self.device_details, relief=SUNKEN,
                   width=30).place(relx=0.2, rely=0.44, anchor='w')
         ttk.Label(self, textvariable=self.analyserData1, relief=SUNKEN,
-                  width=18).place(relx=0.25, rely=0.48, anchor='w')
+                  width=10).place(relx=0.25, rely=0.48, anchor='w')
+        ttk.Label(self, textvariable=self.analyser_freq3, relief=SUNKEN,
+                  width=10).place(relx=0.38, rely=0.58, anchor='w')
         ttk.Label(self, textvariable=self.analyserData2, relief=SUNKEN,
-                  width=18).place(relx=0.25, rely=0.53, anchor='w')
+                  width=10).place(relx=0.25, rely=0.53, anchor='w')
         ttk.Label(self, textvariable=self.analyserData3, relief=SUNKEN,
-                  width=18).place(relx=0.25, rely=0.58, anchor='w')
+                  width=10).place(relx=0.25, rely=0.58, anchor='w')
         ttk.Label(self,text="1. ").place(relx=0.2, rely=0.48, anchor='w')
         ttk.Label(self,text="2. ").place(relx=0.2, rely=0.53, anchor='w')
         ttk.Label(self,text="3. ").place(relx=0.2, rely=0.58, anchor='w')
@@ -199,6 +204,9 @@ class FaultFindWindow(tk.Frame):
         while test == True:  
                 ProbeIsProgrammed = PM.ProbeIsProgrammed()
                 self.fault_message.set("")
+                marker1 = []
+                marker2 = []
+                marker3 = []
                
                 if ProbeIsProgrammed == False: 
                     self.action.set('Probe not programmed...')
@@ -228,41 +236,28 @@ class FaultFindWindow(tk.Frame):
                          # Set the device connected name
                     self.device = " NanoNVA "
                         # Get the analyser to generate data points and return them
-    
-                    analyser_data1 = NanoZND.get_marker_1_command(analyser_port)
-                    # freq = NanoZND.get_freq_command(analyser_port)
-                    analyser_data2 = NanoZND.get_marker_2_command(analyser_port)
-                    analyser_data3 = NanoZND.get_marker_3_command(analyser_port)
-                    
-                    # for data in analyser_data[51:52]:
-                    #     first,second = data.split(' ')
-                    #     ohms_num = float(first)
-                    #     dbs_num = float(second)
-                    x = []
-
-                    for line in analyser_data1.split('\n'):
-                        if line:
-                            x.extend([int(d, 16) for d in line.strip().split(' ')])
-                    read1 = np.array(x, dtype=np.int16)           
-                    x = []
-                    for line in analyser_data2.split('\n'):
-                        if line:
-                            x.extend([int(d, 16) for d in line.strip().split(' ')])
-                    read2 = np.array(x, dtype=np.int16) 
-                    x = []   
-                    for line in analyser_data3.split('\n'):
-                        if line:
-                            x.extend([int(d, 16) for d in line.strip().split(' ')])
-                    read3 = np.array(x, dtype=np.int16)       
-                    
-                    
-
                    
-                    print("freq {}".format(read1)) 
-                    self.analyserData1.set(read1[1])
-                    self.analyserData2.set(read2[1])
+                    marker1.append(NanoZND.get_marker_1_command(analyser_port))
+                    
+                    
+                    # freq = NanoZND.get_freq_command(analyser_port)
+                    marker2.append(NanoZND.get_marker_2_command(analyser_port))
+                    marker3.append(NanoZND.get_marker_3_command(analyser_port))
+                    
+                    for data in marker1:
+                        marker1_id,marker1_val,marker1_freq = data.split(' ')
+                        # print("results {} - {} - {}".format(marker1_id,marker1_val,marker1_freq))
+                    for data in marker2:
+                        marker2_id,marker2_val,marker2_freq = data.split(' ')
+                        
+                    for data in marker3:
+                        marker3_id,marker3_val,marker3_freq = data.split(' ')
+                        
+                    self.analyserData1.set(marker1_val)
+                    self.analyser_freq3.set(marker3_freq[:8])
+                    self.analyserData2.set(marker2_val)
            
-                    self.analyserData3.set(read2[1])
+                    self.analyserData3.set(marker3_val)
                     
                 try:
                             self.text_area.delete('3.0','end')
@@ -286,8 +281,9 @@ class FaultFindWindow(tk.Frame):
                             self.fault_message.set("")
                             ohms_num = 0.0
                             dbs_num = 0.0
-                            self.analyserData1.set(round(ohms_num,3))
-                            self.analyserData2.set(round(dbs_num,3))
+                            self.analyserData1.set(ohms_num)
+                            self.analyserData2.set(dbs_num)
+                            self.analyserData3.set(ohms_num)
                             self.refresh_window()
                         
                 Tk.update(self)

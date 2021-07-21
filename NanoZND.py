@@ -34,15 +34,12 @@ class NanoZND(object):
         self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
     
     
-    def ReadAnalyserData(self, port_in):
+    def ReadAnalyserData(self, port_in, analyser_port):
         port = str(port_in)
         line = ''
         result = ""
         c = ""
-        analyser_port = self.SetAnalyserPort(port)
-        
-      
-        analyser_port.write(self.command.encode('ascii'))
+        # analyser_port = self.SetAnalyserPort(port)
        
         time.sleep(0.05) #allow time for the data to be received  
         analyser_port.readline() # discard empty line
@@ -80,17 +77,20 @@ class NanoZND(object):
         return port_info
     
     def get_marker_1_command(self, port_in):
-        self.command = "marker 1 on\r"
-        return self.ReadAnalyserData(port_in)
+        serial_port = self.SetAnalyserPort(port_in) 
+        serial_port.write(f"marker 1\r".encode('ascii'))
+        return self.ReadAnalyserData(port_in, serial_port)
         
         
     def get_marker_2_command(self, port_in):
-        self.command = "marker 2\r"
-        return self.ReadAnalyserData(port_in)
+        serial_port = self.SetAnalyserPort(port_in) 
+        serial_port.write(f"marker 2\r".encode('ascii'))
+        return self.ReadAnalyserData(port_in, serial_port)
         
     def get_marker_3_command(self, port_in):
-        self.command = "marker 3\r"
-        return self.ReadAnalyserData(port_in)
+        serial_port = self.SetAnalyserPort(port_in) 
+        serial_port.write(f"marker 3\r".encode('ascii'))
+        return self.ReadAnalyserData(port_in, serial_port)
     
       
         
@@ -102,6 +102,7 @@ class NanoZND(object):
     def flush_analyser_port(self, port):
         serial_port = self.SetAnalyserPort(port) 
         serial_port.write("\r\n\r\n".encode("ascii")) # flush serial port  
+        serial_port.close()
         
     # Return the analyser port number   
     def GetAnalyserPortNumber(self, port):

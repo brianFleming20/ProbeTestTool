@@ -59,7 +59,7 @@ class Connection(tk.Frame):
       
         
         # self.is_admin = ""
-        self.connected_to_analyser = False
+        self.connected_to_analyser = True
         self.odm_connection = False
         self.connected_to_com = False
         
