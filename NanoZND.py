@@ -6,7 +6,8 @@ Created on 24 Apr 2017
 
 import pyvisa as visa
 import serial
-import os
+import numpy as np
+import pylab as pl
 import time
 import tkinter as tk
 from tkinter import *
@@ -14,8 +15,8 @@ from tkinter import ttk
 import tkinter.messagebox as tm
 from tkinter import filedialog
 import datastore
-import pickle
 import csv
+from scipy import constants
 
 DS = datastore.DataStore()
 
@@ -30,15 +31,29 @@ class NanoZND(object):
         self.analyser_data = []
         self.analyser_status = False
         self.port_info = None
+        self.analyser_port = ""
         self.command = ""
         self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
+        self._frequencies = None
     
-    
-    def ReadAnalyserData(self, port_in, analyser_port):
-        port = str(port_in)
-        line = ''
+    def refresh_window(self):
+        self.analyser_port = DS.get_ports()[1]
+        self.port_info = serial.Serial(port = self.analyser_port, 
+                                   baudrate=1152000,
+                                   bytesize=8,
+                                   timeout=0.05,
+                                   parity = serial.PARITY_NONE,
+                                   stopbits=serial.STOPBITS_ONE)
+        
+        
+        
+        
+    def ReadAnalyserData(self, analyser_port):
+        port = analyser_port
+        line = ""
         result = ""
         c = ""
+        
         # analyser_port = self.SetAnalyserPort(port)
        
         time.sleep(0.05) #allow time for the data to be received  
@@ -64,7 +79,7 @@ class NanoZND(object):
         
     
     
-    # # Set analyser port details
+    # Set analyser port details
     def SetAnalyserPort(self, analyser_port):
        
         port_info = serial.Serial(port = analyser_port, 
@@ -75,37 +90,145 @@ class NanoZND(object):
                                    stopbits=serial.STOPBITS_ONE)
         
         return port_info
+        
+   
+    
+    def get_vna_check(self):
+        ports = DS.get_ports()
+        all_ports = ports[:-1]
+        port = None
+        serial_port = None
+        
+        for p in all_ports:
+                serial_port = self.SetAnalyserPort(p) 
+                serial_port.write(f"echo\r".encode("ascii"))
+                time.sleep(0.05)
+                read = serial_port.read().decode("utf-8")
+                if read == 'e':
+                    port = p
+        serial_port.close()
+        return port
+    
+    def GetAnalyserPort(self):
+        self.refresh_window()
+        return self.port_info
     
     def get_marker_1_command(self, port_in):
         serial_port = self.SetAnalyserPort(port_in) 
         serial_port.write(f"marker 1\r".encode('ascii'))
-        return self.ReadAnalyserData(port_in, serial_port)
+        return self.ReadAnalyserData( serial_port)
         
         
     def get_marker_2_command(self, port_in):
         serial_port = self.SetAnalyserPort(port_in) 
         serial_port.write(f"marker 2\r".encode('ascii'))
-        return self.ReadAnalyserData(port_in, serial_port)
+        return self.ReadAnalyserData( serial_port)
+    
         
     def get_marker_3_command(self, port_in):
         serial_port = self.SetAnalyserPort(port_in) 
         serial_port.write(f"marker 3\r".encode('ascii'))
-        return self.ReadAnalyserData(port_in, serial_port)
+        return self.ReadAnalyserData( serial_port)
     
-      
+    
+   
+    def dump(self, port):
+        serial_port = self.SetAnalyserPort(port)
+        data = serial_port.write("dump 0\r".encode('ascii'))
         
+        return self.ReadAnalyserData(serial_port)
+        
+        
+    def fetch_frequencies(self, port):
+        port = self.SetAnalyserPort(port)
+        port.write("data\r".encode('ascii'))
+        data = self.ReadAnalyserData(port)
+        port.close()
+        x = []
+        for line in data.split('\n'):
+            if line:
+                x.extend([float(d) for d in line.strip().split(' ')])
+        result = np.array(x[0::2])
+       
+        print(f"freq {result}")
+        return result
+        
+        
+    def data(self, port_in):
+        
+        serial_port = self.SetAnalyserPort(port_in) 
+        
+        
+        serial_port.write('data\r'.encode('ascii'))
+        return self.ReadAnalyserData(serial_port)
+    
+        
+       
+     
+        # x = []
+        # for line in data.split('\n'):
+        #     if line:
+        #         d = line.strip().split(' ')
+        #         x.append(float(d[0])+float(d[1])*1.j)
+        # return np.array(x)
+        # self.fetch_frequencies()
+        
+        
+        
+    
+
     def set_vna_controls(self, port):
         serial_port = self.SetAnalyserPort(port) 
-        serial_port.write(f"sweep 3000000 5000000 101\n".encode('ascii'))  
-        
+        serial_port.write(f"sweep 3000000 5000000 1\r".encode('ascii')) 
+        serial_port.close()
+       
+   
        
     def flush_analyser_port(self, port):
         serial_port = self.SetAnalyserPort(port) 
         serial_port.write("\r\n\r\n".encode("ascii")) # flush serial port  
         serial_port.close()
         
+    def send_scan(self, start = 1e6, stop = 900e6, points = None):
+        if points:
+            self.send_command("scan %d %d %d\r"%(start, stop, points))
+        else:
+            self.send_command("scan %d %d\r"%(start, stop))
+        
+        
+    def tdr(self, port):
+        data = self.fetch_frequencies(port)
+        prop_speed =  78.6
+        _prop_speed = prop_speed/100
+        window = np.blackman(len(data))
+        NFFT = 16384
+        td = np.abs(np.fft.ifft(window * data , NFFT))
+    
+        pk = np.max(td) # Maximum peak value
+        min = np.min(td)
+        time = 1 / (data[2]  - data[0] )
+        t_axis = np.linspace(0, time, NFFT)
+        d_axis = constants.speed_of_light * _prop_speed * (pk - min)
+    
+        print(f"peak freq {pk}")
+     
+        l = (pk - min) * d_axis
+        cable_len = l/2 # cable length is 
+        
+        pl.plot(t_axis, td)
+        pl.xlim(0, time)
+        pl.xlabel("time (s")
+        pl.ylabel("magnitude")
+        pl.show()
+        
+        print(f"cable length is {cable_len}")
+        
+        return cable_len
+    
+    
+        
     # Return the analyser port number   
-    def GetAnalyserPortNumber(self, port):
+    def get_analyser_port_number(self, port):
         analyser_port_info = self.SetAnalyserPort(port)
         analyser_port = analyser_port_info.port
         analyser_port_info.close()
@@ -115,20 +238,10 @@ class NanoZND(object):
             return False
      
     # Return the analyser data points 
-    def GetAnalyserData(self):
-        return self.analyser_data
+    def Get_cable_length(self):
+        return False
     
-    # Return the analyser connection status
-    def GetAnalyserStatus(self):
-        return self.analyser_status
-    
-    # Get the port details and start frequency scan
-    def FrequencyStart(self):
-        pass
-    
-    # Stop the frequency scan and close the port
-    def FrequecyStop(self):
-        pass
+  
     
     def GetFileLocation(self):
         return self.file_location

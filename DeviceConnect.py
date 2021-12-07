@@ -56,18 +56,7 @@ def ignore():
 
 class ConnectionWindow(tk.Frame):
     def __init__(self, parent, controller):
-        # define variables
-        # self.monitor = StringVar()
-        # self.com_port = StringVar()
-        # self.analyser_usb = StringVar()
-        # self.move_probe = StringVar()
-        # self.connected_to_com = False
-        # self.connected_to_analyser = False
-        # self.odm_connection = False
-        # self.analyser_usb.set('COM4')
-        # self.com_port.set('COM3')
-        # self.monitor.set('COM5')
-        # self.move_probe.set('Not Set')
+  
         self.is_admin = ""
         
         # create the window and frame
@@ -92,10 +81,7 @@ class ConnectionWindow(tk.Frame):
           
     def refresh_window(self):
         try:
-            # with open('file.ptt', 'rb') as file:
-            #     fileData = pickle.load(file)
-            #     self.is_admin = fileData[1]
-            # file.close()  
+     
             admin_data = DS.get_user()
             self.is_admin = admin_data[1]
         except:
@@ -110,52 +96,19 @@ class ConnectionWindow(tk.Frame):
             
 
     def _connect_btn_clicked(self, controller):
-        # cp = 'COM3'
-        # odm = 'COM5'
-        # usb = 'COM4'
-        # session_data = []
-        # connection_data = []
-        
-        # Collect system data and add the port info to it
-        
-        
-        # with open('file.ptt', 'rb') as read_file:
-        #         myvar = pickle.load(read_file)
-        #         session_data.extend(myvar)
-        #         self.is_admin = myvar[1]
-
-        # read_file.close()
-        # main_data = DS.get_main()
-        
-        # # self.is_admin = main_data[1]
+      
         self.is_admin = DS.get_user_admin_status()
-        # connection_data.append(cp)
-        # connection_data.append(odm)
-        # connection_data.append(usb)
-        # session_data.append(connection_data)
-        # DS.add_to_batch_file(session_data)
+     
         if self.is_admin == True:
              controller.show_frame()
         else:
             controller.show_frame(CO.Connection)
-        # except:
-            
-        #     self.text_area.delete('3.0','end')
-        #     self.text_area.insert('3.0', "\nError in getting batch data in Connections...")
-            
+   
             
         self.text_area.config(state=NORMAL)  
-        # Write the port info to the system data
-            
-            # with open('file.ptt', 'wb') as write_file:
-            #     pickle.dump(session_data, write_file)
-            # write_file.close()
-            # DS.add_to_main_file(session_data)
+ 
         self.text_area.insert('1.0','Continue to check device connections...')
-        # except:
-            
-        #     self.text_area.delete('3.0','end')
-        #     self.text_area.insert('3.0', "\nError in writting batch data...")
+ 
         self.text_area.config(state=DISABLED)   
         
         
@@ -217,10 +170,7 @@ class ConnectionAdmin(tk.Frame):
             user_data = []
             user_data.append(DS.get_user())
             self.is_admin = user_data[1]
-       
-            # except:
-            #     self.text_area.delete('3.0','end')
-            #     self.text_area.insert('3.0', "\nError in getting Admin data...")
+ 
         
             self.text_area.config(state=NORMAL)   
             self.text_area.insert('2.0',user_data[0])

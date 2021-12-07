@@ -54,6 +54,8 @@ class ODMData(object):
         # ===========================
         
         parameter = serial_port.read().decode('Ascii')
+        if parameter == "":
+            return ["nothing"]
         while parameter != found_item:                     # Test for start of parameters
             parameter = serial_port.read().decode('Ascii')
             
@@ -83,6 +85,25 @@ class ODMData(object):
         
         return serial_port_control
     
+    def get_probe_port(self,port_number):
+        return self.AccessSerialControl( port_number)
+    
+    def get_monitor_port(self):
+        read = ""
+        ports = DS.get_ports()
+        read_check = ","
+        all_ports = ports[:-1]
+        for p in all_ports:
+            serial_port = self.get_probe_port(p) 
+            # serial_port.write(f"info".encode("ascii")) # flush serial port  
+            
+            read = serial_port.readline().decode("utf-8")
+         
+            if read_check in read:
+                port = p
+        serial_port.close()
+        # print(f"port for monitor is {self.monitor_port}")
+        return port
     
     #======================================================
     
@@ -205,11 +226,11 @@ class ODMData(object):
     
     def checkODMPort(self, port):
         port_recieved = self.AccessSerialControl(port)
-        
         if port_recieved.port == port:
-            port_recieved.close()
             return True
         else:
             return False
+        
+        
        
         

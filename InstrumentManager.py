@@ -158,7 +158,7 @@ class ZND(object):
         
     #     self.znd.close()
     
-    def get_trace_values(self, probeID, user):
+    def get_trace_values(self):
         '''
         This returns a list of lists, with each sub list containing a string of y values for a trace and information about that trace such as:
         -An individual reference number within the batch 

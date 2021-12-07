@@ -35,7 +35,6 @@ from BatchManager import Batch
 import SecurityManager
 from SecurityManager import User
 import UserLogin as UL
-import DeviceConnect as DC
 import Connection as CO
 import AdminUser as AU
 import datastore
@@ -76,7 +75,7 @@ class SessionSelectWindow(tk.Frame):
         self.SSW_b3 = ttk.Button(self, text='Completed Batches', command=lambda: self.completed_btn_clicked(controller), width=BTN_WIDTH)
         self.SSW_b3.place(relx=0.28, rely=0.55, anchor=CENTER)
 
-        self.SSW_b4 = ttk.Button(self, text='Edit Users', command=lambda: controller.show_frame(
+        self.SSW_b4 = ttk.Button(self, text='Admin area', command=lambda: controller.show_frame(
             AU.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(relx=0.6, rely=0.55, anchor=CENTER)
         self.text_area.config(state=NORMAL)
@@ -197,13 +196,12 @@ class NewSessionWindow(tk.Frame):
   
         
     def refresh_window(self):
-           
-     
         session_info = DS.get_user()
         self.text_area.config(state=NORMAL)
         self.text_area.insert('1.0',session_info[0])
         self.text_area.insert('3.3','\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
         self.text_area.config(state=DISABLED)
+        
 
     def confm_btn_clicked(self, controller):
         # create batch object
@@ -229,6 +227,7 @@ class NewSessionWindow(tk.Frame):
             name = temp_var[0]
             if BM.CreateBatch(newBatch, name) == False:
                 tm.showerror('Error', 'Batch number not unique')
+                self.refresh_window()
             else:
                 BM.current_batch = newBatch
                 session_data.append(newBatch.batchNumber)
@@ -237,11 +236,13 @@ class NewSessionWindow(tk.Frame):
                 batch_data.append(self.probe_type.get())
                 batch_data.append(self.batchQty.get())
             
-            print("add batch = {}".format(temp_var))
-            DS.add_to_batch_file(batch_data)
+            
+                DS.write_to_batch_file(batch_data)
+                print("batch file data {}".format(DS.get_batch()))
+                controller.show_frame(CO.Connection)
             
             self.NSWE1.delete(0, 'end')
-            controller.show_frame(DC.ConnectionWindow)
+            
 
 
 class ContinueSessionWindow(tk.Frame):

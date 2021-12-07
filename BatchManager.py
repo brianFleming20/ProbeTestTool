@@ -338,11 +338,11 @@ class CSVManager(object):
 
     def ReadLastLine(self, fileName):
         
-        fullPathTest = os.path.abspath(self.inProgressPath + fileName + '.csv')
+        fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
         batches = []
         eachBatch = []
         
-        with open(fullPathTest, 'r') as csvfile:
+        with open(fullPath, 'r') as csvfile:
             datareader = csv.reader(csvfile)
             
             for line in datareader:

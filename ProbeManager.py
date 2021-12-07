@@ -6,9 +6,6 @@ Created on 28 Apr 2017
 import PI
 import InstrumentManager as IM
 import BatchManager
-import serial
-from serial.tools import list_ports
-import struct
 import NanoZND
 
 
@@ -40,10 +37,13 @@ class ProbeManager(object):
         Pass in a com port ID (COMX) and connect to that com_port.
         '''
         
-        try:
-            self.PI.Connect(com_port)
+        
+        self.ser = self.PI.Connect(com_port)
+      
+        if com_port == self.ser.port:
+            self.PI.SM.ClosePort(self.ser)
             return True
-        except:
+        else:
             return False
         
     
@@ -69,9 +69,13 @@ class ProbeManager(object):
     
 
     
-    def TestProbe(self, serialNumber, batchNumber, user):
-        # self.ZND.refresh_traces()
-        r = self.ZND.get_trace_values(serialNumber, user)
+    def TestProbe(self):
+        
+        try:
+            r = self.ZND.get_trace_values()
+            r = True
+        except:
+            r = False
         
         return r
         
@@ -111,14 +115,16 @@ class ProbeManager(object):
         Checks to see if the first byte of the eeprom is programmed with the probe type byte,
         returns true if it is, false if not
         '''
+      
         x = self.PI.ReadFirstByte()
 
-        if x in ['48','49','50','51','52','53','54','55','56','57']: #Probe type codes in decimal
+        if x in ['30','32','34','35','36','38','46']: #Probe type codes in decimal
             return True
         else:
             return False
 
-   
+    def read_serial_number(self):
+        return self.PI.ReadSerialNumber()
 
 class Probe(object):
     

@@ -32,10 +32,7 @@ import pickle
 
 
 class DataStore():
-    def __init__(self):
-        load_data = None
-        temp_data = None
-        admin_load = None
+  
        
         
         ########################
@@ -143,9 +140,8 @@ class DataStore():
     #########################################
     
     def get_username(self):
-        user = []
-        user.extend(self.get_user)
-        return user[0]
+      
+        return self.get_user()[0]
     
     #########################################
     
@@ -159,11 +155,74 @@ class DataStore():
         
     ########################################
     
-    def get_serial_num(self):
-        sn = ""
-        admin_file = self.get_admin()
-        sn = admin_file[1]
-        return sn
+    def get_user_status(self):
+        if "1" in self.get_admin():
+            return True
+        else:
+            return False
     
     def show_all_data(self):
-        print(f"all data = main {self.get_main()}, batch {self.get_batch()}, admin {self.get_admin()}")
+            print(f"all data = main {self.get_user()}, batch {self.get_batch()}, admin {self.get_admin()}")
+            print(f"Probe port {self.get_probe_port()}, Analyser port {self.get_analyser_port()}, ODM port {self.get_ODM_port()} ")
+
+     #########################################
+
+    def get_analyser_port(self):
+        return self.get_ports()[1]
+
+    ###########################################
+
+    def set_analyser_port(self, port):
+        ports = self.get_ports()
+        ports[1] = port
+        self.write_to_port_file(ports)
+        
+    ###########################################
+
+    def get_ODM_port(self):
+        odm_port = ""
+        odm_port = self.get_ports()
+        return odm_port[2]
+
+    ###########################################
+
+    def set_ODM_port(self, port):
+        ports = self.get_ports()
+        ports[2] = port
+        self.write_to_port_file(ports)
+        
+    ###########################################
+
+    def set_probe_port_obj(self, obj):
+        ports = self.get_ports()
+        ports[3] = obj
+        self.write_to_port_file(ports)
+
+    ###########################################
+
+    def get_probe_port_obj(self):
+        return self.get_ports()[3]
+
+    ###########################################    
+
+    def get_probe_port(self):
+        return self.get_ports()[0]
+
+    ############################################
+
+    def set_porbe_port(self, port):
+        ports = self.get_ports()
+        ports[0] = port
+        self.write_to_port_file(ports)
+       
+    ############################################
+
+    def get_current_batch(self):
+        return self.get_batch()[0]
+
+    ############################################
+
+    def get_current_probe_type(self):
+        return self.get_batch()[1]
+        
+    ############################################

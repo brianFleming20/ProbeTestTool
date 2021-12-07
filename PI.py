@@ -46,7 +46,7 @@ class PI(object):
     def Connect(self, com_port):
         
         self.ser = self.SM.ConfigurePort(com_port)
-        self.SM.ClosePort()
+       
         return self.ser
        
             
@@ -55,12 +55,12 @@ class PI(object):
         pass in a list of bytes, writes a byte at a time to the probe
         '''
         
-        self.SM.OpenPort()
+        port = self.SM.OpenPort()
         
         for item in data:
-            self.SM.Send(item)
+            self.SM.Send(item, port)
             time.sleep(0.01)
-        self.SM.ClosePort()
+        self.SM.ClosePort(port)
         
             
     def ProbeReadSerialNumber(self):
@@ -72,15 +72,14 @@ class PI(object):
         sends:    53    ,        A0    ,       01       ,    00   ,    53    ,     A1      ,       10       ,    50
         '''   
         serialData = []
-        self.SM.OpenPort()   
+        port = self.SM.OpenPort()   
         
         for i in range(2): 
-            self.SM.Send(b'53A0010053A11e50')
+            self.SM.Send(b'53A0010053A11e50', port)
            #self.SM.Send(b'53A0010053A10150')   
             time.sleep(0.05) #allow time for the data to be received  
-            
-        serialData = self.SM.Read()
-        self.SM.ClosePort()
+            serialData = self.SM.Read(port)
+        self.SM.ClosePort(port)
         
         return serialData
 
@@ -88,14 +87,19 @@ class PI(object):
         '''
         Returns True if a probe is present, False if not
         '''   
+        
+        # port_info = DS.get_probe_port()
+       
+   
+        # self.ser = self.SM.ConfigurePort(port_info)
         packet_select = bytearray()    
         #get the IO byte
-        self.SM.OpenPort()
+        port = self.SM.OpenPort()
        
-        self.SM.Send(b'4950')   
+        self.SM.Send(b'4950', port)   
         time.sleep(0.05) #allow time for the data to be received  
-        IOByte = self.SM.Read()
-        self.SM.ClosePort()
+        IOByte = self.SM.Read(port)
+        self.SM.ClosePort(port)
         #get the relevant bit
         bits = BitArray(hex=IOByte)
         bit = bits.bin[2:3]
@@ -110,11 +114,12 @@ class PI(object):
         '''
         returns a single byte as a 2 character string
         '''
-        self.SM.OpenPort()         #open the port
-        self.SM.Send(b'53A0010053A10150') #write data to request first byte from the probe EEPROM
+       
+        port = self.SM.OpenPort()         #open the port
+        self.SM.Send(b'53A0010053A10150', port) #write data to request first byte from the probe EEPROM
         time.sleep(0.05) #allow time for the data to be received  
-        firstByte = self.SM.Read() #read the first byte
-        self.SM.ClosePort()
+        firstByte = self.SM.Read(port) #read the first byte
+        self.SM.ClosePort(port)
 
         return firstByte
     
@@ -122,11 +127,16 @@ class PI(object):
         '''
         returns a single byte as a 2 character string
         '''
-        self.SM.OpenPort()         #open the port
-        self.SM.Send(b'53A0010053A11e50') #write data to request first byte from the probe EEPROM
+       
+        
+        port = self.SM.OpenPort()  
+        #open the port
+        print("send")
+        self.SM.Send(b'53A0010053A11e50', port) #write data to request first byte from the probe EEPROM
         time.sleep(0.05) #allow time for the data to be received  
-        sn = self.SM.Read() #read the first byte
-        self.SM.ClosePort()
+        print("read")
+        sn = self.SM.Read(port) #read the first byte
+        self.SM.ClosePort(port)
 
         return sn
     
@@ -140,46 +150,46 @@ class PI(object):
         sends:    53    ,        A0    ,       01       ,    00   ,    53    ,     A1      ,       10       ,    50
         '''   
         serialData = []
-        self.SM.OpenPort()   
+        self.ser = self.SM.OpenPort()   
         
 
-        self.SM.Send(b'53A0010053A11e50')  
+        self.SM.Send(b'53A0010053A11e50', self.ser)  
         time.sleep(0.05) #allow time for the data to be received     
-        serialData = self.SM.Read()
+        serialData = self.SM.Read(self.ser)
         
-        self.SM.Send(b'53A0011e53A11e50') 
+        self.SM.Send(b'53A0011e53A11e50', self.ser) 
         time.sleep(0.05)
-        serialData = serialData + self.SM.Read()
+        serialData = serialData + self.SM.Read(self.ser)
 
-        self.SM.Send(b'53A0013c53A11e50')
+        self.SM.Send(b'53A0013c53A11e50', self.ser)
         time.sleep(0.05)
-        serialData = serialData + self.SM.Read()
+        serialData = serialData + self.SM.Read(self.ser)
         
-        self.SM.Send(b'53A0015A53A11e50') # read 0's
+        self.SM.Send(b'53A0015A53A11e50', self.ser) # read 0's
         time.sleep(0.05)
-        serialData = serialData + self.SM.Read()
+        serialData = serialData + self.SM.Read(self.ser)
 
-        self.SM.Send(b'53A0017853A11e50') # read 0's
+        self.SM.Send(b'53A0017853A11e50', self.ser) # read 0's
         time.sleep(0.05)
-        serialData = serialData + self.SM.Read()
+        serialData = serialData + self.SM.Read(self.ser)
         
-        self.SM.Send(b'53A0019653A11e50')
+        self.SM.Send(b'53A0019653A11e50', self.ser)
         time.sleep(0.05)
-        serialData = serialData + self.SM.Read()
+        serialData = serialData + self.SM.Read(self.ser)
         
-        self.SM.Send(b'53A001B453A11e50')
+        self.SM.Send(b'53A001B453A11e50', self.ser)
         time.sleep(0.05)
-        serialData = serialData + self.SM.Read()
+        serialData = serialData + self.SM.Read(self.ser)
         
-        self.SM.Send(b'53A001D253A11e50')
+        self.SM.Send(b'53A001D253A11e50', self.ser)
         time.sleep(0.05)
-        serialData = serialData + self.SM.Read()
+        serialData = serialData + self.SM.Read(self.ser)
         
-        self.SM.Send(b'53A001F053A11050') # read 0's
+        self.SM.Send(b'53A001F053A11050', self.ser) # read 0's
         time.sleep(0.05)
-        serialData = serialData + self.SM.Read()
+        serialData = serialData + self.SM.Read(self.ser)
         
-        self.SM.ClosePort()
+        self.SM.ClosePort(self.ser)
         
         return serialData
    
@@ -189,53 +199,50 @@ class SerialManager(object):
     A wrapper for TaTT specific PySerial usage.
     '''
     
-    def __init__(self):
-        self.ser = False
+   
         
         
         
     def ConfigurePort(self, port):
       
-        try:
-            self.ser = serial.Serial(port = port, baudrate = 9600, \
+        self.ser = serial.Serial(port = port, baudrate = 9600, \
                 parity = serial.PARITY_NONE, \
                 stopbits = serial.STOPBITS_ONE, \
                 bytesize  = serial.EIGHTBITS, \
                 timeout  = 0, \
                 )
-        except:
-            return False
+       
         
        
         return self.ser
         
-    def get_ports(self):
-        self.port_info = DS.get_ports()   
         
-    def Send(self, input):
+    def Send(self, input, port):
         '''
         pass in hex bytes, send the whole lot down the serial port.
         '''
-        try:
-            #flush the buffers
-            self.ser.flushInput()   
-            self.ser.flushOutput() 
-        except:
-            pass
+       
+       
+
+        #flush the buffers
+        port.reset_input_buffer()  
+        self.ser.reset_output_buffer()
         
         #convert the input to ASCII characters and send it
         self.ser.write(codecs.decode(input, "hex_codec"))
 
         
-    def Read(self):
+    def Read(self, port):
         '''
         reads the contents of the serial buffer and returns it as a string 
         of hex bytes
         '''
+      
+        
         serialData = ''
 
-        while self.ser.inWaiting() > 0:
-            b = binascii.hexlify(self.ser.read(1))
+        while port.inWaiting() > 0:
+            b = binascii.hexlify(port.read(1))
             serialData += codecs.decode(b) 
         
         return serialData
@@ -244,21 +251,23 @@ class SerialManager(object):
         '''
         Opens the port, readying it for communication
         '''
-        port_info = DS.get_ports()
-       
+        port_info = DS.get_probe_port()
+    
    
-        self.ser = self.ConfigurePort(port_info[0])
+        self.ser = self.ConfigurePort(port_info)
        
        
         return self.ser
         
         
     
-    def ClosePort(self):
+    def ClosePort(self, port):
         '''
         Closes the port
+        
         '''
-        self.ser.close()
+      
+        port.close()
     
     
 class ProbeData(object):
@@ -273,14 +282,14 @@ class ProbeData(object):
         self.timeStamp = ''
         self.typeBytes = ''
         
-        self.DP240TypeBytes = ['50','46','30','4a']
-        self.DP12TypeBytes = ['50','30','43','4a']
-        self.DP6TypeBytes = ['50','30','36','4a']
-        self.I2CTypeBytes = ['50','34','38','4a']
-        self.I2PTypeBytes = ['50','31','38','4a']
-        self.I2STypeBytes = ['50','30','36','4a']
-        self.KDP72TypeBytes = ['50','34','38','4a']
-        self.SDP30TypeBytes = ['53','33','30','4a']
+        self.DP240TypeBytes = ['32','46','30','4a']
+        self.DP12TypeBytes = ['32','30','43','4a']
+        self.DP6TypeBytes = ['32','30','36','4a']
+        self.I2CTypeBytes = ['36','34','38','4a']
+        self.I2PTypeBytes = ['36','31','38','4a']
+        self.I2STypeBytes = ['36','30','36','4a']
+        self.KDP72TypeBytes = ['35','34','38','4a']
+        # self.SDP30TypeBytes = ['53','33','30','4a']
         # self.Blank = ['00','00','00','00','00']
 
     
