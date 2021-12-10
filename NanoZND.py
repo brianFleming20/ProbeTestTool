@@ -4,21 +4,18 @@ Created on 24 Apr 2017
 @author: Brian F
 '''
 
-import pyvisa as visa
+
 import serial
 import numpy as np
 import pylab as pl
 import time
-import tkinter as tk
-from tkinter import *
-from tkinter import ttk
 import tkinter.messagebox as tm
-from tkinter import filedialog
 import datastore
 import csv
 from scipy import constants
 
 DS = datastore.DataStore()
+
 
 
 class NanoZND(object):
@@ -35,6 +32,8 @@ class NanoZND(object):
         self.command = ""
         self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
         self._frequencies = None
+        self.show_plot = False
+        self.cable_length_calibration = 196
     
     def refresh_window(self):
         self.analyser_port = DS.get_ports()[1]
@@ -83,7 +82,7 @@ class NanoZND(object):
     def SetAnalyserPort(self, analyser_port):
        
         port_info = serial.Serial(port = analyser_port, 
-                                   baudrate=1152000,
+                                   baudrate=115200,
                                    bytesize=8,
                                    timeout=0.05,
                                    parity = serial.PARITY_NONE,
@@ -127,6 +126,7 @@ class NanoZND(object):
         
     def get_marker_3_command(self, port_in):
         serial_port = self.SetAnalyserPort(port_in) 
+      
         serial_port.write(f"marker 3\r".encode('ascii'))
         return self.ReadAnalyserData( serial_port)
     
@@ -150,7 +150,7 @@ class NanoZND(object):
                 x.extend([float(d) for d in line.strip().split(' ')])
         result = np.array(x[0::2])
        
-        print(f"freq {result}")
+    
         return result
         
         
@@ -197,35 +197,40 @@ class NanoZND(object):
         
         
     def tdr(self, port):
+        delay = 3
         data = self.fetch_frequencies(port)
         prop_speed =  78.6
         _prop_speed = prop_speed/100
         window = np.blackman(len(data))
         NFFT = 16384
         td = np.abs(np.fft.ifft(window * data , NFFT))
+        min_freq = np.min(td)
     
         pk = np.max(td) # Maximum peak value
-        min = np.min(td)
-        time = 1 / (data[2]  - data[0] )
-        t_axis = np.linspace(0, time, NFFT)
-        d_axis = constants.speed_of_light * _prop_speed * (pk - min)
-    
-        print(f"peak freq {pk}")
-     
-        l = (pk - min) * d_axis
+      
+        # peak = pk - min_freq
+        time_ = 1 / (data[2]  - data[0] )
+        t_axis = np.linspace(0, time_, NFFT)
+        d_axis = constants.speed_of_light * _prop_speed * (pk - min_freq)
+       
+        l = 1/(pk - min_freq) 
         cable_len = l/2 # cable length is 
-        
-        pl.plot(t_axis, td)
-        pl.xlim(0, time)
-        pl.xlabel("time (s")
-        pl.ylabel("magnitude")
-        pl.show()
-        
-        print(f"cable length is {cable_len}")
-        
-        return cable_len
+        # idx_pk = np.where(td[1:] == peak)
     
-    
+        # cable_len = d_axis[idx_pk]/2
+        show = DS.get_plot_status()
+        if show == True:
+            pl.plot(t_axis, td)
+            pl.xlim(0, time_)
+            pl.xlabel("time (s")
+            pl.ylabel("magnitude")
+           
+            pl.show()
+        else:
+            pass
+        
+        return cable_len / self.cable_length_calibration
+  
         
     # Return the analyser port number   
     def get_analyser_port_number(self, port):
@@ -236,7 +241,9 @@ class NanoZND(object):
             return True
         else:
             return False
-     
+    
+   
+      
     # Return the analyser data points 
     def Get_cable_length(self):
         return False

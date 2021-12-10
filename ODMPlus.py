@@ -4,11 +4,9 @@ Created on 24 Apr 2017
 @author: Brian F
 '''
 
-import tkinter as tk
+
 import tkinter.messagebox as tm
-import pyvisa as visa
 import serial
-import pickle
 import datastore
 
 DS= datastore.DataStore()
@@ -89,18 +87,17 @@ class ODMData(object):
         return self.AccessSerialControl( port_number)
     
     def get_monitor_port(self):
+        port = "COM5"
         read = ""
         ports = DS.get_ports()
         read_check = ","
         all_ports = ports[:-1]
         for p in all_ports:
-            serial_port = self.get_probe_port(p) 
-            # serial_port.write(f"info".encode("ascii")) # flush serial port  
-            
-            read = serial_port.readline().decode("utf-8")
-         
-            if read_check in read:
-                port = p
+                serial_port = self.get_probe_port(p) 
+                read = serial_port.readline().decode("utf-8")
+                if read_check in read:
+                    port = p
+       
         serial_port.close()
         # print(f"port for monitor is {self.monitor_port}")
         return port

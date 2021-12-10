@@ -121,7 +121,7 @@ PI.Connect('COM7')
 pp = None
 while(1):
     pp = PI.ProbePresent()
-    print(pp)
+   
     time.sleep(2)    
     
 

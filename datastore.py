@@ -33,7 +33,7 @@ import pickle
 
 class DataStore():
   
-       
+   
         
         ########################
         # Main data file read  #
@@ -160,10 +160,13 @@ class DataStore():
             return True
         else:
             return False
+        
+    #########################################
     
     def show_all_data(self):
             print(f"all data = main {self.get_user()}, batch {self.get_batch()}, admin {self.get_admin()}")
-            print(f"Probe port {self.get_probe_port()}, Analyser port {self.get_analyser_port()}, ODM port {self.get_ODM_port()} ")
+            print(f"Probe port {self.get_probe_port()}, Analyser port {self.get_analyser_port()}")
+            print(f"ODM port {self.get_ODM_port()}, Plot status {self.get_plot_status()}")
 
      #########################################
 
@@ -226,3 +229,23 @@ class DataStore():
         return self.get_batch()[1]
         
     ############################################
+    
+    def get_plot_status(self):
+        user_plot = self.get_user()
+        return user_plot[2]
+    
+    ############################################
+    
+    def set_plot_status(self, plot):
+        user_status = []
+        user_status.extend(self.get_user())
+        print(f"length = {len(user_status)}")
+        status_len = len(user_status)
+        if status_len == 3:
+            user_status.pop(2)
+            user_status.insert(2,plot)
+        else:
+            user_status.append(plot)
+        self.write_to_user_file(user_status)
+        
+        

@@ -95,10 +95,10 @@ class SessionSelectWindow(tk.Frame):
     def refresh_window(self):
        
         # DS.write_to_batch_file("")
-        user_info = DS.get_user()
+        user_info = DS.get_user_admin_status()
       
         
-        if False in user_info:
+        if user_info == False:
             self.SSW_b4.config(state=DISABLED)
         else:
             self.SSW_b4.config(state=NORMAL)
@@ -238,7 +238,7 @@ class NewSessionWindow(tk.Frame):
             
             
                 DS.write_to_batch_file(batch_data)
-                print("batch file data {}".format(DS.get_batch()))
+            
                 controller.show_frame(CO.Connection)
             
             self.NSWE1.delete(0, 'end')
@@ -337,6 +337,7 @@ class ContinueSessionWindow(tk.Frame):
         batch_data.append(batch.batchQty)
          
         DS.write_to_batch_file(batch_data)
+      
        
         
         controller.show_frame(CO.Connection)

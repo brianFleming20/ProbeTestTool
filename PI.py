@@ -103,7 +103,7 @@ class PI(object):
         #get the relevant bit
         bits = BitArray(hex=IOByte)
         bit = bits.bin[2:3]
-     
+        # print(f"bit {bit}")
         #check to see if the pin is pulled low by the probe
         if bit == '0':
             return True
@@ -131,10 +131,10 @@ class PI(object):
         
         port = self.SM.OpenPort()  
         #open the port
-        print("send")
+     
         self.SM.Send(b'53A0010053A11e50', port) #write data to request first byte from the probe EEPROM
         time.sleep(0.05) #allow time for the data to be received  
-        print("read")
+     
         sn = self.SM.Read(port) #read the first byte
         self.SM.ClosePort(port)
 
@@ -225,8 +225,8 @@ class SerialManager(object):
        
 
         #flush the buffers
-        port.reset_input_buffer()  
-        self.ser.reset_output_buffer()
+        port.flushInput()  
+        port.flushOutput()
         
         #convert the input to ASCII characters and send it
         self.ser.write(codecs.decode(input, "hex_codec"))
@@ -237,13 +237,15 @@ class SerialManager(object):
         reads the contents of the serial buffer and returns it as a string 
         of hex bytes
         '''
-      
+       
         
         serialData = ''
 
-        while port.inWaiting() > 0:
-            b = binascii.hexlify(port.read(1))
+        while self.ser.inWaiting() > 0:
+            b = binascii.hexlify(self.ser.read(1))
+         
             serialData += codecs.decode(b) 
+        
         
         return serialData
     
@@ -293,7 +295,7 @@ class ProbeData(object):
         # self.Blank = ['00','00','00','00','00']
 
     
-    def GenerateDataString(self, probe_type):
+    def GenerateDataString(self, probeType):
         '''
         Pass in a probe type, returns the full 255 byte probe data including time stamped serial number
         
@@ -307,31 +309,29 @@ class ProbeData(object):
         secondStart = '53A00908'
         end = '50'
         
-        # if probe_type == 'Blank':
-        #     return probezeros
-       
+        if probeType == 'Blank':
+            return probezeros
+        
         #set the correct probe type bytes
-        if probe_type == 'DP240':
+        if probeType == 'DP240':
             typeBytes = self.DP240TypeBytes
-        elif probe_type == 'DP12':
+        elif probeType == 'DP12':
             typeBytes = self.DP12TypeBytes
-        elif probe_type == 'DP6':
+        elif probeType == 'DP6':
             typeBytes = self.DP6TypeBytes
-        elif probe_type == 'I2C':
+        elif probeType == 'I2C':
             typeBytes = self.I2CTypeBytes
-        elif probe_type == 'I2S':
+        elif probeType == 'I2S':
             typeBytes = self.I2STypeBytes
-        elif probe_type == 'I2P':
+        elif probeType == 'I2P':
             typeBytes = self.I2PTypeBytes
-        elif probe_type == 'KDP':
+        elif probeType == 'KDP72':
             typeBytes = self.KDP72TypeBytes
-        elif probe_type == 'I2P':
+        elif probeType == 'I2P':
             typeBytes = self.I2PTypeBytes
-        elif probe_type == 'SDP30':
+        elif probeType == 'SDP30':
             typeBytes = self.SDP30TypeBytes
             
-       
-         
         #create a 12 byte timestamp of the format
         timeStamp = strftime("%Y%m%d%H%M%S", gmtime())
         timeStampFormatted = timeStamp[2:]
@@ -339,10 +339,9 @@ class ProbeData(object):
         for item in timeStampFormatted:
             x = (ord(item))
             timeStampASCII.append(format((x), "x"))
-       
+        
         #stick the type bytes and the timestamp together 
         serialNumber = typeBytes + timeStampASCII
-        
         
         #put them in a format that can be sent via the SC18IM
         lower  = serialNumber[0:8]
@@ -361,7 +360,6 @@ class ProbeData(object):
         for item in SDprobeData:
             stripped = stripped + item[8:-2]
         return SDprobeData, stripped
-
 
 # PI = PI()
 # PD = ProbeData()

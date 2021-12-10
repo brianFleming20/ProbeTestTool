@@ -29,6 +29,7 @@ class ProbeManager(object):
         self.debugResults = [[1,1,1,],[2,2,2],[3,3,3]]
         self.serial = None
         self.dev = dev 
+        self.show = False
         
      
   
@@ -125,6 +126,7 @@ class ProbeManager(object):
 
     def read_serial_number(self):
         return self.PI.ReadSerialNumber()
+    
 
 class Probe(object):
     

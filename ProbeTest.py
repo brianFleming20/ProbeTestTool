@@ -101,7 +101,7 @@ class TestProgramWindow(tk.Frame):
         self.suspend_btn = (PhotoImage(file="suspend.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
-        you = "howdy"
+   
         self.text_area = tk.Text(self, height=5, width=40)
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
         time_now = strftime("%H:%M:%p", gmtime())
@@ -226,6 +226,7 @@ class TestProgramWindow(tk.Frame):
         self.RLLimit = -1  # pass criteria for return loss measurement
         self.user_admin = DS.get_user_status()
         self.programmed = False
+        DS.set_plot_status(False)
         
         ##############################
         # Collect analyser port data #
@@ -281,6 +282,8 @@ class TestProgramWindow(tk.Frame):
                             self.display_message("Probe re-programming enabled.")
                             snum = self.program_probe()
                             results, marker_data = self.test_probe()
+                            self.update_results(results, snum, marker_data)
+                         
                             self.status_image.configure(image=self.amberlight)
                             
                     else:
@@ -288,9 +291,7 @@ class TestProgramWindow(tk.Frame):
                         self.display_message("You can't re-program this probe.") 
                    
                     # if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
-                    
-                    if self.programmed == True:
-                         self.update_results(results, snum, marker_data)
+                         
                     self.update_odm_data()
                     Tk.update(self)
                           
@@ -308,25 +309,19 @@ class TestProgramWindow(tk.Frame):
 
 
     def program_probe(self):
-          
-            serialNumber = self.get_probe_serial_number()
-            print(f"serial number {serialNumber}")
-            snum = str(codecs.decode(serialNumber, "hex"),'utf-8')[1:16]  
-            self.programmed = True
-            Tk.update(self)
-            
-            
-
-
-
-    def get_probe_serial_number(self):
-        serialNumber = PM.ProgramProbe(self.probe_type.get())
-        if serialNumber == False:
+            probe_type = self.probe_type.get()
+         
+            serialNumber = PM.ProgramProbe(self.probe_type.get())
+            if serialNumber == False:
                 tm.showerror('Programming Error',
                                 'Unable to program\nPlease check U1')
                 self.action.set('Probe failed')
                 self.status_image.configure(image=self.redlight)
-        return serialNumber
+            snum = str(codecs.decode(serialNumber, "hex"),'utf-8')[1:16]  
+      
+            self.programmed = True
+            Tk.update(self)
+            return snum
 
 
 
@@ -335,13 +330,13 @@ class TestProgramWindow(tk.Frame):
         results = PM.TestProbe()
         marker_data = ""
         if results == True:
-                analyser_data = ZND.get_marker_3_command(self.analyser_serial)
+                analyser_data = ZND.get_marker_3_command(DS.get_analyser_port())
                 x = []      
                 for line in analyser_data.split('\n'):
                     if line:
                         x.extend([int(d, 16) for d in line.strip().split(' ')])
                         marker_data = np.array(x, dtype=np.int16)
-                        print("markers {}".format(marker_data))
+                     
                 else:
                     self.display_message("Probe failed")
         if self.RLLimit == -1: #check for crystal pass value, now pass every time
