@@ -36,7 +36,6 @@ import BatchManager
 from ProbeManager import ProbeManager
 import datastore
 import codecs
-import PI
 import NanoZND
 import ODMPlus
 
@@ -47,7 +46,6 @@ PM = ProbeManager()
 BM = BatchManager.BatchManager()
 ZND = NanoZND.NanoZND()
 ODM = ODMPlus.ODMData()
-p_I = PI.PI()
 DS = datastore.DataStore()
 
 
@@ -70,10 +68,10 @@ class FaultFindWindow(tk.Frame):
         self.device_details = StringVar()
         self.serialNumber = StringVar()
         self.readSerialNumber = StringVar()
-        self.analyserData1 = IntVar()
+        # self.analyserarker3 = IntVar()
         self.analyser_freq3 = IntVar()
-        self.analyserData2 = IntVar()
-        self.calbe_len = StringVar()
+        # self.analyserData2 = IntVar()
+        self.cable_len = StringVar()
         self.fault_message = StringVar()
         self.plot_text = StringVar()
         self.action = StringVar()
@@ -85,9 +83,10 @@ class FaultFindWindow(tk.Frame):
        
         # List of fault messages
         self.no_fault = "No Faults"
-        self.tx_fault = "Black or Red wire connected"
-        self.rx_fault = "Screen wires touching"
+        self.tx_fault = "Black or Red wire broken"
+        self.rx_fault = "Blue or Green wire broken"
         self.screen_fault = "Check screen wires"
+        self.crystal_error = "Check crystal"
         
         # Import images
         self.deltex = (PhotoImage(file="deltex.gif"))
@@ -112,17 +111,14 @@ class FaultFindWindow(tk.Frame):
             relx=0.1, rely=0.44, anchor='w')
         ttk.Label(self, textvariable=self.device_details, relief=SUNKEN,
                   width=30).place(relx=0.2, rely=0.44, anchor='w')
-        ttk.Label(self, textvariable=self.analyserData1, relief=SUNKEN,
-                  width=10).place(relx=0.35, rely=0.48, anchor='w')
-        ttk.Label(self, textvariable=self.calbe_len, relief=SUNKEN,
+        # ttk.Label(self, textvariable=self.analyser_freq3, relief=SUNKEN,
+        #           width=10).place(relx=0.35, rely=0.48, anchor='w')
+        ttk.Label(self, textvariable=self.cable_len, relief=SUNKEN,
                   width=10).place(relx=0.35, rely=0.53, anchor='w')
-        # ttk.Label(self, textvariable=self.analyserData2, relief=SUNKEN,
-        #           width=10).place(relx=0.25, rely=0.53, anchor='w')
-        ttk.Label(self, textvariable=self.analyserData2, relief=SUNKEN,
-                  width=10).place(relx=0.35, rely=0.58, anchor='w')
-        ttk.Label(self,text="marker 3. ").place(relx=0.2, rely=0.48, anchor='w')
+     
+        # ttk.Label(self,text="marker 3. ").place(relx=0.2, rely=0.48, anchor='w')
         ttk.Label(self,text="cable length. ").place(relx=0.2, rely=0.53, anchor='w')
-        ttk.Label(self,text="marker 1. ").place(relx=0.2, rely=0.58, anchor='w')
+     
         
         ttk.Label(self, text='Serial Number: ').place(
             relx=0.78, rely=0.18, anchor='w')
@@ -178,29 +174,19 @@ class FaultFindWindow(tk.Frame):
 
         
     def refresh_window(self):
-        label = tk.ttk
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
-        test = False
-        # Open the file in binary mode
         self.RLLimit = -1  # pass criteria for return loss measurement
-        
         self.plot_text.set("OFF")
-        DS.show_all_data()
         file_data = DS.get_batch()
         user_data = DS.get_user()
-        
         self.user_admin = DS.get_user_admin_status()
         self.analyser_port = DS.get_analyser_port()
-        
-        ZND.flush_analyser_port(self.analyser_port)
-        ZND.set_vna_controls(self.analyser_port)
-        # NanoZND.calibrate(analyser_port)
-        # NanoZND.traansform(analyser_port)
-        self.text_area.insert('1.0',user_data[0])
+        ZND.flush_analyser_port()
+        ZND.set_vna_controls()
+        self.text_area.insert('1.0',DS.get_username())
         self.text_area.insert('2.0','\nFault finding batch ')
         self.text_area.insert('2.30', file_data[0])
-        
         self.probe_type.set(file_data[1])
         self.current_batch.set(file_data[0])
         self.current_user.set(user_data[0])
@@ -209,45 +195,35 @@ class FaultFindWindow(tk.Frame):
         self.readSerialNumber.set(" ")
         self.text_area.config(state=NORMAL)
         self.ProbeIsProgrammed = PM.ProbeIsProgrammed()
-        self.get_serial_numbers()
-        self.action.set('Probe connected')
+        self.cable_length = 0
         self.fault_message.set("")
-
-        ZND.flush_analyser_port(self.analyser_port)
-        ZND.set_vna_controls(self.analyser_port)
+        Tk.update(self)
         
         
-        if ZND.SetAnalyserPort(self.analyser_port):
+        if ZND.get_analyser_port_number(self.analyser_port):
                          # Set the device connected name
                 self.device = " NanoNVA "
                 self.device_details.set(self.device) 
+                self.check_for_probe()
                         # Get the analyser to generate data points and return them
-                    
-                ZND.set_vna_controls(self.analyser_port)
-    
-        while True:
-            if PM.ProbePresent() == False:
-                self.cancel_btn.config(state=NORMAL)
-                test = False
-                self.action.set('No probe connected...')
-                ttk.Label(self, textvariable=self.action, background='#99c2ff',
+            
+    def check_for_probe(self):
+        while PM.ProbePresent() == False:
+            self.cancel_btn.config(state=NORMAL)
+            self.action.set('No probe connected...')
+            ttk.Label(self, textvariable=self.action, background='yellow',
                         width=40, relief=GROOVE).place(relx=0.2, rely=0.65, anchor='w')
-            else:
-                test = True
-                break  
+            ZND.set_vna_controls() 
             Tk.update(self)
-        
-        while test == True:  
-           
-                self.fault_message.set("")    
-                test = self.fault_find_probe()
-                Tk.update(self)
                 
+        if PM.ProbePresent() == True:       
+            self.get_serial_numbers()
+            self.fault_message.set("")    
+            self.fault_find_probe()
+        
         if PM.ProbePresent() == False:
-                            self.fault_message.set("")
-                            test = False
-                            self.refresh_window()
-                        
+            self.fault_message.set("")
+            self.refresh_window()
                
         
     def get_serial_numbers(self):
@@ -264,52 +240,56 @@ class FaultFindWindow(tk.Frame):
         try:
             self.text_area.delete('3.0','end')
             serial_results = ODM.ReadSerialODM()
-            self.SD_data.set(serial_results[0][5])
-            self.FTc_data.set(serial_results[0][6])
-            self.PV_data.set(serial_results[0][9])
+            self.SD_data.set(serial_results[5])
+            self.FTc_data.set(serial_results[6])
+            self.PV_data.set(serial_results[9])
         except:
-            self.text_area.insert('3.30', '\nODM monitor error..')
+            pass
         
         
         
         
     def fault_find_probe(self):
+        # marker3 = ""
         
-        cable_length = 0
-        marker3 = ""
         while PM.ProbePresent() == True:
             self.cancel_btn.config(state=DISABLED)
             if self.ProbeIsProgrammed == False: 
                 
                 self.action.set('Probe not programmed...')
-                # ttk.Label(self, textvariable=self.action, background='#99c2ff',
-                #         width=40, relief=GROOVE).place(relx=0.2, rely=0.65, anchor='w')
             else:
                 self.action.set('Programmed Probe connected')
                 ttk.Label(self, textvariable=self.action, background='#1fff1f',
                         width=40, relief=GROOVE).place(relx=0.2, rely=0.65, anchor='w')
             
-            cable_length = ZND.tdr(DS.get_analyser_port())
+            self.cable_length = ZND.tdr()
+            if self.cable_length > 0.83 and self.cable_length < 0.9:
+                self.fault_message.set(self.no_fault)
+            
+            # marker3 = ZND.get_marker_3_command()
+            # marker3_id,marker3_val,marker3_freq = marker3.split(' ')
                     
-            marker3 = ZND.get_marker_3_command(self.analyser_port)
-            marker3_id,marker3_val,marker3_freq = marker3.split(' ')
+            # marker1 = ZND.get_marker_1_command()
+            # marker1_id,marker1_val,marker1_freq = marker1.split(' ')
+            
                  
-            self.calbe_len.set(round(cable_length, 3))
-          
-            freq3 = marker3_freq[:6]
-            self.analyserData1.set(freq3)
+            self.cable_len.set(round(self.cable_length, 3))
+            # print(f"Cable length = {cable_length}")
+            # freq3 = marker3_freq[:6]
+         
+            # self.analyser_freq3.set(freq3)
+         
             self.show_odm_data()
             Tk.update(self)
                        
         if PM.ProbePresent() == False:
             self.fault_message.set("")
-            cable_length = 0
-            self.analyserData1.set(0)
-            self.analyserData2.set(0)
-            self.calbe_len.set(0)
+            self.analyser_freq3.set(0)
+         
+            self.cable_length = 0
+            self.cable_len.set(self.cable_length)
             self.action.set('No probe connected...')
-            ttk.Label(self, textvariable=self.action, background='#99c2ff',
+            ttk.Label(self, textvariable=self.action, background='yellow',
                         width=40, relief=GROOVE).place(relx=0.2, rely=0.65, anchor='w')
             Tk.update(self)
-            return False
         

@@ -34,29 +34,24 @@ import SecurityManager
 from SecurityManager import User
 import BatchManager
 import Sessions as SE
-import AdminUser as AU
 import datastore
+import sys
 
 
 from time import gmtime, strftime
 
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
-
 DS = datastore.DataStore()
 
 def ignore():
     return 'break'
 
-
-
 class LogInWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
         self.current_user = StringVar()
-        c_user = ""
-        
-        
+   
         self.login_btn = (PhotoImage(file="login_btn.gif"))
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
@@ -76,7 +71,6 @@ class LogInWindow(tk.Frame):
         self.entry_1 = ttk.Entry(self, textvariable=self.current_user ,font="bold")
         self.entry_2 = ttk.Entry(self, show="*", font="bold")
         self.entry_1.insert(END, 'Jack')
-        c_user = str(self.current_user.get())
         self.entry_2.insert(END, 'password')
 
         self.label_1.place(relx=0.4, rely=0.4, anchor=CENTER)
@@ -89,7 +83,7 @@ class LogInWindow(tk.Frame):
         self.logbtn.place(relx=0.5, rely=0.75 ,anchor=CENTER)
        
         
-        ttk.Button(self, text="Exit", width=20,command=lambda: self.quit()).place(relx=0.7, rely=0.75 ,anchor=CENTER)
+        ttk.Button(self, text="Exit", width=20,command=lambda: self.quit(controller)).place(relx=0.7, rely=0.75 ,anchor=CENTER)
         self.bind('<Return>', lambda event: self._login_btn_clicked)
         
         if "AM" in time_now :
@@ -129,8 +123,8 @@ class LogInWindow(tk.Frame):
                 tm.showerror("Login error", "Incorrect username or password")
             self.logbtn.config(command=lambda: self._login_btn_clicked(controller))
             
-    def quit(self):
-        quit()
+    def quit(self, controller):
+        controller.destroy()
         
         
 

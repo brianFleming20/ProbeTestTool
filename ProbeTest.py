@@ -81,16 +81,16 @@ class TestProgramWindow(tk.Frame):
         self.current_user = StringVar()
         self.probes_passed = IntVar()
         self.device_details = StringVar()
+        self.odm_details = StringVar()
         self.device = "Not connected to analyser"
+        self.odm = "Not connected to ODM"
         self.probe_type = StringVar()
         self.SD_data = IntVar()
         self.FTc_data = IntVar()
         self.PV_data = IntVar()
         self.user_admin = False
-        self.check = 0
-        self.go = False
         self.probes_passed.set(0)
-        
+        self.cont = controller
         #import images
         self.greenlight = (PhotoImage(file="green128.gif"))
         self.amberlight = (PhotoImage(file="amber128.gif"))
@@ -111,9 +111,8 @@ class TestProgramWindow(tk.Frame):
             
         else:
             self.text_area.insert('1.0','Good Afternoon ')
-        
-     
-
+            
+        self.reset()
         ttk.Label(self, text='Batch number: ').place(
             relx=0.1, rely=0.3, anchor='w')
         ttk.Label(self, textvariable=self.current_batch, relief=SUNKEN, font="bold",
@@ -128,6 +127,8 @@ class TestProgramWindow(tk.Frame):
             relx=0.73, rely=0.2, anchor='w')
         ttk.Label(self, textvariable=self.device_details, relief=SUNKEN,
                   width=30).place(relx=0.7, rely=0.25, anchor='w')
+        ttk.Label(self, textvariable=self.odm_details, relief=SUNKEN,
+                  width=30).place(relx=0.7, rely=0.30, anchor='w')
         
         ttk.Label(self, text="Data from ODM").place(
             relx=0.7, rely=0.42, anchor="w")
@@ -151,8 +152,8 @@ class TestProgramWindow(tk.Frame):
         ttk.Label(self, textvariable=self.probes_passed, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.28, rely=0.75, anchor='w')
         
-        self.ff_btn = ttk.Button(self, text=' Start fault finding ', command=lambda: controller.show_frame(FF.FaultFindWindow), 
-                   width=BTN_WIDTH)
+        self.ff_btn = ttk.Button(self, text=' Start fault finding ', 
+                command=lambda: self.find_fault_with_probe(controller), width=BTN_WIDTH)
         self.ff_btn.place(relx=0.53, rely=0.7, anchor=CENTER)
         
         ttk.Label(self, text='Probes to test: ').place(
@@ -187,11 +188,13 @@ class TestProgramWindow(tk.Frame):
             
             
             
+            
     def find_fault_with_probe(self, controller):
         if PM.ProbePresent() == True:
             controller.show_frame(FF.FaultFindWindow)
-        else:
-            self.go = True
+            self.reset()
+            self.refresh_window()
+    
       
       
 
@@ -202,103 +205,108 @@ class TestProgramWindow(tk.Frame):
         BM.SuspendBatch(self.current_batch.get())
     
         controller.show_frame(SE.SessionSelectWindow)
-   
-  
-
-    def refresh_window(self):
+    
+    
+    def reset(self):
         self.session_on_going = True
         self.analyser_serial = None
         self.reprogram = False
+        analyser_port = DS.get_analyser_port()
+        current_user = DS.get_username()
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
         file_data = DS.get_batch()
-        user_data = DS.get_user()
-        ZND.set_vna_controls(DS.get_analyser_port())
-        ZND.flush_analyser_port(DS.get_analyser_port())
-        self.text_area.insert('1.0',user_data[0])
+        ZND.flush_analyser_port()
+        ZND.set_vna_controls()
+        self.text_area.insert('1.0',current_user)
         self.text_area.insert('2.0','\nPlease continue testing batch ')
-        self.text_area.insert('2.30', file_data[0])
+        self.text_area.insert('2.30', DS.get_current_batch())
         self.left_to_test.set(file_data[2])
         self.probe_type.set(DS.get_current_probe_type())
         self.current_batch.set(DS.get_current_batch())
-        self.current_user.set(DS.get_username())
+        self.current_user.set(current_user)
         self.device_details.set(self.device)
         self.RLLimit = -1  # pass criteria for return loss measurement
         self.user_admin = DS.get_user_status()
         self.programmed = False
-        DS.set_plot_status(False)
-        
         ##############################
         # Collect analyser port data #
         ##############################
-       
-        if ZND.get_analyser_port_number(DS.get_analyser_port()):
+        if ZND.get_analyser_port_number(analyser_port):
             self.device = " NanoNVA "
             self.device_details.set(self.device)
-    
+        if ODM.get_monitor_port():
+            self.odm = " ODM Monitor "
+            self.odm_details.set(self.odm)
+  
+  
+
+    def refresh_window(self):
+        print("enter start")
         if self.user_admin == True:
                 self.display_message("Probe re-programming enabled.")
         else:
                 self.display_message("Probe re-programming disabled")
         Tk.update(self)
-       
-        while(self.session_on_going == True):
-            
-            self.status_image.configure(image=self.greylight)
-            if self.left_to_test.get() == False and self.check == False:
-                self.session_on_going == False
-                self.session_complete == True
-          
-            if PM.ProbePresent() == False:
-                self.ff_btn.config(state=DISABLED)
-                self.action.set('Connect New Probe')
-                ttk.Label(self, textvariable=self.action, background='yellow',
+        
+        while self.session_on_going == True:
+            self.action.set('Connect New Probe')
+            ttk.Label(self, textvariable=self.action, background='yellow',
                     width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w') 
-                Tk.update(self) 
-                self.update_odm_data()
-                self.refresh_window()
+            self.ff_btn.config(state=DISABLED)
+            Tk.update(self) 
+            DS.set_plot_status(False)
+        
+            while PM.ProbePresent() == True:
+                self.status_image.configure(image=self.greylight)
+                if self.left_to_test.get() == False:
+                    self.session_on_going == False
+                    self.session_complete == True
                 
-            if PM.ProbePresent() == True:
-           
-                self.ff_btn.config(state=NORMAL)
-                self.action.set('Probe connected')    
-                self.programmed = False
                 if PM.ProbePresent() == True:
+                    self.ff_btn.config(state=NORMAL)
+                    self.action.set('Probe connected') 
+                    self.update_odm_data()   
                     ttk.Label(self, textvariable=self.action, background='#1fff1f',
                         width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w') 
                     Tk.update(self) 
-          
-                    if PM.ProbeIsProgrammed() == False and self.programmed == False:
-                        snum = self.program_probe()
-                        results, marker_data = self.test_probe()
-                        self.status_image.configure(image=self.amberlight)
-
-                    elif PM.ProbeIsProgrammed() and self.user_admin:
                 
+                    if PM.ProbeIsProgrammed() == False:
+                        snum = self.program_probe()
+                        results = self.test_probe()
+                        marker_data = self.get_marker_data()
+                        self.update_results(results, snum, marker_data)
+                        self.status_image.configure(image=self.amberlight)
+                        Tk.update(self)
+                    elif PM.ProbeIsProgrammed() == True and self.user_admin == True:
                         go = tm.askyesno('Programmed Probe Detected', 
-                        'This probe is already programmed.\nDo you wish to re-program and test?') and self.status_image.configure(image=self.amberlight)
-                    
+                            'This probe is already programmed.\nDo you wish to re-program and test?') and self.status_image.configure(image=self.amberlight)
                         if go == None:
                             self.display_message("Probe re-programming enabled.")
                             snum = self.program_probe()
-                            results, marker_data = self.test_probe()
+                            results = self.test_probe()
+                            marker_data = self.get_marker_data()
                             self.update_results(results, snum, marker_data)
-                         
-                            self.status_image.configure(image=self.amberlight)
-                            
-                    else:
-                        self.display_message("Probe re-programming disabled")
-                        self.display_message("You can't re-program this probe.") 
-                   
+                            self.status_image.configure(image=self.amberlight)   
+                        else:
+                            self.display_message("Probe re-programming disabled")
                     # if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
-                         
-                    self.update_odm_data()
-                    Tk.update(self)
-                          
+                        Tk.update(self)  
+                        
+                if PM.ProbePresent() == False:
+                    self.ff_btn.config(state=DISABLED)
+                    self.action.set('Connect New Probe')
+                    ttk.Label(self, textvariable=self.action, background='yellow',
+                    width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
+                    self.reset()
+                    break
+                    
             if self.session_complete == True:
                 BM.CompleteBatch(BM.current_batch)
-
-
+                
+            
+            
+            
 
     def display_message(self, message):
         self.text_area.config(state=NORMAL)
@@ -309,69 +317,71 @@ class TestProgramWindow(tk.Frame):
 
 
     def program_probe(self):
-            probe_type = self.probe_type.get()
-         
-            serialNumber = PM.ProgramProbe(self.probe_type.get())
-            if serialNumber == False:
-                tm.showerror('Programming Error',
-                                'Unable to program\nPlease check U1')
-                self.action.set('Probe failed')
-                self.status_image.configure(image=self.redlight)
+        serialNumber = PM.ProgramProbe(self.probe_type.get())
+        if serialNumber == False:
+            tm.showerror('Programming Error',
+                                'Unable to program\nPlease probe chip.')
+            self.action.set('Probe failed')
+            self.status_image.configure(image=self.redlight)
+            ttk.Label(self, textvariable=self.action, background='orange',
+                        width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w') 
+        else:
             snum = str(codecs.decode(serialNumber, "hex"),'utf-8')[1:16]  
-      
             self.programmed = True
-            Tk.update(self)
             return snum
-
+        Tk.update(self)
+        return False
+        
 
 
     def test_probe(self):
         self.action.set('Testing probe...')
-        results = PM.TestProbe()
-        marker_data = ""
-        if results == True:
-                analyser_data = ZND.get_marker_3_command(DS.get_analyser_port())
-                x = []      
-                for line in analyser_data.split('\n'):
-                    if line:
-                        x.extend([int(d, 16) for d in line.strip().split(' ')])
-                        marker_data = np.array(x, dtype=np.int16)
-                     
+        while PM.ProbePresent() == True:
+            results = PM.TestProbe()
+            self.update_odm_data()
+            if results == True:
+                if self.RLLimit == -1: #check for crystal pass value, now pass every time
+                    self.action.set('Testing complete. Disconnect probe')
+                    self.probes_passed.set(self.probes_passed.get() + 1)
+                    self.status_image.configure(image=self.greenlight)
                 else:
-                    self.display_message("Probe failed")
-        if self.RLLimit == -1: #check for crystal pass value, now pass every time
-            self.action.set('Testing complete. Disconnect probe')
-            self.probes_passed.set(self.probes_passed.get() + 1)
-            self.status_image.configure(image=self.greenlight)
-            
-            
-        else:
-            self.status_image.configure(image=self.redlight)
-            tm.showerror('Return Loss Error',
+                    self.status_image.configure(image=self.redlight)
+                    tm.showerror('Return Loss Error',
                                     'Check crystal connections')
+            else:
+                self.display_message("Probe failed")
+        if PM.ProbePresent() == False:
+            tm.showerror('Probe removed',
+                                    'Probe failed')
+        self.reset()
+        return results
+    
+    
+
+    def get_marker_data(self):
+        marker_data = []
+        for t in range(25):
+                analyser_data = ZND.get_marker_3_command()
+                marker3_id,marker3_val,marker3_freq = analyser_data.split(' ')   
+                marker_data.append(marker3_freq)
+                
+        marker3_min = np.min(marker_data)
+        print(f"marker 3 {marker3_min}")
+        return marker3_min
         
-        return results, marker_data
-
-
+        
 
     def update_odm_data(self):
         # Collect serial data                   
-        try:
+        if ODM.ReadSerialODM() == False:
+            pass
+        else:
             serial_results = ODM.ReadSerialODM()
-            self.SD_data.set(serial_results[0][5])
-            self.FTc_data.set(serial_results[0][6])
-            self.PV_data.set(serial_results[0][9])
-            if self.user_admin == True:
-                self.display_message("Probe re-programming enabled.")
-            else:
-                self.display_message("Probe re-programming disabled")
-            Tk.update(self) 
-            return serial_results
-        except:
-            self.display_message(
-                     'Unable to collect the data from the ODM.')
-            return False
-        
+            self.SD_data.set(serial_results[5])
+            self.FTc_data.set(serial_results[6])
+            self.PV_data.set(serial_results[9])
+        Tk.update(self) 
+     
 
 
     def update_results(self, results, snum, marker_data):
@@ -387,5 +397,6 @@ class TestProgramWindow(tk.Frame):
         data_list_to_file.append(self.current_batch.get())
         data_list_to_file.append(odm_results[0][9])
         BM.saveProbeInfoToCSVFile(data_list_to_file)
+        
         
             

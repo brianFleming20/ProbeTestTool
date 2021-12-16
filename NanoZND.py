@@ -24,204 +24,152 @@ class NanoZND(object):
     '''
     
     def __init__(self):
-        self.device_details = ''
-        self.analyser_data = []
-        self.analyser_status = False
-        self.port_info = None
-        self.analyser_port = ""
-        self.command = ""
         self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
-        self._frequencies = None
         self.show_plot = False
+        self.port_info = None
         self.cable_length_calibration = 196
-    
-    def refresh_window(self):
-        self.analyser_port = DS.get_ports()[1]
-        self.port_info = serial.Serial(port = self.analyser_port, 
-                                   baudrate=1152000,
+        
+    def get_serial_port(self):
+        port = DS.get_analyser_port()
+        self.port_info = serial.Serial(port = port, 
+                                   baudrate=115200,
                                    bytesize=8,
-                                   timeout=0.05,
+                                   timeout=0.1,
                                    parity = serial.PARITY_NONE,
-                                   stopbits=serial.STOPBITS_ONE)
+                                   stopbits=serial.STOPBITS_ONE)  
         
         
+    def close_analyser_port(self):
+        self.port_info.close()
         
         
-    def ReadAnalyserData(self, analyser_port):
-        port = analyser_port
+    
+    def ReadAnalyserData(self):
+       
         line = ""
         result = ""
         c = ""
-        
-        # analyser_port = self.SetAnalyserPort(port)
-       
+      
+        self.get_serial_port() # open
+        self.port_info.readline() # discard empty line
         time.sleep(0.05) #allow time for the data to be received  
-        analyser_port.readline() # discard empty line
         while True:
-            c = analyser_port.read().decode("utf-8")
-
+            c = self.read_data()
             if c == chr(13):
-           
                 next # ignore CR
             line += c
             if c == chr(10):
                 result += line
                 line = ''
-                next
-                
+                next 
             if line.endswith('ch>'):
                 # stop on prompt
                 break
-        analyser_port.close() # Close port 
+        self.port_info.close() # Close port 
+ 
         # return self.analyser_data  
         return result
         
     
-    
-    # Set analyser port details
-    def SetAnalyserPort(self, analyser_port):
-       
-        port_info = serial.Serial(port = analyser_port, 
-                                   baudrate=115200,
-                                   bytesize=8,
-                                   timeout=0.05,
-                                   parity = serial.PARITY_NONE,
-                                   stopbits=serial.STOPBITS_ONE)
+    def get_vna_check(self, ports):
+        port = "not_connected"
         
-        return port_info
-        
-   
-    
-    def get_vna_check(self):
-        ports = DS.get_ports()
-        all_ports = ports[:-1]
-        port = None
-        serial_port = None
-        
-        for p in all_ports:
-                serial_port = self.SetAnalyserPort(p) 
-                serial_port.write(f"echo\r".encode("ascii"))
+        for p in ports:
+                self.port_info = serial.Serial(
+                    port = p, 
+                    baudrate=115200,
+                    bytesize=8,
+                    timeout=0.1,
+                    parity = serial.PARITY_NONE,
+                    stopbits=serial.STOPBITS_ONE) 
+                self.send_data(f"echo\r")
                 time.sleep(0.05)
-                read = serial_port.read().decode("utf-8")
+                read = self.read_data()
                 if read == 'e':
                     port = p
-        serial_port.close()
+        self.port_info.close()
         return port
     
-    def GetAnalyserPort(self):
-        self.refresh_window()
-        return self.port_info
-    
-    def get_marker_1_command(self, port_in):
-        serial_port = self.SetAnalyserPort(port_in) 
-        serial_port.write(f"marker 1\r".encode('ascii'))
-        return self.ReadAnalyserData( serial_port)
-        
-        
-    def get_marker_2_command(self, port_in):
-        serial_port = self.SetAnalyserPort(port_in) 
-        serial_port.write(f"marker 2\r".encode('ascii'))
-        return self.ReadAnalyserData( serial_port)
-    
-        
-    def get_marker_3_command(self, port_in):
-        serial_port = self.SetAnalyserPort(port_in) 
-      
-        serial_port.write(f"marker 3\r".encode('ascii'))
-        return self.ReadAnalyserData( serial_port)
     
     
-   
-    def dump(self, port):
-        serial_port = self.SetAnalyserPort(port)
-        data = serial_port.write("dump 0\r".encode('ascii'))
+    def get_marker_1_command(self):
+        self.get_serial_port() # open
+        self.send_data(f"marker 1\r")
+        self.port_info.close() #close
+        return self.ReadAnalyserData()
         
-        return self.ReadAnalyserData(serial_port)
+        
+    # def get_marker_2_command(self):
+       
+    #     self.port_info.write(f"marker 2\r".encode('ascii'))
+    #     return self.ReadAnalyserData()
+    
+        
+    def get_marker_3_command(self):
+        self.get_serial_port() #open
+        self.send_data("marker 3\r")
+        self.port_info.close() # close
+        analyser_data = self.ReadAnalyserData()
+        x = []      
+        for line in analyser_data.split('\n'):
+            if line:
+                x.extend([int(d, 16) for d in line.strip().split(' ')])
+                result = np.array(x, dtype=np.int16)
+        return result
+    
+
         
         
-    def fetch_frequencies(self, port):
-        port = self.SetAnalyserPort(port)
-        port.write("data\r".encode('ascii'))
-        data = self.ReadAnalyserData(port)
-        port.close()
+    def fetch_frequencies(self):
+        self.get_serial_port() # open
+        self.send_data("data s11\r")
+        self.close_analyser_port() # close
+        data = self.ReadAnalyserData()
         x = []
         for line in data.split('\n'):
             if line:
                 x.extend([float(d) for d in line.strip().split(' ')])
         result = np.array(x[0::2])
-       
-    
         return result
-        
-        
-    def data(self, port_in):
-        
-        serial_port = self.SetAnalyserPort(port_in) 
-        
-        
-        serial_port.write('data\r'.encode('ascii'))
-        return self.ReadAnalyserData(serial_port)
-    
-        
-       
-     
-        # x = []
-        # for line in data.split('\n'):
-        #     if line:
-        #         d = line.strip().split(' ')
-        #         x.append(float(d[0])+float(d[1])*1.j)
-        # return np.array(x)
-        # self.fetch_frequencies()
-        
-        
+
         
     
 
-    def set_vna_controls(self, port):
-        serial_port = self.SetAnalyserPort(port) 
-        serial_port.write(f"sweep 3000000 5000000 1\r".encode('ascii')) 
-        serial_port.close()
+    def set_vna_controls(self):
+        self.get_serial_port() # open
+        self.send_data(f"sweep 3000000 5000000 101\r") 
+        self.close_analyser_port() # close
        
    
        
-    def flush_analyser_port(self, port):
-        serial_port = self.SetAnalyserPort(port) 
-        serial_port.write("\r\n\r\n".encode("ascii")) # flush serial port  
-        serial_port.close()
-        
-    def send_scan(self, start = 1e6, stop = 900e6, points = None):
-        if points:
-            self.send_command("scan %d %d %d\r"%(start, stop, points))
-        else:
-            self.send_command("scan %d %d\r"%(start, stop))
+    def flush_analyser_port(self):
+        self.get_serial_port() # open
+        self.send_data("\r\n\r\n") # flush serial port  
+        self.close_analyser_port() # close
+
         
         
-    def tdr(self, port):
-        delay = 3
-        data = self.fetch_frequencies(port)
-        prop_speed =  78.6
-        _prop_speed = prop_speed/100
+    def tdr(self):
+        
+        data = self.fetch_frequencies()
+     
         window = np.blackman(len(data))
         NFFT = 16384
         td = np.abs(np.fft.ifft(window * data , NFFT))
         min_freq = np.min(td)
     
         pk = np.max(td) # Maximum peak value
-      
-        # peak = pk - min_freq
-        time_ = 1 / (data[2]  - data[0] )
+        time_ = 1 / (data[1]  - data[0] )
         t_axis = np.linspace(0, time_, NFFT)
-        d_axis = constants.speed_of_light * _prop_speed * (pk - min_freq)
-       
+   
         l = 1/(pk - min_freq) 
         cable_len = l/2 # cable length is 
-        # idx_pk = np.where(td[1:] == peak)
-    
-        # cable_len = d_axis[idx_pk]/2
+        td_10 = td * 1000
+       
         show = DS.get_plot_status()
         if show == True:
-            pl.plot(t_axis, td)
-            pl.xlim(0, time_)
+            pl.plot(t_axis, td_10)
+            pl.xlim(10, time_)
             pl.xlabel("time (s")
             pl.ylabel("magnitude")
            
@@ -229,25 +177,22 @@ class NanoZND(object):
         else:
             pass
         
-        return cable_len / self.cable_length_calibration
+        return (cable_len / self.cable_length_calibration) - 1
   
         
     # Return the analyser port number   
     def get_analyser_port_number(self, port):
-        analyser_port_info = self.SetAnalyserPort(port)
-        analyser_port = analyser_port_info.port
-        analyser_port_info.close()
+        analyser_port = ""
+        self.get_serial_port() # open
+        analyser_port = self.port_info.port
+            
         if analyser_port == port:
+            self.port_info.close() # close
             return True
         else:
+            self.port_info.close() # close
             return False
-    
-   
-      
-    # Return the analyser data points 
-    def Get_cable_length(self):
-        return False
-    
+
   
     
     def GetFileLocation(self):
@@ -278,3 +223,15 @@ class NanoZND(object):
  
     def GetOutFileLocation(self):
         return self.file_location
+    
+    
+    def send_data(self,data):
+        #flush the buffers
+        data_ = (ord(character) for character in data)
+        self.port_info.flushInput()   
+        self.port_info.flushOutput() 
+        self.port_info.write(data_)
+        
+        
+    def read_data(self):
+        return self.port_info.read().decode("utf-8")

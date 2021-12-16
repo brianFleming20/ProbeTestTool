@@ -29,6 +29,7 @@ to do:
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
+from tkinter import font
 import tkinter.messagebox as tm
 import BatchManager
 from BatchManager import Batch
@@ -49,13 +50,14 @@ def ignore():
     return 'break'
 
 BTN_WIDTH = 25
+BTN_HEIGHT = 18
 
 class SessionSelectWindow(tk.Frame):
     def __init__(self, parent, controller):
         # create a choose session window
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
         
-        
+ 
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
@@ -64,19 +66,23 @@ class SessionSelectWindow(tk.Frame):
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
         time_now = strftime("%H:%M:%p", gmtime())
         
-        self.SSW_b1 = ttk.Button(self, text='Start a new session', command=lambda: controller.show_frame(
-            NewSessionWindow), width=BTN_WIDTH)
-        self.SSW_b1.place(relx=0.28, rely=0.3, anchor=CENTER)
+        ttk.Button(self, text='Start a new session' , command=lambda: 
+            controller.show_frame(NewSessionWindow), 
+            width=BTN_WIDTH).place(relx=0.28, rely=0.3,  anchor=CENTER)
+        
 
         self.SSW_b2 = ttk.Button(self, text='Continue a previous session',
-                                 command=lambda: controller.show_frame(ContinueSessionWindow), width=BTN_WIDTH)
+            command=lambda: controller.show_frame(ContinueSessionWindow), width=BTN_WIDTH)
+     
         self.SSW_b2.place(relx=0.6, rely=0.3, anchor=CENTER)
 
-        self.SSW_b3 = ttk.Button(self, text='Completed Batches', command=lambda: self.completed_btn_clicked(controller), width=BTN_WIDTH)
-        self.SSW_b3.place(relx=0.28, rely=0.55, anchor=CENTER)
+        ttk.Button(self, text='Completed Batches', command=lambda: 
+            self.completed_btn_clicked(controller), 
+            width=BTN_WIDTH).place(relx=0.28, rely=0.55, anchor=CENTER)
 
-        self.SSW_b4 = ttk.Button(self, text='Admin area', command=lambda: controller.show_frame(
-            AU.AdminWindow), width=BTN_WIDTH)
+        self.SSW_b4 = ttk.Button(self, text='Admin area', command=lambda: 
+            controller.show_frame(AU.AdminWindow), width=BTN_WIDTH)
+       
         self.SSW_b4.place(relx=0.6, rely=0.55, anchor=CENTER)
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
@@ -87,10 +93,10 @@ class SessionSelectWindow(tk.Frame):
             self.text_area.insert('1.0','Good Afternoon ')
         self.text_area.config(state=DISABLED)
             
-        self.SSW_b3 = ttk.Button(self, text='Log Out', command=lambda: controller.show_frame(
-            UL.LogInWindow), width=BTN_WIDTH)
+        self.SSW_b3 = ttk.Button(self, text='Log Out', command=lambda: 
+            controller.show_frame(UL.LogInWindow), width=BTN_WIDTH)
         self.SSW_b3.place(relx=0.75, rely=0.8, anchor=CENTER)
-        
+            
 
     def refresh_window(self):
        
@@ -110,7 +116,7 @@ class SessionSelectWindow(tk.Frame):
          
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
-        self.text_area.insert('2.0',user_info[0])
+        self.text_area.insert('2.0',DS.get_username())
         self.text_area.insert('3.3','\n\nPlease choose an option.')
         self.text_area.config(state=DISABLED)
         
@@ -196,9 +202,8 @@ class NewSessionWindow(tk.Frame):
   
         
     def refresh_window(self):
-        session_info = DS.get_user()
         self.text_area.config(state=NORMAL)
-        self.text_area.insert('1.0',session_info[0])
+        self.text_area.insert('1.0',DS.get_username())
         self.text_area.insert('3.3','\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
         self.text_area.config(state=DISABLED)
         
@@ -250,20 +255,18 @@ class ContinueSessionWindow(tk.Frame):
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
         
         self.deltex = (PhotoImage(file="deltex.gif"))
-        self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
-        self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
+        ttk.Label(self, text=" ", image=self.deltex).place(relx=0.9, rely=0.1, 
+                                                           anchor=CENTER)
         
         self.text_area = tk.Text(self, height=5, width=38)
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
         
         
-        self.Label1 = ttk.Label(self, text='Choose a session to resume')
-        self.Label1.place(relx=0.5, rely=0.05, anchor=CENTER)
+        ttk.Label(self, text='Choose a session to resume').place(relx=0.5, 
+                rely=0.05, anchor=CENTER)
         
-        self.label_4 = ttk.Label(self, text="Batch number")
-        self.label_4.place(relx=0.35, rely=0.3)
-        self.label_5 = ttk.Label(self, text="Batch type")
-        self.label_5.place(relx=0.55, rely=0.3)
+        ttk.Label(self, text="Batch number").place(relx=0.35, rely=0.3)
+        ttk.Label(self, text="Batch type").place(relx=0.55, rely=0.3)
 
         self.sessionListBox = Listbox(self)
         self.sessionListBox.place(relx=0.4, rely=0.4, anchor=CENTER)
@@ -289,14 +292,9 @@ class ContinueSessionWindow(tk.Frame):
         # #create a list of the current users using the dictionary of users
         sessionList = []
         probe_typeList = []
-        user_info = []
-        
-   
-        user_info = DS.get_user()
-       
        
         self.text_area.config(state=NORMAL)
-        self.text_area.insert('1.0',user_info[0])
+        self.text_area.insert('1.0',DS.get_username())
         self.text_area.insert('3.3','\n\nPlease select a batch number\nto continue testing.')
         self.text_area.config(state=DISABLED)
 
@@ -324,20 +322,22 @@ class ContinueSessionWindow(tk.Frame):
     def continue_btn_clicked(self, controller):
         self.probe_typeListBox.config(state=NORMAL)
         batch_data = []
-        session_data = []
-        lstid = self.sessionListBox.curselection()
+        try:
+            
+            lstid = self.sessionListBox.curselection()
         
-        lstBatch = self.sessionListBox.get(lstid[0])
-        batch = BM.GetBatchObject(lstBatch)
-      
-        # DS.add_to_user_file(batch.batchNumber)
-       
-        batch_data.append(batch.batchNumber)
-        batch_data.append(batch.probe_type)
-        batch_data.append(batch.batchQty)
+            lstBatch = self.sessionListBox.get(lstid[0])
+            batch = BM.GetBatchObject(lstBatch)
+            batch_data.append(batch.batchNumber)
+            batch_data.append(batch.probe_type)
+            batch_data.append(batch.batchQty)
          
-        DS.write_to_batch_file(batch_data)
+            DS.write_to_batch_file(batch_data)
+      
+            controller.show_frame(CO.Connection)
+        except:
+            tm.showerror('Select a batch',
+                                'Unable to continue testing until you select a batch.')
       
        
         
-        controller.show_frame(CO.Connection)

@@ -7,9 +7,10 @@ import PI
 import InstrumentManager as IM
 import BatchManager
 import NanoZND
-
+import ProbeInterface
 
 BM = BatchManager.BatchManager()
+PF = ProbeInterface.PRI()
 
 class ProbeManager(object):
     '''
@@ -21,7 +22,6 @@ class ProbeManager(object):
         '''
         Constructor
         '''
-        self.PI = PI.PI()
         self.PD = PI.ProbeData()
         self.NanoZND = NanoZND.NanoZND()
         self.ZND = IM.ZND()
@@ -35,38 +35,11 @@ class ProbeManager(object):
   
     def ConnectToProbeInterface(self, com_port):
         '''
-        Pass in a com port ID (COMX) and connect to that com_port.
+        Check for the same port name as sent from the connection class to set 
+        correct port number.
         '''
+        return PF.check_port_number(com_port)
         
-        
-        self.ser = self.PI.Connect(com_port)
-      
-        if com_port == self.ser.port:
-            self.PI.SM.ClosePort(self.ser)
-            return True
-        else:
-            return False
-        
-    
-    def ConnectToAnalyzer(self, port):
-        self.NanoZND.SetAnalyserPort(port)
-        # self.NanoZND.AccessPortRead()
-         
-        
-    def set_sweep(self, start, stop):
-        if start is not None:
-            self.send_command("sweep start %d\r" % start)
-        if stop is not None:
-            self.send_command("sweep stop %d\r" % stop)
-    
-   
-    
-    def ConfigureVNA(self):
-        self.ZND.Configure()
-        
-    
-    # def ClearAnalyzer(self):
-    #     self.ZND.refresh_traces()
     
 
     
@@ -88,25 +61,24 @@ class ProbeManager(object):
         '''
         probeData = self.PD.GenerateDataString(probe_type)
         # get first two lots of 8 bights for error checking
-
         #write the data to the probe
-        self.PI.ProbeWrite(probeData[0])
-        
-        
+        PF.probe_write(probeData[0])
+            
         #check to see if programming was succesful
         pd = ''.join(probeData[1])
-        check = self.PI.ProbeReadAllBytes()
+        check = PF.read_all_bytes()
         if check == pd:
-            sn = self.PI.ProbeReadSerialNumber()
-            return sn
+                sn = PF.read_serial_number()
+                return sn
         else:
-            return False
+                return False
+      
         
     def ProbePresent(self):
         '''
-        returns True of a probe is inserted into PI, false if not
+        returns True of a probe is inserted into Probe Interface, false if not
         '''
-        if self.PI.ProbePresent() == True:
+        if PF.probe_present() == True:
             return True
         else:
             return False
@@ -116,16 +88,12 @@ class ProbeManager(object):
         Checks to see if the first byte of the eeprom is programmed with the probe type byte,
         returns true if it is, false if not
         '''
-      
-        x = self.PI.ReadFirstByte()
+        return PF.read_first_bytes()
 
-        if x in ['30','32','34','35','36','38','46']: #Probe type codes in decimal
-            return True
-        else:
-            return False
+        
 
     def read_serial_number(self):
-        return self.PI.ReadSerialNumber()
+        return PF.read_serial_number()
     
 
 class Probe(object):

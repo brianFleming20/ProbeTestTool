@@ -239,7 +239,6 @@ class DataStore():
     def set_plot_status(self, plot):
         user_status = []
         user_status.extend(self.get_user())
-        print(f"length = {len(user_status)}")
         status_len = len(user_status)
         if status_len == 3:
             user_status.pop(2)
