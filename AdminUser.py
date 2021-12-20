@@ -59,44 +59,43 @@ class AdminWindow(tk.Frame):
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
-        self.label_4 = ttk.Label(self, text="NanoZND file storage location")
-        self.entry_4 = ttk.Entry(self, textvariable=self.file)
-        
+     
         self.text_area = tk.Text(self, height=5, width=38)
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
         time_now = strftime("%H:%M:%p", gmtime())
 
-        self.label_4.place(relx=0.59, rely=0.4, anchor=CENTER)
-        self.entry_4.place(relx=0.45, rely=0.45, width=300, anchor="w")
-        
-        self.AW_addUsrBtn = ttk.Button(
-            self, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
-        self.AW_addUsrBtn.place(relx=0.42, rely=0.65, anchor=CENTER)
-
-        self.AW_editUsrBtn = ttk.Button(
-            self, text='Edit a current user', command=lambda: controller.show_frame(EditUserWindow))
-        self.AW_editUsrBtn.place(relx=0.62, rely=0.65, anchor=CENTER)
-        
-        self.AW_editUsrBtn = ttk.Button(
-            self, text='Edit a device port number', command=lambda: controller.show_frame(AP.AdminPorts))
-        self.AW_editUsrBtn.place(relx=0.42, rely=0.80, anchor=CENTER)
-        
-        self.AW_adminLogoutBtn = ttk.Button(
-            self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))
-        self.AW_adminLogoutBtn.place(relx=0.62, rely=0.80, anchor=CENTER)
+        self.label_4 = ttk.Label(self, text="NanoZND file storage location")
+        self.entry_4 = ttk.Entry(self, textvariable=self.file)
+        self.label_4.place(relx=0.25, rely=0.7, anchor=CENTER)
+        self.entry_4.place(relx=0.1, rely=0.75, width=300, anchor="w")
         
         self.browseBtn = ttk.Button(
             self, text="Browse", command=lambda: self._browse_btn_clicked(controller))
-        self.browseBtn.grid(row=2, column=1)
-        self.browseBtn.place(relx=0.8, rely=0.45, anchor=CENTER)
-       
+        self.browseBtn.place(relx=0.43, rely=0.73)
+        
+        self.AW_addUsrBtn = ttk.Button(
+            self, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
+        self.AW_addUsrBtn.place(relx=0.1, rely=0.4, anchor=W)
+
+        self.AW_editUsrBtn = ttk.Button(
+            self, text='Edit a current user', command=lambda: controller.show_frame(EditUserWindow))
+        self.AW_editUsrBtn.place(relx=0.1, rely=0.5, anchor=W)
+        
+        self.AW_editUsrBtn = ttk.Button(
+            self, text='Edit a device port number', command=lambda: controller.show_frame(AP.AdminPorts))
+        self.AW_editUsrBtn.place(relx=0.1, rely=0.6, anchor=W)
+        
+        self.AW_adminLogoutBtn = ttk.Button(
+            self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))
+        self.AW_adminLogoutBtn.place(relx=0.8, rely=0.75, anchor=E)
         
         self.label = ttk.Label(self, text="Probe re-program Off / On")
-        self.label.place(relx=0.08, rely=0.42, anchor=CENTER)
-        self.w2 = Scale(self, label="Off",from_=0, to=1, command=self.update ,orient=HORIZONTAL)
+        self.label.place(relx=0.7, rely=0.38, anchor=CENTER)
+        ttk.Label(self, text="OFF").place(relx=0.61, rely=0.45)
+        ttk.Label(self, text="ON").place(relx=0.76, rely=0.45)
+        self.w2 = Scale(self,from_=0, to=1, command=self.update ,orient=HORIZONTAL)
         self.w2.set(0)
-        self.w2.place(relx=0.5, rely=0.5, anchor=CENTER)
-        self.w2.pack(side='left')
+        self.w2.place(relx=0.7, rely=0.45,anchor=CENTER)
         
         if "AM" in time_now :
             self.text_area.insert('1.0','Good Morning ')

@@ -71,13 +71,12 @@ class Connection(tk.Frame):
         
         self.confm_btn = tk.Button(self, text='Continue', padx=2, pady=3,
                                    width=20, command=lambda: self.test_connections(controller))
-        self.confm_btn.place(relx=0.4, rely=0.8, anchor=CENTER)
+        self.confm_btn.place(relx=0.7, rely=0.8, anchor=CENTER)
         self.confm_btn.config(state=NORMAL)
 
         tk.Button(self, text='Cancel', padx=2, pady=3,
                     width=20, command=lambda: 
-                        controller.show_frame(SE.SessionSelectWindow)).place(relx=0.6, 
-                            rely=0.8, anchor=CENTER)
+                        controller.show_frame(SE.SessionSelectWindow)).place(relx=0.3, rely=0.8, anchor=CENTER)
 
         self.bind('<Return>', self.test_connections)
         self.text_area.insert('1.0', "\nPlease continue to the next screen..")  

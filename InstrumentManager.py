@@ -250,7 +250,7 @@ class ZND(object):
         # CH3TR2_Data.append(TxMinMag)
         # CH3TR2_Data.append(self.znd.query("CALC:DATA:TRAC? 'CH3TR2', FDAT")[:-2])
         
-        rlist = []
+        rlist = True
         # rlist.append(CH1TR1_Data)
         # rlist.append(CH1TR2_Data)
         # rlist.append(CH2TR1_Data)

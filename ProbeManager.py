@@ -44,10 +44,10 @@ class ProbeManager(object):
 
     
     def TestProbe(self):
-        
+        print("test probe in PM")
         try:
             r = self.ZND.get_trace_values()
-            r = True
+            # r = True
         except:
             r = False
         

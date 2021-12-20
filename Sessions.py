@@ -95,7 +95,7 @@ class SessionSelectWindow(tk.Frame):
             
         self.SSW_b3 = ttk.Button(self, text='Log Out', command=lambda: 
             controller.show_frame(UL.LogInWindow), width=BTN_WIDTH)
-        self.SSW_b3.place(relx=0.75, rely=0.8, anchor=CENTER)
+        self.SSW_b3.place(relx=0.3, rely=0.8, anchor=CENTER)
             
 
     def refresh_window(self):
@@ -134,9 +134,9 @@ class NewSessionWindow(tk.Frame):
         # Details Screen
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
 
-        batch_frame = tk.Frame(self, pady=3)
+        # batch_frame = tk.Frame(self, pady=3)
         probe_type_frame = tk.Frame(self, pady=3, padx=50, bg= '#E0FFFF')
-        button_frame = tk.Frame(self, pady=3)
+        # button_frame = tk.Frame(self, pady=3)
         
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
@@ -144,7 +144,7 @@ class NewSessionWindow(tk.Frame):
         
         self.text_area = tk.Text(self, height=5, width=38)
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
-        time_now = strftime("%H:%M:%p", gmtime())
+        # time_now = strftime("%H:%M:%p", gmtime())
 
         #batch_frame.grid(row=0, sticky="ew")
         probe_type_frame.place(relx=0.2, rely=0.45,anchor=CENTER)
@@ -156,46 +156,58 @@ class NewSessionWindow(tk.Frame):
         self.NSWL1.place(relx=0.5, rely=0.35, anchor=CENTER)
 
         self.NSWE1 = ttk.Entry(self, textvariable=self.batchNumber)
-        self.NSWE1.place(relx=0.7, rely=0.35, anchor=CENTER)
+        self.NSWE1.place(relx=0.62, rely=0.35, anchor=CENTER)
         
         self.NSWL1 = ttk.Label(self, text='Batch Qty: ', justify=RIGHT)
         self.NSWL1.place(relx=0.5, rely=0.45, anchor=CENTER)
         
         self.NSWE1 = ttk.Entry(self, textvariable=self.batchQty)
-        self.NSWE1.place(relx=0.7, rely=0.45, anchor=CENTER)
+        self.NSWE1.place(relx=0.7, rely=0.45, anchor=E)
 
         self.NSWL2 = ttk.Label(self, text='Select Probe Type: ')
         self.NSWL2.place(relx=0.2, rely=0.7, anchor=CENTER)
         
-       
+        self.probe_type = StringVar(probe_type_frame, "DP240")
+        # Dictionary to create multiple buttons
+        values = {"DP240 [9070-7005]" : "DP240",
+        "DP12 [9070-7003]  " : "DP12 ",
+        "DP6 [9070-7001]    " : "DP6  ",
+        "I2C [9090-7014]     " : "I2C  ",
+        "I2P [9090-7013]     " : "I2P  ",
+        "I2S [9090-7012]      " : "I2S  ",
+        "KDP72 [9081-7001]" : "KDP  "}
+        
+        for (text, value) in values.items():
+            Radiobutton(probe_type_frame, text = text, variable = self.probe_type,
+            value = value).pack(side = TOP, ipady = 5)
       
 
-        # tk.Radiobutton(probe_type_frame, text='SDP30 [Suprasternal Probe]',
-        #                variable=self.probe_type, value='SDP30').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='DP240 [9070-7005]',
-                       variable=self.probe_type, value='DP240').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='DP12 [9070-7003]',
-                       variable=self.probe_type, value='DP12').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='DP6 [9070-7001]',
-                       variable=self.probe_type, value='DP6').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='I2C [9090-7014]',
-                       variable=self.probe_type, value='I2C').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='I2P [9090-7013]', 
-                       variable=self.probe_type, value='I2P').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='I2S [9090-7012]', 
-                       variable=self.probe_type, value='I2S').pack(fill=X, ipady=5)
-        tk.Radiobutton(probe_type_frame, text='KDP72 [9081-7001]', 
-                       variable=self.probe_type, value='KDP').pack(fill=X, ipady=5)
-        # tk.Radiobutton(probe_type_frame, text='Blank',
-        #                variable=self.probe_type, value='Blank').pack(fill=X, ipady=7)
+        # # tk.Radiobutton(probe_type_frame, text='SDP30 [Suprasternal Probe]',
+        # #                variable=self.probe_type, value='SDP30').pack(fill=X, ipady=5)
+        # tk.Radiobutton(probe_type_frame, text='DP240 [9070-7005]',
+        #                variable=self.probe_type, value='DP240').pack(side=TOP, ipady=5)
+        # tk.Radiobutton(probe_type_frame, text='DP12 [9070-7003]',
+        #                variable=self.probe_type, value='DP12').pack(fill=X, ipady=5)
+        # tk.Radiobutton(probe_type_frame, text='DP6 [9070-7001]',
+        #                variable=self.probe_type, value='DP6').pack(fill=X, ipady=5)
+        # tk.Radiobutton(probe_type_frame, text='I2C [9090-7014]',
+        #                variable=self.probe_type, value='I2C').pack(fill=X, ipady=5)
+        # tk.Radiobutton(probe_type_frame, text='I2P [9090-7013]', 
+        #                variable=self.probe_type, value='I2P').pack(fill=X, ipady=5)
+        # tk.Radiobutton(probe_type_frame, text='I2S [9090-7012]', 
+        #                variable=self.probe_type, value='I2S').pack(fill=X, ipady=5)
+        # tk.Radiobutton(probe_type_frame, text='KDP72 [9081-7001]', 
+        #                variable=self.probe_type, value='KDP').pack(fill=X, ipady=5)
+        # # tk.Radiobutton(probe_type_frame, text='Blank',
+        # #                variable=self.probe_type, value='Blank').pack(fill=X, ipady=7)
         
         self.confm_btn = tk.Button(self, text='Confirm', padx=2, pady=3,
-                                   width=BTN_WIDTH, command=lambda: self.confm_btn_clicked(controller))
-        self.confm_btn.place(relx=0.3, rely=0.8, anchor=CENTER)
+                width=BTN_WIDTH, command=lambda: self.confm_btn_clicked(controller))
+        self.confm_btn.place(relx=0.8, rely=0.8, anchor=CENTER)
 
         self.cancl_btn = tk.Button(self, text='Cancel', padx=2, pady=3, width=BTN_WIDTH,
-                                   command=lambda: controller.show_frame(SessionSelectWindow))
-        self.cancl_btn.place(relx=0.7, rely=0.8, anchor=CENTER)
+                command=lambda: controller.show_frame(SessionSelectWindow))
+        self.cancl_btn.place(relx=0.5, rely=0.8, anchor=CENTER)
 
         self.bind('<Return>', self.confm_btn_clicked)
         
@@ -270,23 +282,22 @@ class ContinueSessionWindow(tk.Frame):
 
         self.sessionListBox = Listbox(self)
         self.sessionListBox.place(relx=0.4, rely=0.4, anchor=CENTER)
-        self.sessionListBox.config(height=3, width=20)
+        self.sessionListBox.config(height=4, width=20)
         
         self.probe_typeListBox = Listbox(self)
         self.probe_typeListBox.place(relx=0.6, rely=0.4, anchor=CENTER)
-        self.probe_typeListBox.config(height=3, width=15)
+        self.probe_typeListBox.config(height=4, width=15)
         
 
         self.continue_btn = ttk.Button(
             self, text='Continue Session', command=lambda: self.continue_btn_clicked(controller))
-        self.continue_btn.place(relx=0.4, rely=0.8, anchor=CENTER)
+        self.continue_btn.place(relx=0.7, rely=0.8, anchor=CENTER)
 
         self.cancel_btn = ttk.Button(
             self, text='Cancel', command=lambda: controller.show_frame(SessionSelectWindow))
-        self.cancel_btn.place(relx=0.6, rely=0.8, anchor=CENTER)
+        self.cancel_btn.place(relx=0.3, rely=0.8, anchor=CENTER)
         
 
-        # self.refresh_window()
 
     def refresh_window(self):
         # #create a list of the current users using the dictionary of users

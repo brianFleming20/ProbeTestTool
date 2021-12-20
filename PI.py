@@ -40,13 +40,13 @@ class ProbeData(object):
         self.timeStamp = ''
         self.typeBytes = ''
         
-        self.DP240TypeBytes = ['50','46','30','4a']
-        self.DP12TypeBytes = ['50','30','43','4a']
-        self.DP6TypeBytes = ['50','30','36','4a']
-        self.I2CTypeBytes = ['50','34','38','4a']
-        self.I2PTypeBytes = ['50','31','38','4a']
-        self.I2STypeBytes = ['50','30','36','4a']
-        self.KDP72TypeBytes = ['50','34','38','4a']
+        self.DP240TypeBytes = ['32','46','30','4a']
+        self.DP12TypeBytes = ['32','30','43','4a']
+        self.DP6TypeBytes = ['32','30','36','4a']
+        self.I2CTypeBytes = ['36','34','38','4a']
+        self.I2PTypeBytes = ['36','31','38','4a']
+        self.I2STypeBytes = ['36','30','36','4a']
+        self.KDP72TypeBytes = ['35','34','38','4a']
         self.SDP30TypeBytes = ['53','33','30','4a']
 
 

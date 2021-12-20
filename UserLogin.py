@@ -80,10 +80,10 @@ class LogInWindow(tk.Frame):
 
         self.logbtn = ttk.Button(
             self, text="Login",image=self.login_btn, width=20,command=lambda: self._login_btn_clicked(controller))
-        self.logbtn.place(relx=0.5, rely=0.75 ,anchor=CENTER)
+        self.logbtn.place(relx=0.7, rely=0.75 ,anchor=CENTER)
        
         
-        ttk.Button(self, text="Exit", width=20,command=lambda: self.quit(controller)).place(relx=0.7, rely=0.75 ,anchor=CENTER)
+        ttk.Button(self, text="Exit", width=20,command=lambda: self.quit(controller)).place(relx=0.35, rely=0.75 ,anchor=CENTER)
         self.bind('<Return>', lambda event: self._login_btn_clicked)
         
         if "AM" in time_now :
