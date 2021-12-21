@@ -29,6 +29,7 @@ to do:
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
+from tkinter.ttk import *
 from tkinter import font
 import tkinter.messagebox as tm
 import BatchManager
@@ -54,10 +55,13 @@ BTN_HEIGHT = 18
 
 class SessionSelectWindow(tk.Frame):
     def __init__(self, parent, controller):
+        super().__init__()
         # create a choose session window
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
-        
- 
+        # s=ttk.Style()
+        # s.theme_names()
+        # s.theme_use('default')
+
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
@@ -67,7 +71,7 @@ class SessionSelectWindow(tk.Frame):
         time_now = strftime("%H:%M:%p", gmtime())
         
         ttk.Button(self, text='Start a new session' , command=lambda: 
-            controller.show_frame(NewSessionWindow), 
+            controller.show_frame(NewSessionWindow),
             width=BTN_WIDTH).place(relx=0.28, rely=0.3,  anchor=CENTER)
         
 

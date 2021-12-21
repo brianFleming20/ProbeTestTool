@@ -82,15 +82,12 @@ class TestProgramWindow(tk.Frame):
         self.probes_passed = IntVar()
         self.device_details = StringVar()
         self.odm_details = StringVar()
-        self.device = "Not connected to analyser"
-        self.odm = "Not connected to ODM"
         self.probe_type = StringVar()
         self.SD_data = IntVar()
         self.FTc_data = IntVar()
         self.PV_data = IntVar()
         self.user_admin = False
         self.probes_passed.set(0)
-        self.cont = controller
         #import images
         self.greenlight = (PhotoImage(file="green128.gif"))
         self.amberlight = (PhotoImage(file="amber128.gif"))
@@ -207,11 +204,12 @@ class TestProgramWindow(tk.Frame):
         self.probe_type.set(DS.get_current_probe_type())
         self.current_batch.set(DS.get_current_batch())
         self.current_user.set(current_user)
-        self.device_details.set(self.device)
         self.RLLimit = -1  # pass criteria for return loss measurement
         self.user_admin = DS.get_user_status()
         self.programmed = False
         self.status_image.configure(image=self.greylight)
+        ttk.Label(self, textvariable=self.action, background='yellow',
+                        width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
         ##############################
         # Collect analyser port data #
         ##############################
@@ -260,7 +258,7 @@ class TestProgramWindow(tk.Frame):
                         marker_data = self.get_marker_data()
                         if snum != False:
                             self.update_results(results, snum, marker_data)
-                    
+                            
                         Tk.update(self)    
                     else:
                         self.display_message("Probe re-programming disabled")
@@ -281,18 +279,22 @@ class TestProgramWindow(tk.Frame):
                     else:
                         break
                     
-                    
         if self.session_complete == True:
                 BM.CompleteBatch(BM.current_batch)
                 
             
+            
     def set_display(self):
-        if ZND.get_analyser_port_number(DS.get_admin()):
-            self.device = " NanoNVA "
-            self.device_details.set(self.device)
+        odm = "Not connected to ODM"
+        device = "Not connected to analyser"
+        if ZND.get_analyser_port_number(DS.get_analyser_port()):
+            device = " NanoNVA "
+        self.device_details.set(device)
         if ODM.get_monitor_port():
-            self.odm = " ODM Monitor "
-            self.odm_details.set(self.odm)    
+            odm = " ODM Monitor "
+        self.odm_details.set(odm)    
+            
+            
             
     def display_message(self, message):
         self.text_area.config(state=NORMAL)
@@ -313,15 +315,15 @@ class TestProgramWindow(tk.Frame):
             tm.showerror('Programming Error',
                                 'Unable to program\nPlease check probe chip.')
             self.action.set('Probe failed')
-            Tk.update(self) 
+            
             self.status_image.configure(image=self.redlight)
             ttk.Label(self, textvariable=self.action, background='orange',
                         width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w') 
+            Tk.update(self) 
         else:
             snum = str(codecs.decode(serialNumber, "hex"),'utf-8')[:16]  
             self.programmed = True
             return snum
-     
         return False
         
 
@@ -344,11 +346,14 @@ class TestProgramWindow(tk.Frame):
                     self.status_image.configure(image=self.redlight)
                     tm.showerror('Return Loss Error',
                                     'Check crystal connections')
-            else:
+            if results == False:
                 self.display_message("Probe failed")
-        if PM.ProbePresent() == False:
-            tm.showerror('Probe removed',
-                                    'Probe failed')
+                tm.showerror('Probe Info',
+                                    'Probe Failed....')
+        else:
+            tm.showerror('Probe failed',
+                                    'Probe removed....')
+            self.RLLimit = "removed"
         self.reset()
         return self.RLLimit
     

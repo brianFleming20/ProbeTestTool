@@ -24,21 +24,21 @@ class ODMData(object):
   
     def get_odm_port(self):
         port_number = DS.get_ODM_port()
-        try:
-            self.odm_port = serial.Serial(port = port_number,
-                                    baudrate=9600,
-                                    bytesize=8,
-                                    timeout=1,
-                                    parity= serial.PARITY_NONE,
-                                    stopbits=serial.STOPBITS_ONE)
-        except:
-            tm.showerror('ODM error',
-                                    'Please restart...')
+        self.odm_port = serial.Serial()
+        self.odm_port.baudrate = '9600'
+        self.odm_port.port = port_number
+        self.odm_port.bytesize = 8
+        self.odm_port.timeout = 1
         
         
         
     def close_port(self):
         self.odm_port.close()
+        
+        
+    def check_port_open(self):
+        if self.odm_port == None:
+            self.get_odm_port() 
 
     
         
@@ -49,13 +49,9 @@ class ODMData(object):
         temp = ""
         parameters = ''
         # Set up port connection
-        self.get_odm_port()
-        # Access the ODM via the port
-      
-        # while 'A' not in parameters:
-        #     parameters = self.odm_port.readline()
+        self.check_port_open()
+        self.odm_port.open()
         
-                  # Test for end of parameters
         parameters = self.odm_port.readline() # read line of ODM
       
         for data in parameters:
@@ -70,20 +66,13 @@ class ODMData(object):
     
     def get_monitor_port(self):
         read = [0,0,0,0,"not_connected"]
-        
+        read = self.ReadSerialODM()
         try:
-        
-            read = self.ReadSerialODM()
             if read[4].strip().isdigit():
                 return True
         except:
             return False
       
-    
-      
-        
-    
-        
     # def GetODMParameters(self):
     #     packet = bytearray()
         

@@ -27,30 +27,34 @@ class NanoZND(object):
         self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
         self.show_plot = False
         self.analyser_port = None
+        self.ser = None
         self.cable_length_calibration = 196
         
-    def get_serial_port(self, port):
-        self.analyser_port = serial.Serial(port = port, 
-                                   baudrate=115200,
-                                   bytesize=8,
-                                   timeout=1,
-                                   parity = serial.PARITY_NONE,
-                                   stopbits=serial.STOPBITS_ONE)  
+        
+    def get_serial_port(self, serial_port):
+        self.ser = serial.Serial()
+        self.ser.baudrate = '115200'
+        self.ser.port = serial_port
+        self.ser.bytesize = 8
+        self.ser.timeout = 1
         
         
     def close_analyser_port(self):
-        self.analyser_port.close()
+        self.ser.close()
         
         
+    def check_port_open(self):
+        if self.ser == None:
+            self.get_serial_port(DS.get_analyser_port())   
+            
     
     def ReadAnalyserData(self):
-        print("reading data")
         line = ""
         result = ""
         c = ""
         # port = DS.get_analyser_port()
-        # self.get_serial_port(port) # open
-        self.analyser_port.readline() # discard empty line
+        # self.ser.open() # open
+        self.ser.readline() # discard empty line
         time.sleep(0.05) #allow time for the data to be received  
         while True:
             c = self.read_data()
@@ -64,23 +68,22 @@ class NanoZND(object):
             if line.endswith('ch>'):
                 # stop on prompt
                 break
-        self.analyser_port.close() # Close port 
+   
         return result
         
     
     def get_vna_check(self, ports):
         port = "not_connected"
-        
+        self.check_port_open()
         for p in ports:
             self.get_serial_port(p)
-            self.analyser_port.flushInput()
+            self.ser.open()
             self.send_data(f"echo\r")
             time.sleep(0.05)
             read = self.read_data()
             if read == 'e':
                 port = p
-            self.send_data("\r\n\r\n") 
-        self.analyser_port.close()
+        self.close_analyser_port()
         return port
     
     
@@ -100,8 +103,8 @@ class NanoZND(object):
     
         
     def get_marker_3_command(self):
-        port = DS.get_analyser_port()
-        self.get_serial_port(port) #open
+        self.check_port_open()
+        self.ser.open()
         self.send_data("marker 3\r")
         # self.analyser_port.close() # close
         analyser_data = self.ReadAnalyserData()
@@ -116,11 +119,12 @@ class NanoZND(object):
         
         
     def fetch_frequencies(self):
-        port = DS.get_analyser_port()
-        self.get_serial_port(port) # open
+        self.check_port_open()
+        self.ser.open()
         self.send_data("data s11\r")
         # self.close_analyser_port() # close
         data = self.ReadAnalyserData()
+        self.close_analyser_port()
         x = []
         for line in data.split('\n'):
             if line:
@@ -132,16 +136,16 @@ class NanoZND(object):
     
 
     def set_vna_controls(self):
-        port = DS.get_analyser_port()
-        self.get_serial_port(port) # open
+        self.check_port_open()
+        self.ser.open()
         self.send_data(f"sweep 3000000 5000000 1\r") 
         self.close_analyser_port() # close
        
    
        
     def flush_analyser_port(self):
-        port = DS.get_analyser_port()
-        self.get_serial_port(port) # open
+        self.check_port_open()
+        self.ser.open()
         self.send_data("\r\n\r\n") # flush serial port  
         self.close_analyser_port() # close
 
@@ -180,16 +184,16 @@ class NanoZND(object):
         
     # Return the analyser port number   
     def get_analyser_port_number(self, port):
-        port = DS.get_analyser_port()
         analyser_port = ""
-        self.get_serial_port(port) # open
-        analyser_port = self.analyser_port.port
+        self.check_port_open()
+        self.ser.open() # open
+        analyser_port = self.ser.port
             
         if analyser_port == port:
-            self.analyser_port.close() # close
+            self.close_analyser_port() # close
             return True
         else:
-            self.analyser_port.close() # close
+            self.close_analyser_port()# close
             return False
 
   
@@ -226,11 +230,16 @@ class NanoZND(object):
     
     def send_data(self,data):
         #flush the buffers
+     
         data_ = (ord(character) for character in data)
-        self.analyser_port.flushInput()   
-        self.analyser_port.flushOutput() 
-        self.analyser_port.write(data_)
+        self.ser.flushInput()   
+        self.ser.flushOutput() 
+        self.ser.write(data_)
+    
         
         
     def read_data(self):
-        return self.analyser_port.read().decode("utf-8")
+      
+        result = self.ser.read().decode("utf-8")
+      
+        return result
