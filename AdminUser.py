@@ -38,13 +38,11 @@ import Sessions as SE
 import AdminPortControl as AP
 import datastore
 import NanoZND
-import random
-import io
-import pickle
+
 
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
-NanoZND = NanoZND.NanoZND()
+ZND = NanoZND.NanoZND()
 DS = datastore.DataStore()
 
 def ignore():
@@ -54,7 +52,7 @@ class AdminWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
         self.file = StringVar()
-        self.file.set(NanoZND.GetFileLocation())
+        self.file.set(ZND.GetFileLocation())
         
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
@@ -70,7 +68,7 @@ class AdminWindow(tk.Frame):
         self.entry_4.place(relx=0.1, rely=0.75, width=300, anchor="w")
         
         self.browseBtn = ttk.Button(
-            self, text="Browse", command=lambda: self._browse_btn_clicked(controller))
+            self, text="Browse", command=lambda: self._browse_btn_clicked())
         self.browseBtn.place(relx=0.43, rely=0.73)
         
         self.AW_addUsrBtn = ttk.Button(
@@ -140,12 +138,12 @@ class AdminWindow(tk.Frame):
         self.text_area.config(state=DISABLED)
      
         
-    def _browse_btn_clicked(self, controller):
+    def _browse_btn_clicked(self):
         filename = filedialog.askopenfilenames(initialdir = "/",title = "Select file",
                                                filetypes = ((".csv files","*.csv"),
                                                             ("all files","*.*")))     
-        NanoZND.SetFileLocation(filename)
-        self.file = NanoZND.GetFileLocation()   
+        ZND.SetFileLocation(filename)
+        self.file = ZND.GetFileLocation()   
         
 
 class ChangePasswordWindow(tk.Frame):

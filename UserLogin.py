@@ -35,7 +35,7 @@ from SecurityManager import User
 import BatchManager
 import Sessions as SE
 import datastore
-import sys
+
 
 
 from time import gmtime, strftime
@@ -60,8 +60,8 @@ class LogInWindow(tk.Frame):
         self.label_4 = ttk.Label(self, image=self.title)
         self.label_4.place(relx=0.5, rely=0.1, anchor=CENTER)
 
-        self.label_1 = ttk.Label(self, text="Username")
-        self.label_2 = ttk.Label(self, text="Password")
+        self.label_1 = ttk.Label(self, text="Username",width=40)
+        self.label_2 = ttk.Label(self, text="Password",width=40)
         self.label_5 = ttk.Label(self, text="Good morning.", font=("bold", 20))
         self.label_6 = ttk.Label(self, text="Good afternoon.", font=("bold", 20))
         time_now = strftime("%H:%M:%p", gmtime())
@@ -73,17 +73,21 @@ class LogInWindow(tk.Frame):
         self.entry_1.insert(END, 'Jack')
         self.entry_2.insert(END, 'password')
 
-        self.label_1.place(relx=0.4, rely=0.4, anchor=CENTER)
-        self.label_2.place(relx=0.4, rely=0.5, anchor=CENTER)
+        self.label_1.config(font=("Courier", 14))
+        self.label_2.config(font=("Courier", 14))
+        self.entry_1.config(font=("Courier", 14))
+        self.entry_2.config(font=("Courier", 14))
+        self.label_1.place(relx=0.55, rely=0.4, anchor=CENTER)
+        self.label_2.place(relx=0.55, rely=0.5, anchor=CENTER)
         self.entry_1.place(relx=0.6, rely=0.4, anchor=CENTER)
         self.entry_2.place(relx=0.6, rely=0.5, anchor=CENTER)
 
         self.logbtn = ttk.Button(
             self, text="Login",image=self.login_btn, width=20,command=lambda: self._login_btn_clicked(controller))
-        self.logbtn.place(relx=0.7, rely=0.75 ,anchor=CENTER)
+        self.logbtn.place(relx=0.88, rely=0.5 ,anchor=CENTER)
        
         
-        ttk.Button(self, text="Exit", width=20,command=lambda: self.quit(controller)).place(relx=0.35, rely=0.75 ,anchor=CENTER)
+        ttk.Button(self, text="Exit", width=20,command=lambda: self.quit(controller)).place(relx=0.88, rely=0.65 ,anchor=CENTER)
         self.bind('<Return>', lambda event: self._login_btn_clicked)
         
         if "AM" in time_now :

@@ -8,11 +8,11 @@ fix path variables
 import csv
 import os
 from time import gmtime, strftime
-import pickle
-import pdb
+import NanoZND
 import datastore
 
 DS = datastore.DataStore()
+ZND = NanoZND.NanoZND()
 
 
 class BatchManager(object):
@@ -66,23 +66,23 @@ class BatchManager(object):
         check if batch object is the current batch
         makes the current_batch False
         '''
-     
         batch_data = DS.get_batch()
         batch_number = batch_data[0]
         probe_type = batch_data[1]
         probesleft = batch_data[2]
        
-        myvar = DS.get_user()
-        user = myvar[0]
+        user_data = DS.get_user()
+        user = user_data[0]
 
-           
         if batchnumber == batch_number:
             time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             Stime_now = str(time_now)
-            info = [batchnumber, probe_type, probesleft, user, time_now]
+            info = [batchnumber, probe_type, probesleft, user, Stime_now]
            
             self.CSVM.WriteListOfListsCSV(info, batchnumber) 
         self.current_batch = False
+        
+        
         
     def updateBatchInfo(self):
         session_data = []
@@ -93,9 +93,11 @@ class BatchManager(object):
        
         self.current_batch = self.GetBatchObject(session_data[0])
         
-    def saveProbeInfoToCSVFile(self, data_list):
-        
+    def saveProbeInfoToCSVFile(self, list):
+        data_list = []
+        data_list.extend(list)
         time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        
         data_list.append(time_now)
         self.CSVM.WriteProbeDataToFile(data_list)
         
@@ -105,6 +107,7 @@ class BatchManager(object):
         pass in a batch object, check if this is in the availableBatchs list , if so: 
         make the batch the current_batch
         '''
+        
         if batch.batchNumber in self.CSVM.GetFileNames():
             
             self.current_batch = batch
@@ -144,18 +147,12 @@ class BatchManager(object):
     
     def GetBatchObject(self, batchNumber):
         #get the batch's info list
-      
         info = self.CSVM.ReadLastLine(batchNumber)
-        
         for item in info:
-                
+            print(f"batch item {item}")
             if batchNumber in item[0]:
                 info = item[:]
-                    
-        
-        
-        
-        
+       
         try:  
             #get the batch's probe type
             probe_type = info[1]
@@ -164,8 +161,6 @@ class BatchManager(object):
         except:
             probe_type = "unable to read"
             batchQty = 0    
-        
-  
         
         batch = Batch(batchNumber)
         batch.probe_type = probe_type
@@ -180,11 +175,15 @@ class BatchManager(object):
         '''
         self.CSVM.WriteListOfListsCSV(results, batchNumber)   #create the CSV file
         
+        
+        
     def testCSVRead(self, batchNumber):
         fullPathTest = os.path.abspath(self.inProgressPathTest + batchNumber + '.csv')
         with open(fullPathTest, 'rb') as csvfile:
             datareader = csv.reader(csvfile)
         csvfile.close()
+        
+        
         
     def ReadProbeSerialNumber(self, batchNumber):
         info = self.GetBatchObject(batchNumber)
@@ -200,6 +199,7 @@ class CSVManager(object):
         self.path = os.path.join("C:\\Users", os.getenv('username'), "Desktop\\PTT_Results", "")
         self.inProgressPath = os.path.join(self.path, "in_progress", "")
         self.completePath = os.path.join(self.path, "complete", "")
+        self.save_path = ""
         
         #os.rmdir(self.inProgressPath)
         #os.rmdir(self.completePath)
@@ -230,6 +230,13 @@ class CSVManager(object):
                 print ("Creation of the directory %s failed" % self.completePath)
             else:
                 print ("Successfully created the directory %s" % self.completePath)
+                
+    
+    def get_save_path(self):
+        self.save_path = ZND.GetFileLocation()
+        print(f"file location is {self.save_path}")
+        print(f"set save path {self.path}")
+                
 
     def GetFileNamesInProgress(self):
         '''
@@ -246,6 +253,8 @@ class CSVManager(object):
         
         return batches
     
+    
+    
     def GetFileNamesComplete(self):
         '''
         tick
@@ -261,6 +270,8 @@ class CSVManager(object):
             newList.append(newItem)
         
         return newList
+    
+    
     
     def WriteListOfListsCSV(self, inputList, fileName):
         '''
@@ -279,9 +290,11 @@ class CSVManager(object):
             datawriter.writerow(inputList)
         file.close()
         
+        
+        
     def WriteProbeDataToFile(self, data_list):
-    
-        filename = DS.get_batch()[0]
+        self.get_save_path()
+        filename = DS.get_current_batch()
         
         fullPath = os.path.abspath(self.inProgressPath + filename + '.csv')
         # inputList = [serialNumber,fileName,analyserData,user,pv_data,time]
@@ -293,6 +306,8 @@ class CSVManager(object):
             
             datawriter.writerow(data_list)
         file.close()
+
+
 
     def WriteCSVTitles(self, fileName):
         '''
@@ -346,7 +361,6 @@ class CSVManager(object):
             datareader = csv.reader(csvfile)
             
             for line in datareader:
-                
                 if "Batch No" in line:
                     pass
                 elif line == []:
@@ -354,13 +368,8 @@ class CSVManager(object):
                 else:
                     eachBatch.append(line)
                     
-            batches.append(eachBatch[-1])
-            
-                    
-                
+            batches.append(eachBatch[-1])  
         csvfile.close()   
-        
-       
         return batches
         
     

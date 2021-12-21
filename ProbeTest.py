@@ -258,14 +258,15 @@ class TestProgramWindow(tk.Frame):
                         marker_data = self.get_marker_data()
                         if snum != False:
                             self.update_results(results, snum, marker_data)
-                            
-                        Tk.update(self)    
+                           
+                        # Tk.update(self)    
                     else:
                         self.display_message("Probe re-programming disabled")
                         # if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
-                        DS.write_to_admin_file(str([0]))
-                        Tk.update(self) 
-                        break
+                        
+                        
+                    Tk.update(self) 
+                    break
                      
             while 1:
                     if PM.ProbePresent() == False:
@@ -310,7 +311,8 @@ class TestProgramWindow(tk.Frame):
         ttk.Label(self, textvariable=self.action, background='#00BFFF',
                         width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w') 
         Tk.update(self)
-        serialNumber = PM.ProgramProbe(self.probe_type.get())
+        probe_type = DS.get_current_probe_type()
+        serialNumber = PM.ProgramProbe(probe_type)
         if serialNumber == False:
             tm.showerror('Programming Error',
                                 'Unable to program\nPlease check probe chip.')
@@ -342,6 +344,7 @@ class TestProgramWindow(tk.Frame):
                 if self.RLLimit == -1: #check for crystal pass value, now pass every time
                     self.action.set('Testing complete. Disconnect probe')
                     self.status_image.configure(image=self.greenlight)
+                    Tk.update(self)
                 else:
                     self.status_image.configure(image=self.redlight)
                     tm.showerror('Return Loss Error',
@@ -350,10 +353,7 @@ class TestProgramWindow(tk.Frame):
                 self.display_message("Probe failed")
                 tm.showerror('Probe Info',
                                     'Probe Failed....')
-        else:
-            tm.showerror('Probe failed',
-                                    'Probe removed....')
-            self.RLLimit = "removed"
+        DS.write_to_admin_file(str([0]))
         self.reset()
         return self.RLLimit
     
@@ -389,17 +389,20 @@ class TestProgramWindow(tk.Frame):
 
 
     def update_results(self, results, snum, marker_data):
-        print(f"updating results {results} {snum} {marker_data}")
         data_list_to_file = []
-        odm_results = self.update_odm_data()
-        BM.UpdateResults(
-            results, self.current_batch.get())
+        odm_results = ODM.ReadSerialODM()
+        odm_to_file = str(odm_results[9])
+        results_to_file = str(results)
+        print(f"odm data to file {odm_to_file} {results_to_file}")
+        # BM.UpdateResults(
+        #     results, self.current_batch.get())
         self.left_to_test.set(self.left_to_test.get() - 1)
         self.probes_passed.set(self.probes_passed.get() + 1)
         self.status_image.configure(image=self.greenlight)
         data_list_to_file.append(snum)
-        data_list_to_file.append(marker_data)
         data_list_to_file.append(self.current_user.get())
         data_list_to_file.append(self.current_batch.get())
-        data_list_to_file.append(odm_results[9])
+        data_list_to_file.append(results_to_file)
+        data_list_to_file.append(marker_data)
+        data_list_to_file.append(odm_to_file)
         BM.saveProbeInfoToCSVFile(data_list_to_file)   

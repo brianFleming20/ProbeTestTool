@@ -58,10 +58,8 @@ class SessionSelectWindow(tk.Frame):
         super().__init__()
         # create a choose session window
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
-        # s=ttk.Style()
-        # s.theme_names()
-        # s.theme_use('default')
-
+    
+# place(relx=0.28, rely=0.3,  anchor=CENTER)
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
@@ -70,24 +68,24 @@ class SessionSelectWindow(tk.Frame):
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
         time_now = strftime("%H:%M:%p", gmtime())
         
-        ttk.Button(self, text='Start a new session' , command=lambda: 
+        ttk.Button(self, text='Start a new session', command=lambda: 
             controller.show_frame(NewSessionWindow),
-            width=BTN_WIDTH).place(relx=0.28, rely=0.3,  anchor=CENTER)
+            width=BTN_WIDTH).place(height=35,width=180, x=250, y=180)
         
 
         self.SSW_b2 = ttk.Button(self, text='Continue a previous session',
             command=lambda: controller.show_frame(ContinueSessionWindow), width=BTN_WIDTH)
      
-        self.SSW_b2.place(relx=0.6, rely=0.3, anchor=CENTER)
+        self.SSW_b2.place(height=35, width=180, x=550, y=180 )
 
         ttk.Button(self, text='Completed Batches', command=lambda: 
             self.completed_btn_clicked(controller), 
-            width=BTN_WIDTH).place(relx=0.28, rely=0.55, anchor=CENTER)
+            width=BTN_WIDTH).place(height=35,width=180, x=250, y=350)
 
         self.SSW_b4 = ttk.Button(self, text='Admin area', command=lambda: 
             controller.show_frame(AU.AdminWindow), width=BTN_WIDTH)
-       
-        self.SSW_b4.place(relx=0.6, rely=0.55, anchor=CENTER)
+        
+        self.SSW_b4.place(height=35,width=180, x=550, y=350)
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
         if "AM" in time_now :

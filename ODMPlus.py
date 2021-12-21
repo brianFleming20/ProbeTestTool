@@ -53,7 +53,6 @@ class ODMData(object):
         self.odm_port.open()
         
         parameters = self.odm_port.readline() # read line of ODM
-      
         for data in parameters:
             temp += chr(data)
             if data == ignor_bit:
