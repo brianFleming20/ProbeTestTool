@@ -62,35 +62,13 @@ class LogInWindow(tk.Frame):
         self.label_4 = ttk.Label(self, image=self.title)
         self.label_4.place(relx=0.5, rely=0.1, anchor=CENTER)
 
-        # self.label_1 = ttk.Label(self, text="Username",width=40)
-        # self.label_2 = ttk.Label(self, text="Password",width=40)
+       
         self.label_5 = ttk.Label(self, text="Good morning.", font=("bold", 20))
         self.label_6 = ttk.Label(self, text="Good afternoon.", font=("bold", 20))
         time_now = strftime("%H:%M:%p", gmtime())
         DS.write_to_from_keys("  ")
-        # self.current_user.set("Brian")
-        # password = "********"
-        
-        # self.entry_1 = ttk.Label(text=self.current_user.get(), font=( "bold", 15))
-        # self.entry_2 = ttk.Label(text=password, font=("bold", 15))
-
-        # self.entry_1 = ttk.Entry(self, textvariable=self.current_user ,font="bold")
-        # self.entry_2 = ttk.Entry(self, show="*", font="bold")
-        # self.entry_1.insert(END, 'Jack')
-        # self.entry_2.insert(END, 'password')
-
-        # self.label_1.config(font=("Courier", 14))
-        # self.label_2.config(font=("Courier", 14))
-        # self.entry_1.config(font=("Courier", 14))
-        # self.entry_2.config(font=("Courier", 14))
-        # self.label_1.place(relx=0.55, rely=0.4, anchor=CENTER)
-        # self.label_2.place(relx=0.55, rely=0.5, anchor=CENTER)
-        # self.entry_1.place(relx=0.6, rely=0.4, anchor=CENTER)
-        # self.entry_2.place(relx=0.6, rely=0.5, anchor=CENTER)
-        
-        # self.btn = ttk.Button(self, text="keyboard", command=lambda: 
-        #     self.get_keys())
-        # self.btn.place(relx=0.88, rely=0.75 ,anchor=CENTER)
+  
+      
 
         self.logbtn = ttk.Button(
             self, text="Login",image=self.login_btn, width=20,command=lambda: self._login_btn_clicked(controller))
@@ -152,25 +130,25 @@ class LogInWindow(tk.Frame):
     def password_entry(self):
         DS.write_to_from_keys(" ")
         self.password = ""
-        password_blank = "*************************************"
-        print(f"keys data {DS.get_keyboard_data()}")
-        data = DS.get_keyboard_data()
+        password_blank = "*********************"
+       
+        pw_data = DS.get_keyboard_data()
         while True:
-            data = DS.get_keyboard_data()
-            pw_len = len(data)
+            pw_data = DS.get_keyboard_data()
+            pw_len = len(pw_data)
             
-            if data[-1] == "+":
+            if pw_data[-1] == "+":
                 self.label_1.config(state=NORMAL)
                 self.label_2.config(state=NORMAL)
-                data = data[:-1]
+                pw_data = pw_data[:-1]
                 break
             
             self.entry_2 = ttk.Label(self.canvas_pass, text=password_blank[0:pw_len], font=("bold", 15))
-            self.entry_2.place(relx=0.55, rely=0.58,anchor=N)
+            self.entry_2.place(relx=0.7, rely=0.3, width=150,anchor=N)
             Tk.update(self)
             
-        self.password = data
-        print(f"password is {self.password}")
+        self.password = pw_data
+        # print(f"password is {self.password}")
         
 
 

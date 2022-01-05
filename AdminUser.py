@@ -28,6 +28,7 @@ to do:
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
+import tkinter.font as font
 import tkinter.messagebox as tm
 from tkinter import filedialog
 import SecurityManager
@@ -38,12 +39,14 @@ import Sessions as SE
 import AdminPortControl as AP
 import datastore
 import NanoZND
+import OnScreenKeys
 
 
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
 ZND = NanoZND.NanoZND()
 DS = datastore.DataStore()
+KY = OnScreenKeys.Keyboard()
 
 def ignore():
     return 'break'
@@ -63,43 +66,29 @@ class AdminWindow(tk.Frame):
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
         time_now = strftime("%H:%M:%p", gmtime())
 
-        self.label_4 = ttk.Label(self, text="NanoZND file storage location")
-        self.entry_4 = ttk.Entry(self, textvariable=self.file)
-        self.label_4.place(relx=0.4, rely=0.5)
-        self.entry_4.place(relx=0.4, rely=0.6, width=300)
-        
-        self.browseBtn = ttk.Button(
-            self, text="Browse", command=lambda: self._browse_btn_clicked())
-        self.browseBtn.place(relx=0.75, rely=0.6)
-        
-        # canvas = Canvas(width=150, height=150)
-        
-        # self.AW_addUsrBtn = ttk.Button(
-        #     canvas, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
-        # self.AW_addUsrBtn.place(relx=0.1, rely=0.4, anchor=W)
+        self.userListBox = Listbox(self, height=15, width=20)
+        self.userListBox.place(relx=0.75, rely=0.5, anchor=CENTER)
+        userList = []
+        for item in SM.GetUserList():
+            
+            if item.admin == True:
+                item.name = item.name + "--> Admin"
+    
+            userList.append(item.name)   
+         
 
-        # self.AW_editUsrBtn = ttk.Button(
-        #     canvas, text='Edit a current user', command=lambda: controller.show_frame(EditUserWindow))
-        # self.AW_editUsrBtn.place(relx=0.1, rely=0.5, anchor=W)
+        # clear the listbox
+        self.userListBox.delete(0, END)
+
+        # fill the listbox with the list of users
+        for item in userList:
+            self.userListBox.insert(END, item)
+        # Getting the selected user
         
-        # self.AW_editUsrBtn = ttk.Button(
-        #     canvas, text='Edit a device port number', command=lambda: controller.show_frame(AP.AdminPorts))
-        # self.AW_editUsrBtn.place(relx=0.1, rely=0.6, anchor=W)
-        # canvas.place(x=100, y=250)
-        self.AW_adminLogoutBtn = ttk.Button(
-            self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))
-        self.AW_adminLogoutBtn.place(relx=0.8, rely=0.75, anchor=E)
-        
+      
         self.checked_state = IntVar()
     
-        
-        # self.label = ttk.Label(self, text="Probe re-program Off / On")
-        # self.label.place(relx=0.7, rely=0.38, anchor=CENTER)
-        # ttk.Label(self, text="OFF").place(relx=0.61, rely=0.45)
-        # ttk.Label(self, text="ON").place(relx=0.76, rely=0.45)
-        # self.w2 = Scale(self,from_=0, to=1, command=self.update ,orient=HORIZONTAL)
-        # self.w2.set(0)
-        # self.w2.place(relx=0.7, rely=0.45,anchor=CENTER)
+    
         
         if "AM" in time_now :
             self.text_area.insert('1.0','Good Morning ')
@@ -107,7 +96,9 @@ class AdminWindow(tk.Frame):
         else:
             self.text_area.insert('1.0','Good Afternoon ')
         
-        
+    def canvas_gone(self):
+        self.checkbutton.destroy()
+        self.canvas.destroy() 
         
         
     def refresh_window(self):
@@ -126,30 +117,41 @@ class AdminWindow(tk.Frame):
         else:
             self.text_area.insert('4.0','\nProbe re-programming is disabled.')
         self.text_area.config(state=DISABLED)
-        checkbutton = Checkbutton(text="Admin user- if checked. ", 
+        self.checkbutton = Checkbutton(text="Admin user- if checked. ", 
                                   variable=self.checked_state,command=self.update, font=("Courier",10))
                                   
         self.checked_state.get()
-        checkbutton.place(relx=0.5, rely=0.42, anchor=CENTER)
+        self.checkbutton.place(relx=0.5, rely=0.42, anchor=CENTER)
         self.show_user_options()
         Tk.update(self) 
         
     def show_user_options(self):
-        canvas = Canvas(width=250, height=150)
-        
+        self.canvas = Canvas(width=250, height=150)
+      
         self.AW_addUsrBtn = ttk.Button(
-            canvas, text='Add a new user', command=lambda: self.control.show_frame(AddUserWindow))
+            self.canvas, text='Add a new user', command=lambda: [self.canvas_gone(),self.control.show_frame(AddUserWindow)])
         self.AW_addUsrBtn.place(relx=0.1, rely=0.1, anchor=W)
 
         self.AW_editUsrBtn = ttk.Button(
-            canvas, text='Edit a current user', command=lambda: self.control.show_frame(EditUserWindow))
+            self.canvas, text='Edit a current user', command=lambda: [self.canvas_gone(),self.control.show_frame(EditUserWindow)])
         self.AW_editUsrBtn.place(relx=0.1, rely=0.45, anchor=W)
         
         self.AW_editUsrBtn = ttk.Button(
-            canvas, text='Edit a device port number', command=lambda: self.control.show_frame(AP.AdminPorts))
+            self.canvas, text='Edit a device port number', command=lambda: [self.canvas_gone(),self.control.show_frame(AP.AdminPorts)])
         self.AW_editUsrBtn.place(relx=0.1, rely=0.8, anchor=W)
-        canvas.place(x=100, y=250)
+        self.AW_adminLogoutBtn = ttk.Button(
+            self, text='Done', width=30, command=lambda:
+                [self.canvas_gone(),self.control.show_frame(SE.SessionSelectWindow)])
+        self.AW_adminLogoutBtn.place(relx=0.8, rely=0.78, anchor=E)
+        self.canvas.place(x=100, y=250)
+        self.label_4 = ttk.Label(self, text="NanoZND file storage location")
+        self.entry_4 = ttk.Entry(self, textvariable=self.file)
+        self.label_4.place(relx=0.1, rely=0.7)
+        self.entry_4.place(relx=0.1, rely=0.78, width=300)
         
+        self.browseBtn = ttk.Button(
+            self, text="Browse", command=lambda: self._browse_btn_clicked())
+        self.browseBtn.place(relx=0.42, rely=0.78)
         
 
          
@@ -258,7 +260,7 @@ class EditUserWindow(tk.Frame):
         self.Label1 = ttk.Label(self, text='Choose a user to edit')
         self.Label1.place(relx=0.5, rely=0.07, anchor=CENTER)
 
-        self.userListBox = Listbox(self, height=15, width=20)
+        self.userListBox = Listbox(self, height=10, width=20)
         self.userListBox.place(relx=0.3, rely=0.5, anchor=CENTER)
 
         self.CngPWrd_btn = ttk.Button(
@@ -412,16 +414,16 @@ class AddUserWindow(tk.Frame):
         if self.newpassword.get() == self.confpassword.get():
                 
             # create user object
-            if self.isAdmin.get() == 'false':
+            if self.is_admin.get() == 'false':
                 admin = False
             else:
                 admin = True
                 
             newUser = User(self.newusername.get(), self.newpassword.get(), admin)
             
-            if self.isAdmin.get() == 'true' and self.allow_add_admin == False:
+            if self.is_admin.get() == 'true' and self.allow_add_admin == False:
                 admin = False
-                self.textArea.insert('4.30','\nThere are 2 administrators already,\nNo nore allowed')
+                self.text_area.insert('4.30','\nThere are 2 administrators already,\nNo nore allowed')
 
             # try adding it to the list of users
            

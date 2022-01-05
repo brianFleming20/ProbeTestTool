@@ -213,7 +213,7 @@ class Keyboard():
    
     def press(self,num):
         self.keys = self.keys + str(num)
-        print(f"data in {self.keys}")
+      
         DS.write_to_from_keys(self.keys)
         # self.keystrokes.set(self.keys)
         # every keyboard press chould be recoreded in the datastore for use in the system.
