@@ -26,11 +26,6 @@ to do:
 '''
 import tkinter as tk
 from tkinter import *
-from tkinter import ttk
-import tkinter.messagebox as tm
-from tkinter import filedialog
-
-
 
 
 import UserLogin as UL
@@ -41,7 +36,7 @@ import AdminUser as AU
 import FaultFinder as FF
 import Connection as CO
 import AdminPortControl as AP
-
+import OnScreenKeys as KY
 
 
 
@@ -51,12 +46,20 @@ PTT_Version = 'Deltex Medical : P0035 Probe Test Tool V1.0'
 w = 1000  # window width
 h = 650  # window height
 LARGE_FONT = ("Verdana", 14)
-BTN_WIDTH = 30
+
 
 
 # Assign as a command when I want to disable a button (double click prevention)
 def ignore():
     return 'break'
+
+exp = " "  
+
+def press(num):
+        global exp
+        exp=exp + str(num)
+        print(f"pressed {exp}")
+
 
 
 class WindowController(tk.Tk):
@@ -101,29 +104,33 @@ class WindowController(tk.Tk):
                   FF.FaultFindWindow):
 
             frame = F(container, self)
+            
 
             self.frames[F] = frame
+            
 
             frame.grid(row=0, column=0, sticky="nsew")
             # self.attributes('-fullscreen', True)
+            self.attributes('-toolwindow', True)
+            
 
         self.show_frame(UL.LogInWindow)
+        
+        
+        
        
 
     def show_frame(self, newFrame):
 
         frame = self.frames[newFrame]
+        
         frame.tkraise()
 
         # Does the frame have a refresh method, if so call it.
         if hasattr(newFrame, 'refresh_window') and callable(getattr(newFrame, 'refresh_window')):
             self.frames[newFrame].refresh_window()
 
-
-
-
-
-
+  
 
               
 

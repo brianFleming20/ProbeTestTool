@@ -45,7 +45,7 @@ class ODMData(object):
     def ReadSerialODM(self):
         # initalise parameters
         ignor_bit = 44
-        serial_result = []
+        odm_result = []
         temp = ""
         parameters = ''
         # Set up port connection
@@ -56,21 +56,21 @@ class ODMData(object):
         for data in parameters:
             temp += chr(data)
             if data == ignor_bit:
-                serial_result.append(temp[:-1])
+                odm_result.append(temp[:-1])
                 temp = ""                              
-        self.close_port()                       
-        return serial_result                             
+        self.close_port()                     
+        return odm_result                             
 
 
     
     def get_monitor_port(self):
-        read = [0,0,0,0,"not_connected"]
+        # read = [0,0,0,0,"not_connected"]
         read = self.ReadSerialODM()
-        try:
-            if read[4].strip().isdigit():
-                return True
-        except:
+        if read == []:
             return False
+        else:
+            if isinstance(read[3], int):
+                return True
       
     # def GetODMParameters(self):
     #     packet = bytearray()

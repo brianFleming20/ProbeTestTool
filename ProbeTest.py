@@ -1,15 +1,16 @@
 '''
 Created on 3 May 2017
+Updated on 22 Dec 2021
 
 @author: jackw
-@amended by Brian F
+@amended: by Brian F
 
 Naming convention
 - Variables = no spaces, capitals for every word except the first : thisIsAVariable
 - Local functions = prefixed with _, _ for spaces, no capitals : _a_local_function
 
 Dependencies
--NI VISA Backend
+-NI VISA Backend not used
 -Non standard python modules
     pyvisa
     pyserial
@@ -56,7 +57,7 @@ DS = datastore.DataStore()
 
 
 # define global variables
-PTT_Version = 'Deltex Medical : XXXX-XXXX Probe Test Tool V0.1'
+PTT_Version = 'Deltex Medical : XXXX-XXXX Probe Test Tool V1'
 w = 800  # window width
 h = 600  # window height
 LARGE_FONT = ("Verdana", 14)
@@ -182,6 +183,10 @@ class TestProgramWindow(tk.Frame):
     def suspnd_btn_clicked(self, controller):
         self.session_complete = False
         self.session_on_going = False
+        batch_data = []
+        batch_data.extend(DS.get_batch())
+        batch_data[2] = self.left_to_test.get()
+        DS.write_to_batch_file(batch_data)
         BM.SuspendBatch(self.current_batch.get())
         controller.show_frame(SE.SessionSelectWindow)
     
@@ -190,7 +195,6 @@ class TestProgramWindow(tk.Frame):
     def reset(self):
         self.session_on_going = True
         self.analyser_serial = None
-        self.reprogram = False
         current_user = DS.get_username()
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
@@ -201,11 +205,13 @@ class TestProgramWindow(tk.Frame):
         self.text_area.insert('2.0','\nPlease continue testing batch ')
         self.text_area.insert('2.30', DS.get_current_batch())
         self.left_to_test.set(file_data[2])
+        self.probes_passed.set(0)
         self.probe_type.set(DS.get_current_probe_type())
         self.current_batch.set(DS.get_current_batch())
         self.current_user.set(current_user)
         self.RLLimit = -1  # pass criteria for return loss measurement
         self.user_admin = DS.get_user_status()
+        print(f"user admin {self.user_admin}")
         self.programmed = False
         self.status_image.configure(image=self.greylight)
         ttk.Label(self, textvariable=self.action, background='yellow',
@@ -218,7 +224,10 @@ class TestProgramWindow(tk.Frame):
   
 
     def refresh_window(self):
+        Tk.update(self)
         self.reset()
+        DS.set_plot_status(False)
+        go = False
         if self.user_admin == True:
                 self.display_message("Probe re-programming enabled.")
         else:
@@ -226,64 +235,53 @@ class TestProgramWindow(tk.Frame):
         if self.left_to_test.get() == 0:
             self.session_on_going == False
             self.session_complete == True
-        Tk.update(self) 
-                    
+        self.update_odm_data()           
         while self.session_on_going == True:
-            self.action.set('Connect New Probe')
             self.ff_btn.config(state=DISABLED)
-            DS.set_plot_status(False)
-            
-            if PM.ProbePresent() == True:
-                self.action.set('Probe connected') 
-                self.update_odm_data()   
-                ttk.Label(self, textvariable=self.action, background='#7FFF00',
+            while PM.ProbePresent() == False:
+                probe_programmed = PM.ProbeIsProgrammed()
+                self.status_image.configure(image=self.greylight)
+                ttk.Label(self, textvariable=self.action, background='yellow',
                         width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w') 
+                self.action.set('Connect New Probe')
                 Tk.update(self) 
-                
-                if PM.ProbeIsProgrammed() == False:
-                    snum = self.program_probe()
-                    results = self.test_probe()
-                    marker_data = self.get_marker_data()
-                    if snum != False:
-                        self.update_results(results, snum, marker_data)
-                    break
-                        
-                elif PM.ProbeIsProgrammed() == True and self.user_admin == True:
-                    go = tm.askyesno('Programmed Probe Detected', 
-                            'This probe is already programmed.\nDo you wish to re-program and test?')
-                    if go == True:
-                        self.display_message("Probe re-programming enabled.")
+            # if PM.ProbePresent() == True:
+            self.action.set('Probe connected')    
+            ttk.Label(self, textvariable=self.action, background='#7FFF00',
+                        width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w') 
+            self.update_odm_data()
+            Tk.update(self) 
+            if probe_programmed == False:
+                if self.user_admin == False:
                         snum = self.program_probe()
                         results = self.test_probe()
                         marker_data = self.get_marker_data()
                         if snum != False:
                             self.update_results(results, snum, marker_data)
-                           
-                        # Tk.update(self)    
-                    else:
-                        self.display_message("Probe re-programming disabled")
+                        probe_programmed = PM.ProbeIsProgrammed()
+
+            if probe_programmed == True:       
+                if self.user_admin == True:
+                        go = tm.askyesno('Programmed Probe Detected', 
+                            'This probe is already programmed.\nDo you wish to re-program and test?')
+                if go == True:
+                        self.display_message("Probe re-programming enabled.")
+                        snum = self.program_probe()
+                        results = self.test_probe()
+                        marker_data = self.get_marker_data()
+                        if snum != False:
+                            self.update_results(results, snum, marker_data)  
+                        probe_programmed = PM.ProbeIsProgrammed()
+                else:
+                        self.display_message("Probe not re-programmed")
                         # if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
-                        
-                        
-                    Tk.update(self) 
-                    break
+                Tk.update(self)      
                      
-            while 1:
-                    if PM.ProbePresent() == False:
-                        # PM.ClearAnalyzer()
-                        self.status_image.configure(image=self.greylight)
-                        ttk.Label(self, textvariable=self.action, background='yellow',
-                        width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w') 
-                        self.action.set('Connect New Probe')
-                        self.set_display()
-                        Tk.update(self)
-                    else:
-                        break
-                    
         if self.session_complete == True:
                 BM.CompleteBatch(BM.current_batch)
                 
-            
+   
+                     
             
     def set_display(self):
         odm = "Not connected to ODM"
@@ -317,7 +315,6 @@ class TestProgramWindow(tk.Frame):
             tm.showerror('Programming Error',
                                 'Unable to program\nPlease check probe chip.')
             self.action.set('Probe failed')
-            
             self.status_image.configure(image=self.redlight)
             ttk.Label(self, textvariable=self.action, background='orange',
                         width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w') 
@@ -337,9 +334,7 @@ class TestProgramWindow(tk.Frame):
         self.ff_btn.config(state=NORMAL)
         Tk.update(self)
         if PM.ProbePresent() == True:
-         
             results = PM.TestProbe()
-            self.update_odm_data()
             if results == True:
                 if self.RLLimit == -1: #check for crystal pass value, now pass every time
                     self.action.set('Testing complete. Disconnect probe')
@@ -353,8 +348,8 @@ class TestProgramWindow(tk.Frame):
                 self.display_message("Probe failed")
                 tm.showerror('Probe Info',
                                     'Probe Failed....')
+        self.update_odm_data()
         DS.write_to_admin_file(str([0]))
-        self.reset()
         return self.RLLimit
     
     
@@ -379,7 +374,6 @@ class TestProgramWindow(tk.Frame):
             serial_results = ODM.ReadSerialODM()
             if serial_results == []:
                 serial_results = [0,0,0,0,0,0,0,0,0,0]
-                serial_results = ODM.ReadSerialODM()
             self.SD_data.set(serial_results[5])
             self.FTc_data.set(serial_results[6])
             self.PV_data.set(serial_results[9])
@@ -391,17 +385,16 @@ class TestProgramWindow(tk.Frame):
     def update_results(self, results, snum, marker_data):
         data_list_to_file = []
         odm_results = ODM.ReadSerialODM()
-        odm_to_file = str(odm_results[9])
+        if odm_results == []:
+            odm_to_file = "ODM not used"
+        else:
+            odm_to_file = str(odm_results[9])
         results_to_file = str(results)
-        print(f"odm data to file {odm_to_file} {results_to_file}")
-        # BM.UpdateResults(
-        #     results, self.current_batch.get())
         self.left_to_test.set(self.left_to_test.get() - 1)
         self.probes_passed.set(self.probes_passed.get() + 1)
-        self.status_image.configure(image=self.greenlight)
         data_list_to_file.append(snum)
+        data_list_to_file.append(self.probe_type.get())
         data_list_to_file.append(self.current_user.get())
-        data_list_to_file.append(self.current_batch.get())
         data_list_to_file.append(results_to_file)
         data_list_to_file.append(marker_data)
         data_list_to_file.append(odm_to_file)

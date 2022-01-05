@@ -40,18 +40,19 @@ import UserLogin as UL
 import Connection as CO
 import AdminUser as AU
 import datastore
-import pickle
+import OnScreenKeys
 from time import gmtime, strftime
 
 BM = BatchManager.BatchManager()
 SM = SecurityManager.SecurityManager()
 DS = datastore.DataStore()
+KY = OnScreenKeys.Keyboard()
 
 def ignore():
     return 'break'
 
 BTN_WIDTH = 25
-BTN_HEIGHT = 18
+BTN_HEIGHT = 20
 
 class SessionSelectWindow(tk.Frame):
     def __init__(self, parent, controller):
@@ -67,6 +68,9 @@ class SessionSelectWindow(tk.Frame):
         self.text_area = tk.Text(self, height=5, width=38)
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
         time_now = strftime("%H:%M:%p", gmtime())
+        
+        self.NSWL1 = ttk.Label(self, text='Session Sellection Window. ', justify=RIGHT, font=("Courier", 20, "bold"))
+        self.NSWL1.place(relx=0.5, rely=0.05, anchor=CENTER)
         
         ttk.Button(self, text='Start a new session', command=lambda: 
             controller.show_frame(NewSessionWindow),
@@ -149,9 +153,9 @@ class NewSessionWindow(tk.Frame):
         # time_now = strftime("%H:%M:%p", gmtime())
 
         #batch_frame.grid(row=0, sticky="ew")
-        probe_type_frame.place(relx=0.2, rely=0.45,anchor=CENTER)
+        probe_type_frame.place(relx=0.25, rely=0.5,anchor=CENTER)
         
-        self.NSWL1 = ttk.Label(self, text='Probe selection window. ', justify=RIGHT)
+        self.NSWL1 = ttk.Label(self, text='Probe selection window. ', justify=RIGHT, font=("Courier", 20, "bold"))
         self.NSWL1.place(relx=0.5, rely=0.05, anchor=CENTER)
 
         self.NSWL1 = ttk.Label(self, text='Batch number: ', justify=RIGHT)
@@ -167,7 +171,7 @@ class NewSessionWindow(tk.Frame):
         self.NSWE1.place(relx=0.7, rely=0.45, anchor=E)
 
         self.NSWL2 = ttk.Label(self, text='Select Probe Type: ')
-        self.NSWL2.place(relx=0.2, rely=0.7, anchor=CENTER)
+        self.NSWL2.place(relx=0.1, rely=0.35, anchor=CENTER)
         
         self.probe_type = StringVar(probe_type_frame, "DP240")
         # Dictionary to create multiple buttons
@@ -203,6 +207,9 @@ class NewSessionWindow(tk.Frame):
         # # tk.Radiobutton(probe_type_frame, text='Blank',
         # #                variable=self.probe_type, value='Blank').pack(fill=X, ipady=7)
         
+        ttk.Button(self, text="keyboard", command=lambda: 
+            self.get_keys()).place(relx=0.7, rely=0.65 ,anchor=CENTER)
+        
         self.confm_btn = tk.Button(self, text='Confirm', padx=2, pady=3,
                 width=BTN_WIDTH, command=lambda: self.confm_btn_clicked(controller))
         self.confm_btn.place(relx=0.8, rely=0.8, anchor=CENTER)
@@ -220,6 +227,10 @@ class NewSessionWindow(tk.Frame):
         self.text_area.insert('1.0',DS.get_username())
         self.text_area.insert('3.3','\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
         self.text_area.config(state=DISABLED)
+        
+        
+    def get_keys(self):
+        KY.get_keyboard()
         
 
     def confm_btn_clicked(self, controller):
@@ -254,8 +265,6 @@ class NewSessionWindow(tk.Frame):
                 batch_data.append(self.batchNumber.get())
                 batch_data.append(self.probe_type.get())
                 batch_data.append(self.batchQty.get())
-            
-            
                 DS.write_to_batch_file(batch_data)
             
                 controller.show_frame(CO.Connection)

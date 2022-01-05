@@ -140,7 +140,6 @@ class DataStore():
     #########################################
     
     def get_username(self):
-      
         return self.get_user()[0]
     
     #########################################
@@ -247,4 +246,7 @@ class DataStore():
             user_status.append(plot)
         self.write_to_user_file(user_status)
         
+    ############################################
+    
+    
         

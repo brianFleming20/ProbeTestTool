@@ -53,6 +53,7 @@ class AdminWindow(tk.Frame):
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
         self.file = StringVar()
         self.file.set(ZND.GetFileLocation())
+        self.control = controller
         
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
@@ -64,36 +65,41 @@ class AdminWindow(tk.Frame):
 
         self.label_4 = ttk.Label(self, text="NanoZND file storage location")
         self.entry_4 = ttk.Entry(self, textvariable=self.file)
-        self.label_4.place(relx=0.25, rely=0.7, anchor=CENTER)
-        self.entry_4.place(relx=0.1, rely=0.75, width=300, anchor="w")
+        self.label_4.place(relx=0.4, rely=0.5)
+        self.entry_4.place(relx=0.4, rely=0.6, width=300)
         
         self.browseBtn = ttk.Button(
             self, text="Browse", command=lambda: self._browse_btn_clicked())
-        self.browseBtn.place(relx=0.43, rely=0.73)
+        self.browseBtn.place(relx=0.75, rely=0.6)
         
-        self.AW_addUsrBtn = ttk.Button(
-            self, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
-        self.AW_addUsrBtn.place(relx=0.1, rely=0.4, anchor=W)
+        # canvas = Canvas(width=150, height=150)
+        
+        # self.AW_addUsrBtn = ttk.Button(
+        #     canvas, text='Add a new user', command=lambda: controller.show_frame(AddUserWindow))
+        # self.AW_addUsrBtn.place(relx=0.1, rely=0.4, anchor=W)
 
-        self.AW_editUsrBtn = ttk.Button(
-            self, text='Edit a current user', command=lambda: controller.show_frame(EditUserWindow))
-        self.AW_editUsrBtn.place(relx=0.1, rely=0.5, anchor=W)
+        # self.AW_editUsrBtn = ttk.Button(
+        #     canvas, text='Edit a current user', command=lambda: controller.show_frame(EditUserWindow))
+        # self.AW_editUsrBtn.place(relx=0.1, rely=0.5, anchor=W)
         
-        self.AW_editUsrBtn = ttk.Button(
-            self, text='Edit a device port number', command=lambda: controller.show_frame(AP.AdminPorts))
-        self.AW_editUsrBtn.place(relx=0.1, rely=0.6, anchor=W)
-        
+        # self.AW_editUsrBtn = ttk.Button(
+        #     canvas, text='Edit a device port number', command=lambda: controller.show_frame(AP.AdminPorts))
+        # self.AW_editUsrBtn.place(relx=0.1, rely=0.6, anchor=W)
+        # canvas.place(x=100, y=250)
         self.AW_adminLogoutBtn = ttk.Button(
             self, text='Done', command=lambda: controller.show_frame(SE.SessionSelectWindow))
         self.AW_adminLogoutBtn.place(relx=0.8, rely=0.75, anchor=E)
         
-        self.label = ttk.Label(self, text="Probe re-program Off / On")
-        self.label.place(relx=0.7, rely=0.38, anchor=CENTER)
-        ttk.Label(self, text="OFF").place(relx=0.61, rely=0.45)
-        ttk.Label(self, text="ON").place(relx=0.76, rely=0.45)
-        self.w2 = Scale(self,from_=0, to=1, command=self.update ,orient=HORIZONTAL)
-        self.w2.set(0)
-        self.w2.place(relx=0.7, rely=0.45,anchor=CENTER)
+        self.checked_state = IntVar()
+    
+        
+        # self.label = ttk.Label(self, text="Probe re-program Off / On")
+        # self.label.place(relx=0.7, rely=0.38, anchor=CENTER)
+        # ttk.Label(self, text="OFF").place(relx=0.61, rely=0.45)
+        # ttk.Label(self, text="ON").place(relx=0.76, rely=0.45)
+        # self.w2 = Scale(self,from_=0, to=1, command=self.update ,orient=HORIZONTAL)
+        # self.w2.set(0)
+        # self.w2.place(relx=0.7, rely=0.45,anchor=CENTER)
         
         if "AM" in time_now :
             self.text_area.insert('1.0','Good Morning ')
@@ -101,39 +107,69 @@ class AdminWindow(tk.Frame):
         else:
             self.text_area.insert('1.0','Good Afternoon ')
         
+        
+        
+        
     def refresh_window(self):
            
         session_info = DS.get_user()
-        DS.write_to_admin_file(str([self.w2.get()]))
-    
+        # DS.write_to_admin_file(str([self.w2.get()]))
+        DS.write_to_admin_file(str([self.checked_state.get()]))
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
         self.text_area.insert('1.0',session_info[0])
         self.text_area.insert('2.0','\n\nPlease choose an option.')
         
-        if self.w2.get() == 1:
+        # if self.w2.get() == 1:
+        if self.checked_state.get() == 1:
             self.text_area.insert('4.0','\nProbe re-programming is enabled.')
         else:
             self.text_area.insert('4.0','\nProbe re-programming is disabled.')
         self.text_area.config(state=DISABLED)
+        checkbutton = Checkbutton(text="Admin user- if checked. ", 
+                                  variable=self.checked_state,command=self.update, font=("Courier",10))
+                                  
+        self.checked_state.get()
+        checkbutton.place(relx=0.5, rely=0.42, anchor=CENTER)
+        self.show_user_options()
         Tk.update(self) 
-         
-    def update(self, controller):
-        admin_data = str([self.w2.get()])
         
+    def show_user_options(self):
+        canvas = Canvas(width=250, height=150)
+        
+        self.AW_addUsrBtn = ttk.Button(
+            canvas, text='Add a new user', command=lambda: self.control.show_frame(AddUserWindow))
+        self.AW_addUsrBtn.place(relx=0.1, rely=0.1, anchor=W)
+
+        self.AW_editUsrBtn = ttk.Button(
+            canvas, text='Edit a current user', command=lambda: self.control.show_frame(EditUserWindow))
+        self.AW_editUsrBtn.place(relx=0.1, rely=0.45, anchor=W)
+        
+        self.AW_editUsrBtn = ttk.Button(
+            canvas, text='Edit a device port number', command=lambda: self.control.show_frame(AP.AdminPorts))
+        self.AW_editUsrBtn.place(relx=0.1, rely=0.8, anchor=W)
+        canvas.place(x=100, y=250)
+        
+        
+
+         
+    def update(self):
+        # admin_data = str([self.w2.get()])
+        admin_data = str(self.checked_state.get())
        
         DS.write_to_admin_file(admin_data)
      
-        
         self.text_area.config(state=NORMAL)
         self.text_area.delete('4.0','end')
-        if self.w2.get() == 1:
+        # if self.w2.get() == 1:
+        if self.checked_state.get() == 1:
             self.text_area.insert('4.0','\nProbe re-programming is enabled.')
-            DS.write_to_admin_file(str([self.w2.get()]))
+            # DS.write_to_admin_file(str([self.w2.get()]))
+            DS.write_to_admin_file(str([self.checked_state.get()]))
            
         else:
             self.text_area.insert('4.0','\nProbe re-programming is disabled.')
-            DS.write_to_admin_file(str([self.w2.get()]))
+            DS.write_to_admin_file(str([self.checked_state.get()]))
             
         self.text_area.config(state=DISABLED)
      

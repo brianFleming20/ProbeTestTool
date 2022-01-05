@@ -149,7 +149,6 @@ class BatchManager(object):
         #get the batch's info list
         info = self.CSVM.ReadLastLine(batchNumber)
         for item in info:
-            print(f"batch item {item}")
             if batchNumber in item[0]:
                 info = item[:]
        

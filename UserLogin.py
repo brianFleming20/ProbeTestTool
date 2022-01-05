@@ -29,13 +29,12 @@ import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox as tm
-from tkinter import filedialog
 import SecurityManager
 from SecurityManager import User
 import BatchManager
 import Sessions as SE
 import datastore
-
+import OnScreenKeys
 
 
 from time import gmtime, strftime
@@ -43,6 +42,8 @@ from time import gmtime, strftime
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
 DS = datastore.DataStore()
+KY = OnScreenKeys.Keyboard()
+
 
 def ignore():
     return 'break'
@@ -60,27 +61,34 @@ class LogInWindow(tk.Frame):
         self.label_4 = ttk.Label(self, image=self.title)
         self.label_4.place(relx=0.5, rely=0.1, anchor=CENTER)
 
-        self.label_1 = ttk.Label(self, text="Username",width=40)
-        self.label_2 = ttk.Label(self, text="Password",width=40)
+        # self.label_1 = ttk.Label(self, text="Username",width=40)
+        # self.label_2 = ttk.Label(self, text="Password",width=40)
         self.label_5 = ttk.Label(self, text="Good morning.", font=("bold", 20))
         self.label_6 = ttk.Label(self, text="Good afternoon.", font=("bold", 20))
         time_now = strftime("%H:%M:%p", gmtime())
+        # self.current_user.set("Brian")
+        # password = "********"
         
-       
+        # self.entry_1 = ttk.Label(text=self.current_user.get(), font=( "bold", 15))
+        # self.entry_2 = ttk.Label(text=password, font=("bold", 15))
 
-        self.entry_1 = ttk.Entry(self, textvariable=self.current_user ,font="bold")
-        self.entry_2 = ttk.Entry(self, show="*", font="bold")
-        self.entry_1.insert(END, 'Jack')
-        self.entry_2.insert(END, 'password')
+        # self.entry_1 = ttk.Entry(self, textvariable=self.current_user ,font="bold")
+        # self.entry_2 = ttk.Entry(self, show="*", font="bold")
+        # self.entry_1.insert(END, 'Jack')
+        # self.entry_2.insert(END, 'password')
 
-        self.label_1.config(font=("Courier", 14))
-        self.label_2.config(font=("Courier", 14))
-        self.entry_1.config(font=("Courier", 14))
-        self.entry_2.config(font=("Courier", 14))
-        self.label_1.place(relx=0.55, rely=0.4, anchor=CENTER)
-        self.label_2.place(relx=0.55, rely=0.5, anchor=CENTER)
-        self.entry_1.place(relx=0.6, rely=0.4, anchor=CENTER)
-        self.entry_2.place(relx=0.6, rely=0.5, anchor=CENTER)
+        # self.label_1.config(font=("Courier", 14))
+        # self.label_2.config(font=("Courier", 14))
+        # self.entry_1.config(font=("Courier", 14))
+        # self.entry_2.config(font=("Courier", 14))
+        # self.label_1.place(relx=0.55, rely=0.4, anchor=CENTER)
+        # self.label_2.place(relx=0.55, rely=0.5, anchor=CENTER)
+        # self.entry_1.place(relx=0.6, rely=0.4, anchor=CENTER)
+        # self.entry_2.place(relx=0.6, rely=0.5, anchor=CENTER)
+        
+        self.btn = ttk.Button(self, text="keyboard", command=lambda: 
+            self.get_keys())
+        self.btn.place(relx=0.7, rely=0.65 ,anchor=CENTER)
 
         self.logbtn = ttk.Button(
             self, text="Login",image=self.login_btn, width=20,command=lambda: self._login_btn_clicked(controller))
@@ -96,8 +104,28 @@ class LogInWindow(tk.Frame):
         else:
             self.label_6.place(relx=0.5, rely=0.25, anchor=CENTER)
             
-        self.entry_1.focus_set()
+       
         
+        
+    def refresh_window(self):
+        self.btn.config(state=NORMAL)
+        self.current_user.set("|")
+        password = "____"
+        canvas_name = Canvas(width=400, height=40)
+        canvas_name.place(x=350, y=225)
+        canvas_pass = Canvas(width=400, height=40)
+        canvas_pass.place(x=350, y=300)
+        self.label_1 = ttk.Label(canvas_name, text="Username",width=40)
+        self.label_2 = ttk.Label(canvas_pass, text="Password",width=40)
+        self.label_1.place(relx=0.4, rely=0.2, anchor=CENTER)
+        self.label_2.place(relx=0.4, rely=0.6, anchor=CENTER)
+        self.entry_1 = ttk.Label(canvas_name,text=self.current_user.get(), font=( "bold", 15))
+        self.entry_2 = ttk.Label(canvas_pass,text=password, font=("bold", 15))
+        self.entry_1.place(relx=0.55, rely=0.2, anchor=CENTER)
+        self.entry_2.place(relx=0.55, rely=0.6, anchor=CENTER)
+        
+    def name_entry(self, name):
+        self.current_user.set(name)   
 
     def _login_btn_clicked(self, controller):
         self.logbtn.config(command=ignore)
@@ -127,11 +155,20 @@ class LogInWindow(tk.Frame):
                 tm.showerror("Login error", "Incorrect username or password")
             self.logbtn.config(command=lambda: self._login_btn_clicked(controller))
             
+            
     def quit(self, controller):
         controller.destroy()
         
+    def get_keys(self):
+        key = KY.keys
+      
+        KY.get_keyboard()
+    
+        print(f"sent {key}")
+        self.btn.config(state=DISABLED)
         
-
+            
+    
 
  
         

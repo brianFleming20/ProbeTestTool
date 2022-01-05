@@ -36,10 +36,8 @@ import ProbeManager
 import NanoZND
 import ODMPlus
 from time import gmtime, strftime
-import time
 import ProbeTest
 import Sessions as SE
-import DeviceConnect as DC
 import datastore
 import ProbeInterface
 
@@ -106,7 +104,6 @@ class Connection(tk.Frame):
                 ports.remove(read1)
                 self.znd_working = True
                 self.znd.set(p)
-               
                 DS.set_analyser_port(read1)
 
         for p in ports:
@@ -114,7 +111,6 @@ class Connection(tk.Frame):
                 ports.remove(read3)
                 self.probe_working = True
                 self.probe.set(p)
-                
                 DS.set_porbe_port(read3)
 
         DS.set_ODM_port(ports[0])
@@ -132,7 +128,6 @@ class Connection(tk.Frame):
         self.confm_btn.config(state=NORMAL) 
         self.test_comms()
         if self.probe_working == True and self.znd_working == True and self.test_odm_connection() == True:
-            time.sleep(1)
             controller.show_frame(PT.TestProgramWindow)
         else:
             tm.showinfo("Port info","Please reset all ports.")
