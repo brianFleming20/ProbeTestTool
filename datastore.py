@@ -77,6 +77,15 @@ class DataStore():
         return port_load
     
     #######################################
+    
+    def get_keyboard_data(self):
+        with open('file.keys','rb') as load_keys:
+            keys_data = pickle.load(load_keys)
+        load_keys.close()
+     
+        return keys_data
+    
+    #########################################
         
     def write_to_user_file(self, user_data):
         with open('file.user', 'wb') as user_file:
@@ -106,6 +115,14 @@ class DataStore():
         port_file.close()
         
     ##########################################
+    
+    def write_to_from_keys(self, keys):
+        
+        with open('file.keys', 'wb') as key_input:
+            pickle.dump(keys, key_input)
+        key_input.close()
+        
+    ##########################################    
     
     def add_to_user_file(self, user_data):
         user_load = []
@@ -247,6 +264,5 @@ class DataStore():
         self.write_to_user_file(user_status)
         
     ############################################
-    
     
         
