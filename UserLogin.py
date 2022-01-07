@@ -44,7 +44,6 @@ BM = BatchManager.BatchManager()
 DS = datastore.DataStore()
 KY = OnScreenKeys.Keyboard()
 
-
 def ignore():
     return 'break'
 
@@ -52,8 +51,6 @@ class LogInWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
         self.current_user = StringVar()
-        # self.canvas_name = None
-        # self.canvas_pass = None
         self.login_btn = (PhotoImage(file="login_btn.gif"))
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
@@ -88,22 +85,24 @@ class LogInWindow(tk.Frame):
         
         
     def refresh_window(self):
-        
+        self.current_user = "brian"
+        self.password = "password"
         
         # self.current_user.set("|")
-        
-        self.canvas_name = Canvas(width=400, height=40)
+       
+        self.canvas_name = Canvas(bg="#eae9e9",width=400, height=40)
         self.canvas_name.place(x=350, y=225)
-        self.canvas_pass = Canvas(width=400, height=40)
+        self.canvas_pass = Canvas(bg="#eae9e9",width=400, height=40)
         self.canvas_pass.place(x=350, y=300)
         self.btn_1 = ttk.Button(self.canvas_name, text='Username', command=lambda: 
             [self.get_keys(),self.name_entry()], width=20)
-        # self.btn_1 = ttk.Label(canvas_name, text="Username",width=40)
         self.btn_2 = ttk.Button(self.canvas_pass, text='Password', command=lambda: 
             [self.get_keys(),self.password_entry()], width=20)
+        self.name_text = self.canvas_name.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 16, "bold"))
+        self.pass_text = self.canvas_pass.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
+      
         
-        
-        # self.label_2 = ttk.Label(canvas_pass, text="Password",width=40)
+       
         self.btn_1.place(relx=0.2, rely=0.2, anchor=N)
         self.btn_2.place(relx=0.2, rely=0.2, anchor=N)
         
@@ -178,11 +177,13 @@ class LogInWindow(tk.Frame):
                 break 
             if block:
                 
-                ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
+                # self.label2=ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
+                self.canvas_pass.itemconfig(self.pass_text, text=password_blank[:pw_len])
             else:
-                ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
+                self.canvas_name.itemconfig(self.name_text, text=pw_data)
+                
+                # self.label1=ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
             Tk.update(master)
-       
         return pw_data
         
     def get_keys(self):

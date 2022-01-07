@@ -29,14 +29,14 @@ import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox as tm
-from tkinter import filedialog
 from time import gmtime, strftime
 import datastore
 import AdminUser as AU
-import pickle
+import OnScreenKeys
 
 
 
+KY = OnScreenKeys.Keyboard()
 DS = datastore.DataStore()
 
 def ignore():
@@ -47,88 +47,159 @@ class AdminPorts(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
         
-        self.monitor = StringVar()
-        self.com_port = StringVar()
-        self.analyser_usb = StringVar()
-        self.move_probe = StringVar()
-        self.analyser_usb.set('COM4')
-        self.com_port.set('COM3')
-        self.monitor.set('COM5')
-        self.move_probe.set('Not Set') 
+        
+        self.analyser_usb = "COM4"
+        self.com_port = "COM3"
+        self.monitor = "COM5"
+        self.move_probe = "Not Set"
         ports_data = []
         connection_data = []
-        connection_data.append(self.com_port.get())
-        connection_data.append(self.analyser_usb.get())
-        connection_data.append(self.monitor.get())
-        connection_data.append(self.move_probe.get())
+        connection_data.append(self.com_port)
+        connection_data.append(self.analyser_usb)
+        connection_data.append(self.monitor)
+        connection_data.append(self.move_probe)
         ports_data.extend(connection_data)
      
         DS.write_to_port_file(ports_data)
         
         tk.Frame.__init__(self, parent, bg='#E0FFFF')   
-        self.label_1 = ttk.Label(self, text="ODM monitor port")
-        self.label_2 = ttk.Label(self, text="Probe Interface Port")
-        self.label_3 = ttk.Label(self, text="Analyser port")
         
-        self.label_5 = ttk.Label(self, text="Probe Movement Interface")
-        self.entry_1 = ttk.Entry(self, textvariable=self.monitor,)
-        self.entry_2 = ttk.Entry(self, textvariable=self.com_port, )
-        self.entry_3 = ttk.Entry(self, textvariable=self.analyser_usb, )
-        
-        self.entry_5 = ttk.Entry(self, textvariable=self.move_probe)
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_8 = ttk.Label(self, text=" ", image=self.deltex)
-        self.label_8.place(relx=0.9, rely=0.2, anchor=CENTER)
-        
-        self.label_1.place(relx=0.275, rely=0.3, anchor=CENTER)
-        self.label_2.place(relx=0.275, rely=0.5, anchor=CENTER)
-        self.label_3.place(relx=0.275, rely=0.4,anchor=CENTER)
-        
-        self.label_5.place(relx=0.275, rely=0.6, anchor=CENTER)
-        self.entry_1.place(relx=0.5, rely=0.3, anchor=CENTER)
-        self.entry_2.place(relx=0.5, rely=0.5, anchor=CENTER)
-        self.entry_3.place(relx=0.5, rely=0.4, anchor=CENTER)
-        
-        self.entry_5.place(relx=0.5, rely=0.6, anchor=CENTER)
-        
+        self.label_8.place(relx=0.9, rely=0.15, anchor=CENTER)
         
         self.connectBtn = ttk.Button(
-            self, text="Connect", command=lambda: self._connect_btn_clicked(controller))
-        self.connectBtn.grid(row=2, column=1)
-        self.connectBtn.place(relx=0.4, rely=0.82, anchor=CENTER)
+            self, text="Continue", command=lambda: 
+                [self.destroy_canvas(),self._connect_btn_clicked(controller)])
+        self.connectBtn.place(height=35,width=150, x=850, y=530 ,anchor=CENTER)
         self.bind('<Return>', self._connect_btn_clicked)
 
         self.cancelBtn = ttk.Button(
-            self, text="Cancel",  command=lambda: controller.show_frame(AU.AdminWindow))
-        self.cancelBtn.place(relx=0.6, rely=0.82, anchor=CENTER)
+            self, text="Cancel",  command=lambda: 
+                [self.destroy_canvas(),controller.show_frame(AU.AdminWindow)])
+        self.cancelBtn.place(relx=0.7, rely=0.82, anchor=CENTER)
         
         self.text_area = tk.Text(self, height=5, width=38)
-        self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
+        self.text_area.place(relx=0.20, rely=0.15, anchor=CENTER)
 
         
     def refresh_window(self):
+            self.canvas_1 = Canvas(bg="#eae9e9",width=250, height=40)
+            self.canvas_1.place(x=375, y=120)
+            self.canvas_2 = Canvas(bg="#eae9e9",width=250, height=40)
+            self.canvas_2.place(x=375, y=195)
+            self.canvas_3 = Canvas(bg="#eae9e9",width=250, height=40)
+            self.canvas_3.place(x=375, y=270)
+            self.canvas_4 = Canvas(bg="#eae9e9",width=250, height=40)
+            self.canvas_4.place(x=375, y=345)
+            self.btn_1 = ttk.Button(self.canvas_1, text="ODM monitor port", command=lambda:
+                [self.get_keys(), self.monitor_entry()])
+            self.btn_2 = ttk.Button(self.canvas_2, text="Probe Interface Port", command=lambda:
+                [self.get_keys(), self.probe_entry()])
+            self.btn_3 = ttk.Button(self.canvas_3, text="Analyser port", command=lambda:
+                [self.get_keys(), self.znd_entry()])
+            self.btn_4 = ttk.Button(self.canvas_4, text="Probe Movement Interface", command=lambda:
+                [self.get_keys(), self.move_entry()])
+            self.btn_1.place(relx=0.25, rely=0.3, anchor=N)
+            self.btn_2.place(relx=0.25, rely=0.3, anchor=N)
+            self.btn_3.place(relx=0.20, rely=0.3, anchor=N)
+            self.btn_4.place(relx=0.32, rely=0.3, anchor=N)
+            self.znd_text = self.canvas_1.create_text(180,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 16, "bold"))
+            self.probe_text = self.canvas_2.create_text(180,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
+            self.monitor_text = self.canvas_3.create_text(180,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
+            self.move_text = self.canvas_4.create_text(180,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
             user_data = []
-            ports = []
             user_data.append(DS.get_user())
         
-          
             self.text_area.config(state=NORMAL)   
             self.text_area.insert('2.0',user_data[0])
             self.text_area.insert('2.0','\n\nPlease check any external devices\nand press continue...')
             self.text_area.config(state=DISABLED)
             
 
+
+
     def _connect_btn_clicked(self, controller):
-     
         ports_data = []
         connection_data = []
-        connection_data.append(self.com_port.get())
-        connection_data.append(self.analyser_usb.get())
-        connection_data.append(self.monitor.get())
-        connection_data.append(self.move_probe.get())
+        connection_data.append(self.com_port)
+        connection_data.append(self.analyser_usb)
+        connection_data.append(self.monitor)
+        connection_data.append(self.move_probe)
         ports_data.extend(connection_data)
-     
         DS.write_to_port_file(ports_data)
-    
         controller.show_frame(AU.AdminWindow)
+        
+        
+        
+    def destroy_canvas(self):
+        self.canvas_1.destroy()
+        self.canvas_2.destroy()
+        self.canvas_3.destroy()
+        self.canvas_4.destroy()  
+        
+         
+        
+    def get_keys(self):
+        KY.display()
+        self.btn_1.config(state=DISABLED)
+        self.btn_2.config(state=DISABLED)
+        self.btn_3.config(state=DISABLED)
+        self.btn_4.config(state=DISABLED)
+        
+        
+        
+    def set_buttons_norm(self):
+        self.btn_1.config(state=NORMAL)
+        self.btn_2.config(state=NORMAL)
+        self.btn_3.config(state=NORMAL)
+        self.btn_4.config(state=NORMAL)
+        
+        
+        
+    def znd_entry(self):
+        self.current_user = ""
+        data = self.wait_for_response(self.canvas_1, self.znd_text)
+        self.newusername = data
+        self.set_buttons_norm()
+        
+        
+        
+    def probe_entry(self):
+        self.current_user = ""
+        data = self.wait_for_response(self.canvas_1, self.probe_text)
+        self.newusername = data
+        self.set_buttons_norm()
+        
+        
+        
+    def monitor_entry(self):
+        self.current_user = ""
+        data = self.wait_for_response(self.canvas_1, self.monitor_text)
+        self.newusername = data
+        self.set_buttons_norm()
+        
+        
+        
+    def move_entry(self):
+        self.current_user = ""
+        data = self.wait_for_response(self.canvas_1, self.move_text)
+        self.newusername = data
+        self.set_buttons_norm()
+        
+             
+        
+    def wait_for_response(self, master, label):
+        DS.write_to_from_keys(" ")
+        data = DS.get_keyboard_data()
+        while 1:
+            data = DS.get_keyboard_data()
+            if data[-1] == "+":
+                data = data[:-1]
+                break 
+       
+            master.itemconfig(label, text=data)
+                # ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
+            Tk.update(master)
+        return data
             

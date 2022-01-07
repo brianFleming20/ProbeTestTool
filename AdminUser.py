@@ -126,8 +126,8 @@ class AdminWindow(tk.Frame):
         Tk.update(self) 
         
     def show_user_options(self):
-        self.canvas = Canvas(width=250, height=150)
-      
+        self.canvas = Canvas(bg="#eae9e9",width=250, height=150)
+        self.canvas.place(x=100, y=250)
         self.AW_addUsrBtn = ttk.Button(
             self.canvas, text='Add a new user', command=lambda: [self.canvas_gone(),self.control.show_frame(AddUserWindow)])
         self.AW_addUsrBtn.place(relx=0.1, rely=0.1, anchor=W)
@@ -143,7 +143,7 @@ class AdminWindow(tk.Frame):
             self, text='Done', width=30, command=lambda:
                 [self.canvas_gone(),self.control.show_frame(SE.SessionSelectWindow)])
         self.AW_adminLogoutBtn.place(relx=0.8, rely=0.78, anchor=E)
-        self.canvas.place(x=100, y=250)
+        
         self.label_4 = ttk.Label(self, text="NanoZND file storage location")
         self.entry_4 = ttk.Entry(self, textvariable=self.file)
         self.label_4.place(relx=0.1, rely=0.7)
@@ -212,10 +212,13 @@ class ChangePasswordWindow(tk.Frame):
         self.confm_btn.place(relx=0.25, rely=0.8, anchor=CENTER)
         
     def refresh_window(self):
-        self.canvas_1 = Canvas(width=400, height=40)
+        self.canvas_1 = Canvas(bg="#eae9e9",width=400, height=40)
         self.canvas_1.place(x=350, y=225)
-        self.canvas_2 = Canvas(width=400, height=40)
+        self.canvas_2 = Canvas(bg="#eae9e9",width=400, height=40)
         self.canvas_2.place(x=350, y=300)
+        self.pass1_text = self.canvas_1.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 16, "bold"))
+        self.pass2_text = self.canvas_2.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
+      
         session_info = DS.get_user()
         self.CPWb1 = ttk.Button(self.canvas_1, text='Enter a new password', command=lambda:
             [self.get_keys(),self.password_entry()])
@@ -236,7 +239,7 @@ class ChangePasswordWindow(tk.Frame):
         
     def password_entry(self):
     
-        pw_data = self.wait_for_response(self.canvas_1)
+        pw_data = self.wait_for_response(self.canvas_1,self.pass1_text)
         self.CPWb1.config(state=NORMAL)
         self.CPWb2.config(state=NORMAL)
         self.newPassword = pw_data
@@ -246,7 +249,7 @@ class ChangePasswordWindow(tk.Frame):
     def conform_pwd(self):
         DS.write_to_from_keys(" ")
         
-        pw_data = self.wait_for_response(self.canvas_2)
+        pw_data = self.wait_for_response(self.canvas_2,self.pass2_text)
         self.CPWb1.config(state=NORMAL)
         self.CPWb2.config(state=NORMAL)
         self.confirmPassword = pw_data
@@ -260,7 +263,7 @@ class ChangePasswordWindow(tk.Frame):
         
         
         
-    def wait_for_response(self, master):
+    def wait_for_response(self, master, label):
         DS.write_to_from_keys(" ")
         password_blank = "*********************"
         pw_data = DS.get_keyboard_data()
@@ -270,8 +273,8 @@ class ChangePasswordWindow(tk.Frame):
             if pw_data[-1] == "+":
                 pw_data = pw_data[:-1]
                 break 
-         
-            ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
+            master.itemconfig(label, text=password_blank[:pw_len])
+            
             Tk.update(master)
             
         return pw_data
@@ -481,12 +484,15 @@ class AddUserWindow(tk.Frame):
         
     def refresh_window(self):
          # create a list of the current users using the dictionary of users
-        self.canvas_1 = Canvas(width=400, height=40)
+        self.canvas_1 = Canvas(bg="#eae9e9",width=400, height=40)
         self.canvas_1.place(x=200, y=200)
-        self.canvas_2 = Canvas(width=400, height=40)
+        self.canvas_2 = Canvas(bg="#eae9e9",width=400, height=40)
         self.canvas_2.place(x=200, y=275)
-        self.canvas_3 = Canvas(width=400, height=40)
+        self.canvas_3 = Canvas(bg="#eae9e9",width=400, height=40)
         self.canvas_3.place(x=200, y=350)
+        self.name_text = self.canvas_1.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 16, "bold"))
+        self.pass1_text = self.canvas_2.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
+        self.pass2_text = self.canvas_3.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
         self.AUWl1 = ttk.Button(self.canvas_1, text='New user name: ',command=lambda:
             [self.get_keys(),self.name_entry()])
         self.AUWl2 = ttk.Button(self.canvas_2, text='Enter Password: ', command=lambda:
@@ -522,8 +528,8 @@ class AddUserWindow(tk.Frame):
         
     def name_entry(self):
         self.current_user = ""
-        pass_block = False
-        data = self.wait_for_response(self.canvas_1,  pass_block)
+        block = False
+        data = self.wait_for_response(self.canvas_1,  block, self.name_text)
         self.newusername = data
         self.set_buttons_norm()
       
@@ -531,7 +537,7 @@ class AddUserWindow(tk.Frame):
         
     def password_entry(self):
         block = True
-        pw_data = self.wait_for_response(self.canvas_2, block)
+        pw_data = self.wait_for_response(self.canvas_2, block, self.pass1_text)
         self.newpassword = pw_data
         self.set_buttons_norm()
         
@@ -540,13 +546,13 @@ class AddUserWindow(tk.Frame):
         
     def conform_pwd(self):
         block = True
-        pw_data = self.wait_for_response(self.canvas_3, block)
+        pw_data = self.wait_for_response(self.canvas_3, block, self.pass2_text)
         self.confpassword = pw_data
         self.set_buttons_norm()
         
         
         
-    def wait_for_response(self, master, block):
+    def wait_for_response(self, master, block, label):
         DS.write_to_from_keys(" ")
         password_blank = "*********************"
         pw_data = DS.get_keyboard_data()
@@ -557,11 +563,15 @@ class AddUserWindow(tk.Frame):
                 pw_data = pw_data[:-1]
                 break 
             if block:
-                ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
+                master.itemconfig(label, text=password_blank[:pw_len])
+                # ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
             else:
-                ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
+                master.itemconfig(label, text=pw_data)
+                # ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
             Tk.update(master)
         return pw_data
+    
+    
     
     def set_buttons_norm(self):
         self.AUWl1.config(state=NORMAL)

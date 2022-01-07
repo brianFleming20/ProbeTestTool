@@ -74,22 +74,22 @@ class SessionSelectWindow(tk.Frame):
         
         ttk.Button(self, text='Start a new session', command=lambda: 
             controller.show_frame(NewSessionWindow),
-            width=BTN_WIDTH).place(height=35,width=180, x=250, y=180)
+            width=BTN_WIDTH).place(height=35,width=180, x=200, y=180)
         
 
         self.SSW_b2 = ttk.Button(self, text='Continue a previous session',
             command=lambda: controller.show_frame(ContinueSessionWindow), width=BTN_WIDTH)
      
-        self.SSW_b2.place(height=35, width=180, x=550, y=180 )
+        self.SSW_b2.place(height=35, width=180, x=500, y=180 )
 
         ttk.Button(self, text='Completed Batches', command=lambda: 
-            self.completed_btn_clicked(controller), 
-            width=BTN_WIDTH).place(height=35,width=180, x=250, y=350)
+            self.completed_btn_clicked(), 
+            width=BTN_WIDTH).place(height=35,width=180, x=200, y=350)
 
         self.SSW_b4 = ttk.Button(self, text='Admin area', command=lambda: 
             controller.show_frame(AU.AdminWindow), width=BTN_WIDTH)
         
-        self.SSW_b4.place(height=35,width=180, x=550, y=350)
+        self.SSW_b4.place(height=35,width=180, x=500, y=350)
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
         if "AM" in time_now :
@@ -126,8 +126,17 @@ class SessionSelectWindow(tk.Frame):
         self.text_area.insert('3.3','\n\nPlease choose an option.')
         self.text_area.config(state=DISABLED)
         
-    def completed_btn_clicked(self, controller):
+    def completed_btn_clicked(self):
         print("Completed button clicked...")
+        self.complete_canvas = Canvas(bg="#eae9e9",width=200, height=300)
+        self.complete_canvas.place(x=730, y=180)
+        self.complete_canvas.create_text(100,20,text="Probes Completed",fill="black",font=(OnScreenKeys.FONT_NAME, 12, "bold"))
+        ttk.Button(self.complete_canvas, text="Close", command=lambda:
+            self.complete_canvas.destroy()).place(relx=0.80, rely=0.9, anchor=N)
+        for probes in range(5):
+            position = (probes * 20) + 50
+            self.complete_canvas.create_text(80,position,text=f"Probes {probes}",fill="black",font=(OnScreenKeys.FONT_NAME, 10))
+        
       
             
             
@@ -196,6 +205,9 @@ class NewSessionWindow(tk.Frame):
         self.canvas_type.place(x=350, y=200)
         self.canvas_qty = Canvas(width=225, height=40)
         self.canvas_qty.place(x=350, y=275)
+        self.type_text = self.canvas_type.create_text(130,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 16, "bold"))
+        self.qty_text = self.canvas_qty.create_text(130,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
+      
         self.btn_1 = ttk.Button(self.canvas_type, text='Batch number: ',command=lambda:[self.get_keys(),self.type_entry()])
         self.btn_1.place(relx=0.25, rely=0.3, anchor=N)
         self.btn_2 = ttk.Button(self.canvas_qty, text='Batch Qty: ', command=lambda:[self.get_keys(),self.qty_entry()])
@@ -214,7 +226,7 @@ class NewSessionWindow(tk.Frame):
         
     def type_entry(self):
         self.current_user = ""
-        data = self.wait_for_response(self.canvas_type)
+        data = self.wait_for_response(self.canvas_type, self.type_text)
         self.current_user = data
         self.btn_1.config(state=NORMAL)
         self.btn_2.config(state=NORMAL)
@@ -222,13 +234,13 @@ class NewSessionWindow(tk.Frame):
         
     def qty_entry(self):
         self.current_user = ""
-        data = self.wait_for_response(self.canvas_qty)
+        data = self.wait_for_response(self.canvas_qty, self.qty_text)
         self.current_user = data
         self.btn_1.config(state=NORMAL)
         self.btn_2.config(state=NORMAL)
         
         
-    def wait_for_response(self, master):
+    def wait_for_response(self, master, label):
         DS.write_to_from_keys(" ")
        
         while 1:
@@ -237,7 +249,8 @@ class NewSessionWindow(tk.Frame):
             if data[-1] == "+":
                 data = data[:-1]
                 break 
-            ttk.Label(master, text=data, font=("bold", 15)).place(relx=0.5, rely=0.3, width=100,anchor=N)
+            master.itemconfig(label, text=data)
+            # ttk.Label(master, text=data, font=("bold", 15)).place(relx=0.75, rely=0.3, width=100,anchor=N)
             Tk.update(master)
        
         return data
