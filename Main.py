@@ -42,7 +42,7 @@ import OnScreenKeys as KY
 
 
 # define global variables
-PTT_Version = 'Deltex Medical : P0035 Probe Test Tool V1.0'
+PTT_Version = 'Deltex Medical : P0035 Probe Test Tool V2.0'
 w = 1000  # window width
 h = 650  # window height
 LARGE_FONT = ("Verdana", 14)
