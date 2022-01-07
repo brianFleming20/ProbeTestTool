@@ -39,7 +39,6 @@ class DataStore():
         # Main data file read  #
         ########################
     def get_user(self):
-       
         with open('file.user', 'rb') as load_user_file:
             load_data = pickle.load(load_user_file)
         load_user_file.close()
@@ -49,10 +48,8 @@ class DataStore():
         # Batch control file read #
         ###########################
     def get_batch(self):
-        
         with open("file.batch", "rb") as load_batch_file:
             temp_load = pickle.load(load_batch_file)
-          
         load_batch_file.close()
         return temp_load
     
@@ -63,7 +60,6 @@ class DataStore():
         with open('file.admin', 'rb') as load_admin_file:
             admin_load = pickle.load(load_admin_file)
         load_admin_file.close()
-      
         return admin_load
     
     #######################################
@@ -71,9 +67,7 @@ class DataStore():
     def get_ports(self):
         with open('file.ports', 'rb') as load_ports_file:
             port_load = pickle.load(load_ports_file)
-          
         load_ports_file.close()
-     
         return port_load
     
     #######################################
@@ -109,7 +103,6 @@ class DataStore():
     #########################################
     
     def write_to_port_file(self, ports):
-   
         with open('file.ports', 'wb') as port_file:
             pickle.dump(ports, port_file)
         port_file.close()
@@ -117,10 +110,10 @@ class DataStore():
     ##########################################
     
     def write_to_from_keys(self, keys):
-        
         with open('file.keys', 'wb') as key_input:
             pickle.dump(keys, key_input)
         key_input.close()
+    
         
     ##########################################    
     
@@ -151,7 +144,6 @@ class DataStore():
     def get_user_admin_status(self):
         admin = []
         admin.extend(self.get_user())
-  
         return admin[1]
     
     #########################################
@@ -160,6 +152,7 @@ class DataStore():
         return self.get_user()[0]
     
     #########################################
+        
     
     def get_programme_status(self):
         ok = []

@@ -51,7 +51,7 @@ KY = OnScreenKeys.Keyboard()
 def ignore():
     return 'break'
 
-BTN_WIDTH = 25
+BTN_WIDTH = 22
 BTN_HEIGHT = 20
 
 class SessionSelectWindow(tk.Frame):
@@ -133,9 +133,9 @@ class SessionSelectWindow(tk.Frame):
             
 class NewSessionWindow(tk.Frame):
     def __init__(self, parent, controller):
-        self.batchNumber = StringVar()
+        self.batchNumber = ""
         self.probe_type = StringVar()
-        self.batchQty = IntVar()
+        self.batchQty = 0
 
         # Details Screen
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
@@ -149,29 +149,17 @@ class NewSessionWindow(tk.Frame):
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
         self.text_area = tk.Text(self, height=5, width=38)
-        self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
+        self.text_area.place(relx=0.25, rely=0.20, anchor=CENTER)
         # time_now = strftime("%H:%M:%p", gmtime())
 
         #batch_frame.grid(row=0, sticky="ew")
-        probe_type_frame.place(relx=0.25, rely=0.5,anchor=CENTER)
+        probe_type_frame.place(relx=0.25, rely=0.6,anchor=CENTER)
         
         self.NSWL1 = ttk.Label(self, text='Probe selection window. ', justify=RIGHT, font=("Courier", 20, "bold"))
         self.NSWL1.place(relx=0.5, rely=0.05, anchor=CENTER)
 
-        self.NSWL1 = ttk.Label(self, text='Batch number: ', justify=RIGHT)
-        self.NSWL1.place(relx=0.5, rely=0.35, anchor=CENTER)
 
-        self.NSWE1 = ttk.Entry(self, textvariable=self.batchNumber)
-        self.NSWE1.place(relx=0.62, rely=0.35, anchor=CENTER)
-        
-        self.NSWL1 = ttk.Label(self, text='Batch Qty: ', justify=RIGHT)
-        self.NSWL1.place(relx=0.5, rely=0.45, anchor=CENTER)
-        
-        self.NSWE1 = ttk.Entry(self, textvariable=self.batchQty)
-        self.NSWE1.place(relx=0.7, rely=0.45, anchor=E)
-
-        self.NSWL2 = ttk.Label(self, text='Select Probe Type: ')
-        self.NSWL2.place(relx=0.1, rely=0.35, anchor=CENTER)
+        ttk.Label(self, text='Select Probe Type: ').place(relx=0.1, rely=0.42, anchor=CENTER)
         
         self.probe_type = StringVar(probe_type_frame, "DP240")
         # Dictionary to create multiple buttons
@@ -186,43 +174,32 @@ class NewSessionWindow(tk.Frame):
         for (text, value) in values.items():
             Radiobutton(probe_type_frame, text = text, variable = self.probe_type,
             value = value).pack(side = TOP, ipady = 5)
-      
-
-        # # tk.Radiobutton(probe_type_frame, text='SDP30 [Suprasternal Probe]',
-        # #                variable=self.probe_type, value='SDP30').pack(fill=X, ipady=5)
-        # tk.Radiobutton(probe_type_frame, text='DP240 [9070-7005]',
-        #                variable=self.probe_type, value='DP240').pack(side=TOP, ipady=5)
-        # tk.Radiobutton(probe_type_frame, text='DP12 [9070-7003]',
-        #                variable=self.probe_type, value='DP12').pack(fill=X, ipady=5)
-        # tk.Radiobutton(probe_type_frame, text='DP6 [9070-7001]',
-        #                variable=self.probe_type, value='DP6').pack(fill=X, ipady=5)
-        # tk.Radiobutton(probe_type_frame, text='I2C [9090-7014]',
-        #                variable=self.probe_type, value='I2C').pack(fill=X, ipady=5)
-        # tk.Radiobutton(probe_type_frame, text='I2P [9090-7013]', 
-        #                variable=self.probe_type, value='I2P').pack(fill=X, ipady=5)
-        # tk.Radiobutton(probe_type_frame, text='I2S [9090-7012]', 
-        #                variable=self.probe_type, value='I2S').pack(fill=X, ipady=5)
-        # tk.Radiobutton(probe_type_frame, text='KDP72 [9081-7001]', 
-        #                variable=self.probe_type, value='KDP').pack(fill=X, ipady=5)
-        # # tk.Radiobutton(probe_type_frame, text='Blank',
-        # #                variable=self.probe_type, value='Blank').pack(fill=X, ipady=7)
         
-        ttk.Button(self, text="keyboard", command=lambda: 
-            self.get_keys()).place(relx=0.7, rely=0.65 ,anchor=CENTER)
+       
         
         self.confm_btn = tk.Button(self, text='Confirm', padx=2, pady=3,
-                width=BTN_WIDTH, command=lambda: self.confm_btn_clicked(controller))
-        self.confm_btn.place(relx=0.8, rely=0.8, anchor=CENTER)
+                width=BTN_WIDTH, command=lambda: 
+                    [self.canvas_type.destroy(),self.canvas_qty.destroy(),self.confm_btn_clicked(controller)])
+        self.confm_btn.place(relx=0.85, rely=0.88, anchor=CENTER)
 
         self.cancl_btn = tk.Button(self, text='Cancel', padx=2, pady=3, width=BTN_WIDTH,
-                command=lambda: controller.show_frame(SessionSelectWindow))
-        self.cancl_btn.place(relx=0.5, rely=0.8, anchor=CENTER)
+                command=lambda:
+                    [self.canvas_type.destroy(),self.canvas_qty.destroy(),controller.show_frame(SessionSelectWindow)])
+        self.cancl_btn.place(relx=0.65, rely=0.88, anchor=CENTER)
 
         self.bind('<Return>', self.confm_btn_clicked)
         
   
         
     def refresh_window(self):
+        self.canvas_type = Canvas(width=225, height=40)
+        self.canvas_type.place(x=350, y=200)
+        self.canvas_qty = Canvas(width=225, height=40)
+        self.canvas_qty.place(x=350, y=275)
+        self.btn_1 = ttk.Button(self.canvas_type, text='Batch number: ',command=lambda:[self.get_keys(),self.type_entry()])
+        self.btn_1.place(relx=0.25, rely=0.3, anchor=N)
+        self.btn_2 = ttk.Button(self.canvas_qty, text='Batch Qty: ', command=lambda:[self.get_keys(),self.qty_entry()])
+        self.btn_2.place(relx=0.2, rely=0.3, anchor=N)
         self.text_area.config(state=NORMAL)
         self.text_area.insert('1.0',DS.get_username())
         self.text_area.insert('3.3','\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
@@ -231,6 +208,39 @@ class NewSessionWindow(tk.Frame):
         
     def get_keys(self):
         KY.get_keyboard()
+        self.btn_1.config(state=DISABLED)
+        self.btn_2.config(state=DISABLED)
+        
+        
+    def type_entry(self):
+        self.current_user = ""
+        data = self.wait_for_response(self.canvas_type)
+        self.current_user = data
+        self.btn_1.config(state=NORMAL)
+        self.btn_2.config(state=NORMAL)
+        
+        
+    def qty_entry(self):
+        self.current_user = ""
+        data = self.wait_for_response(self.canvas_qty)
+        self.current_user = data
+        self.btn_1.config(state=NORMAL)
+        self.btn_2.config(state=NORMAL)
+        
+        
+    def wait_for_response(self, master):
+        DS.write_to_from_keys(" ")
+       
+        while 1:
+            data = DS.get_keyboard_data()
+         
+            if data[-1] == "+":
+                data = data[:-1]
+                break 
+            ttk.Label(master, text=data, font=("bold", 15)).place(relx=0.5, rely=0.3, width=100,anchor=N)
+            Tk.update(master)
+       
+        return data
         
 
     def confm_btn_clicked(self, controller):
@@ -238,18 +248,18 @@ class NewSessionWindow(tk.Frame):
         session_data = []
         batch_data = []
         DAnswer = False
-        newBatch = Batch(self.batchNumber.get())
+        newBatch = Batch(self.batchNumber)
         newBatch.probe_type = self.probe_type.get()
-        newBatch.batchQty = self.batchQty.get()
+        newBatch.batchQty = self.batchQty
 
-        if self.batchQty.get() > 100:
+        if self.batchQty > 100:
                 self.text_area.config(state=NORMAL)
                 self.text_area.delete('2.0','end')
                 self.text_area.insert('2.0','\nCheck batch quantity. ')
                 self.text_area.config(state=DISABLED)
         else:
             DAnswer = tm.askyesno('Confirm', 'Are batch details correct?' )
-        if DAnswer == True and self.batchQty.get() > 0:
+        if DAnswer == True and self.batchQty > 0:
             # create the batch file
         
             temp_var = DS.get_user()
@@ -262,14 +272,14 @@ class NewSessionWindow(tk.Frame):
                 BM.current_batch = newBatch
                 session_data.append(newBatch.batchNumber)
                 session_data.append(newBatch.probe_type)
-                batch_data.append(self.batchNumber.get())
+                batch_data.append(self.batchNumber)
                 batch_data.append(self.probe_type.get())
-                batch_data.append(self.batchQty.get())
+                batch_data.append(self.batchQty)
                 DS.write_to_batch_file(batch_data)
             
                 controller.show_frame(CO.Connection)
             
-            self.NSWE1.delete(0, 'end')
+            
             
 
 

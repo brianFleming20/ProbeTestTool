@@ -151,7 +151,7 @@ class SecManDB(object):
             thisUser = User(user, password, admin)
         else:
             thisUser = False
-        
+
         return thisUser
     
     def getUserList(self,):
@@ -209,8 +209,7 @@ class User(object):
         self.password = password
         self.admin = admin
 
-    def get_user_status(self):
-        return admin
+   
 #SM = SecurityManager()
          
 #with open('filename.pickle', 'rb') as handle:

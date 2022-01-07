@@ -186,9 +186,11 @@ class AdminWindow(tk.Frame):
 
 class ChangePasswordWindow(tk.Frame):
     def __init__(self, parent, controller):
-        self.newPassword = StringVar()
-        self.confirmPassword = StringVar()
+        self.newPassword = ""
+        self.confirmPassword = ""
         self.name = ""
+        self.canvas_1 = None
+        self.canvas_2 = None
 
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
         
@@ -199,42 +201,88 @@ class ChangePasswordWindow(tk.Frame):
         self.text_area = tk.Text(self, height=5, width=38)
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
 
-        self.CPWl1 = ttk.Label(self, text='Enter a new password')
-        self.CPWl1.place(relx=0.35, rely=0.3, anchor=CENTER)
-        
-        self.CPWl1 = ttk.Label(self, text='Confirm new password')
-        self.CPWl1.place(relx=0.35, rely=0.35, anchor=CENTER)
-
-        self.CPWe1 = ttk.Entry(self, textvariable=self.newPassword, show="*", font="bold")
-        self.CPWe1.place(relx=0.65, rely=0.3, anchor=CENTER)
-        
-        self.CPWe1 = ttk.Entry(self, textvariable=self.confirmPassword, show="*", font="bold")
-        self.CPWe1.place(relx=0.65, rely=0.35, anchor=CENTER)
 
         self.confm_btn = ttk.Button(
             self, text='Confirm', command=lambda: self.confm_btn_clicked(controller))
-        self.confm_btn.place(relx=0.5, rely=0.6, anchor=CENTER)
+        self.confm_btn.place(relx=0.8, rely=0.8, anchor=CENTER)
         
         self.confm_btn = ttk.Button(
-            self, text='Back', command=lambda: controller.show_frame(EditUserWindow))
-        self.confm_btn.place(relx=0.65, rely=0.6, anchor=CENTER)
+            self, text='Back', command=lambda: 
+                [self.canvas_1.destroy(),self.canvas_2.destroy(),controller.show_frame(EditUserWindow)])
+        self.confm_btn.place(relx=0.25, rely=0.8, anchor=CENTER)
         
     def refresh_window(self):
-     
+        self.canvas_1 = Canvas(width=400, height=40)
+        self.canvas_1.place(x=350, y=225)
+        self.canvas_2 = Canvas(width=400, height=40)
+        self.canvas_2.place(x=350, y=300)
         session_info = DS.get_user()
+        self.CPWb1 = ttk.Button(self.canvas_1, text='Enter a new password', command=lambda:
+            [self.get_keys(),self.password_entry()])
+        self.CPWb1.place(relx=0.2, rely=0.3, anchor=N)
         
-        my_admin = DS.get_admin()
-        self.name = my_admin[1]
+        self.CPWb2 = ttk.Button(self.canvas_2, text='Confirm new password', command=lambda: 
+            [self.get_keys(),self.conform_pwd()])
+        self.CPWb2.place(relx=0.2, rely=0.3, anchor=N)
+      
         
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0','end')
         self.text_area.insert('1.0',session_info[0])
-        self.text_area.insert('2.0','\nChange ' + self.name + "'s password.")
+        self.text_area.insert('2.0','\nChange ' + DS.get_username() + "'s password.")
         self.text_area.config(state=DISABLED)
+        
+        
+        
+    def password_entry(self):
+    
+        pw_data = self.wait_for_response(self.canvas_1)
+        self.CPWb1.config(state=NORMAL)
+        self.CPWb2.config(state=NORMAL)
+        self.newPassword = pw_data
+        
+        
+        
+    def conform_pwd(self):
+        DS.write_to_from_keys(" ")
+        
+        pw_data = self.wait_for_response(self.canvas_2)
+        self.CPWb1.config(state=NORMAL)
+        self.CPWb2.config(state=NORMAL)
+        self.confirmPassword = pw_data
+        
+        
+        
+    def get_keys(self):
+        KY.display()
+        self.CPWb1.config(state=DISABLED)
+        self.CPWb2.config(state=DISABLED)
+        
+        
+        
+    def wait_for_response(self, master):
+        DS.write_to_from_keys(" ")
+        password_blank = "*********************"
+        pw_data = DS.get_keyboard_data()
+        while 1:
+            pw_data = DS.get_keyboard_data()
+            pw_len = len(pw_data)
+            if pw_data[-1] == "+":
+                pw_data = pw_data[:-1]
+                break 
+         
+            ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
+            Tk.update(master)
+            
+        return pw_data
+    
+    
 
     def confm_btn_clicked(self, controller):
-        if self.newPassword.get() == self.confirmPassword.get():
-            # SM.editingUser.password = self.newPassword.get()
+        self.canvas_1.destroy()
+        self.canvas_2.destroy()
+        if self.newPassword == self.confirmPassword:
+            SM.editingUser.password = self.newPassword
             user = SM.GetUserObject(self.name)
             SM.updatePassword(user)
             tm.showinfo('Changed password', 'Password change successful')
@@ -361,9 +409,9 @@ class AddUserWindow(tk.Frame):
         # add User screen
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
 
-        self.newusername = StringVar()
-        self.newpassword = StringVar()
-        self.confpassword = StringVar()
+        self.newusername = ""
+        self.newpassword = ""
+        self.confpassword = ""
         self.is_admin = StringVar()
         self.allow_add_admin = False
         self.allow_add = True
@@ -377,41 +425,28 @@ class AddUserWindow(tk.Frame):
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
 
-        self.AUWl1 = ttk.Label(self, text='New user name: ')
-        self.AUWl2 = ttk.Label(self, text='Enter Password: ')
-        self.AUWl3 = ttk.Label(self, text='Confirm Password: ')
-        #self.AUWl3 = ttk.Label(self.AUW, text='Admin: ')
-        self.AUWe1 = ttk.Entry(self, textvariable=self.newusername)
-        self.AUWe2 = ttk.Entry(self, textvariable=self.newpassword, show="*", font="bold")
-        self.AUWe3 = ttk.Entry(self, textvariable=self.confpassword, show="*", font="bold")
-
         self.rb1 = ttk.Radiobutton(
             self, text='Admin', variable=self.is_admin, value='true')
-        self.rb1.place(relx=0.5, rely=0.55, anchor=CENTER)
+        self.rb1.place(relx=0.7, rely=0.35, anchor=CENTER)
         self.rb2 = ttk.Radiobutton(
             self, text='Non-Admin', variable=self.is_admin, value='false')
-        self.rb2.place(relx=0.5, rely=0.65, anchor=CENTER)
-
-        self.AUWl1.place(relx=0.4, rely=0.25, anchor=CENTER)
-        self.AUWl2.place(relx=0.4, rely=0.35, anchor=CENTER)
-        self.AUWe1.place(relx=0.6, rely=0.25, anchor=CENTER)
-        self.AUWe2.place(relx=0.6, rely=0.35, anchor=CENTER)
-        self.AUWl3.place(relx=0.4, rely=0.4, anchor=CENTER)
-        self.AUWe3.place(relx=0.6, rely=0.4, anchor=CENTER)
+        self.rb2.place(relx=0.7, rely=0.45, anchor=CENTER)
 
         self.confm_btn = ttk.Button(
-            self, text="Confirm", command=lambda: self._confm_btn_clicked(controller))
-        self.confm_btn.place(relx=0.4, rely=0.8, anchor=CENTER)
+            self, text="Confirm", command=lambda: 
+            [self.canvas_1.destroy(),self.canvas_2.destroy(),self.canvas_3.destroy(),self._confm_btn_clicked(controller)])
+        self.confm_btn.place(relx=0.85, rely=0.8, anchor=CENTER)
 
         self.cancl_btn = ttk.Button(
-            self, text="Cancel", command=lambda: controller.show_frame(AdminWindow))
-        self.cancl_btn.place(relx=0.6, rely=0.8, anchor=CENTER)
+            self, text="Cancel", command=lambda: 
+            [self.canvas_1.destroy(),self.canvas_2.destroy(),self.canvas_3.destroy(),controller.show_frame(AdminWindow)])
+        self.cancl_btn.place(relx=0.7, rely=0.8, anchor=CENTER)
 
     def _confm_btn_clicked(self, controller):
         self.confm_btn.config(command=ignore)
         self.cancl_btn.config(command=ignore)
         self.text_area.config(state=NORMAL)
-        if self.newpassword.get() == self.confpassword.get():
+        if self.newpassword == self.confpassword:
                 
             # create user object
             if self.is_admin.get() == 'false':
@@ -419,7 +454,7 @@ class AddUserWindow(tk.Frame):
             else:
                 admin = True
                 
-            newUser = User(self.newusername.get(), self.newpassword.get(), admin)
+            newUser = User(self.newusername, self.newpassword, admin)
             
             if self.is_admin.get() == 'true' and self.allow_add_admin == False:
                 admin = False
@@ -433,7 +468,7 @@ class AddUserWindow(tk.Frame):
                     controller.show_frame(AdminWindow)
             else:
                     tm.showerror('Error', 'User already exsists')
-           
+                    
             self.confm_btn.config(
                 command=lambda: self._confm_btn_clicked(controller))
             self.cancl_btn.config(
@@ -442,8 +477,25 @@ class AddUserWindow(tk.Frame):
             self.text_area.insert('3.3','\nPlease check password spelling,\nthey are not the same.')
         self.text_area.config(state=DISABLED)
         
+        
+        
     def refresh_window(self):
          # create a list of the current users using the dictionary of users
+        self.canvas_1 = Canvas(width=400, height=40)
+        self.canvas_1.place(x=200, y=200)
+        self.canvas_2 = Canvas(width=400, height=40)
+        self.canvas_2.place(x=200, y=275)
+        self.canvas_3 = Canvas(width=400, height=40)
+        self.canvas_3.place(x=200, y=350)
+        self.AUWl1 = ttk.Button(self.canvas_1, text='New user name: ',command=lambda:
+            [self.get_keys(),self.name_entry()])
+        self.AUWl2 = ttk.Button(self.canvas_2, text='Enter Password: ', command=lambda:
+            [self.get_keys(),self.password_entry()])
+        self.AUWl3 = ttk.Button(self.canvas_3, text='Confirm Password: ', command=lambda:
+            [self.get_keys,self.conform_pwd])
+        self.AUWl1.place(relx=0.15, rely=0.3, anchor=N)
+        self.AUWl2.place(relx=0.15, rely=0.3, anchor=N)
+        self.AUWl3.place(relx=0.15, rely=0.3, anchor=N)
       
         session_info = DS.get_user()
     
@@ -464,5 +516,62 @@ class AddUserWindow(tk.Frame):
 
     def _setDefaults(self):
         self.is_admin.set('false')
-        self.newusername.set("")
-        self.newpassword.set("")
+        self.newusername = ""
+        self.newpassword = ""
+        
+        
+    def name_entry(self):
+        self.current_user = ""
+        pass_block = False
+        data = self.wait_for_response(self.canvas_1,  pass_block)
+        self.newusername = data
+        self.set_buttons_norm()
+      
+        
+        
+    def password_entry(self):
+        block = True
+        pw_data = self.wait_for_response(self.canvas_2, block)
+        self.newpassword = pw_data
+        self.set_buttons_norm()
+        
+        
+        
+        
+    def conform_pwd(self):
+        block = True
+        pw_data = self.wait_for_response(self.canvas_3, block)
+        self.confpassword = pw_data
+        self.set_buttons_norm()
+        
+        
+        
+    def wait_for_response(self, master, block):
+        DS.write_to_from_keys(" ")
+        password_blank = "*********************"
+        pw_data = DS.get_keyboard_data()
+        while 1:
+            pw_data = DS.get_keyboard_data()
+            pw_len = len(pw_data)
+            if pw_data[-1] == "+":
+                pw_data = pw_data[:-1]
+                break 
+            if block:
+                ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
+            else:
+                ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
+            Tk.update(master)
+        return pw_data
+    
+    def set_buttons_norm(self):
+        self.AUWl1.config(state=NORMAL)
+        self.AUWl2.config(state=NORMAL)
+        self.AUWl3.config(state=NORMAL)
+        
+        
+    def get_keys(self):
+          
+        KY.display()
+        self.AUWl1.config(state=DISABLED)
+        self.AUWl2.config(state=DISABLED)
+        self.AUWl3.config(state=DISABLED)

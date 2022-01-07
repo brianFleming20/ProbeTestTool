@@ -52,8 +52,8 @@ class LogInWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#E0FFFF')
         self.current_user = StringVar()
-        self.canvas_name = None
-        self.canvas_pass = None
+        # self.canvas_name = None
+        # self.canvas_pass = None
         self.login_btn = (PhotoImage(file="login_btn.gif"))
         self.deltex = (PhotoImage(file="deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
@@ -71,7 +71,8 @@ class LogInWindow(tk.Frame):
       
 
         self.logbtn = ttk.Button(
-            self, text="Login",image=self.login_btn, width=20,command=lambda: self._login_btn_clicked(controller))
+            self, text="Login",image=self.login_btn, width=20,command=lambda: 
+                [self.canvas_name.destroy(),self.canvas_pass.destroy(),self._login_btn_clicked(controller)])
         self.logbtn.place(relx=0.88, rely=0.5 ,anchor=CENTER)
        
         
@@ -95,59 +96,40 @@ class LogInWindow(tk.Frame):
         self.canvas_name.place(x=350, y=225)
         self.canvas_pass = Canvas(width=400, height=40)
         self.canvas_pass.place(x=350, y=300)
-        self.label_1 = ttk.Button(self.canvas_name, text='Username', command=lambda: 
+        self.btn_1 = ttk.Button(self.canvas_name, text='Username', command=lambda: 
             [self.get_keys(),self.name_entry()], width=20)
-        # self.label_1 = ttk.Label(canvas_name, text="Username",width=40)
-        self.label_2 = ttk.Button(self.canvas_pass, text='Password', command=lambda: 
+        # self.btn_1 = ttk.Label(canvas_name, text="Username",width=40)
+        self.btn_2 = ttk.Button(self.canvas_pass, text='Password', command=lambda: 
             [self.get_keys(),self.password_entry()], width=20)
+        
+        
         # self.label_2 = ttk.Label(canvas_pass, text="Password",width=40)
-        self.label_1.place(relx=0.2, rely=0.2, anchor=N)
-        self.label_2.place(relx=0.2, rely=0.2, anchor=N)
+        self.btn_1.place(relx=0.2, rely=0.2, anchor=N)
+        self.btn_2.place(relx=0.2, rely=0.2, anchor=N)
         
         
         
         
     def name_entry(self):
-        
-        data = DS.get_keyboard_data()
-        while 1:
-            data = DS.get_keyboard_data()
-            
-            if data[-1] == "+":
-                self.label_1.config(state=NORMAL)
-                self.label_2.config(state=NORMAL)
-                data = data[:-1]
-                break 
-            self.entry_1 = ttk.Label(self.canvas_name,text=data, font=( "bold", 15))
-            self.entry_1.place(relx=0.55, rely=0.2, anchor=N)
-            Tk.update(self)
+        self.current_user = ""
+        pass_block = False
+        data = self.wait_for_response(self.canvas_name,  pass_block)
         self.current_user = data
-   
-        DS.write_to_from_keys(data)
+        self.btn_1.config(state=NORMAL)
+        self.btn_2.config(state=NORMAL)
+        # DS.write_to_from_keys(data)
     
         
         
     def password_entry(self):
-        DS.write_to_from_keys(" ")
         self.password = ""
-        password_blank = "*********************"
-       
-        pw_data = DS.get_keyboard_data()
-        while True:
-            pw_data = DS.get_keyboard_data()
-            pw_len = len(pw_data)
-            
-            if pw_data[-1] == "+":
-                self.label_1.config(state=NORMAL)
-                self.label_2.config(state=NORMAL)
-                pw_data = pw_data[:-1]
-                break
-            
-            self.entry_2 = ttk.Label(self.canvas_pass, text=password_blank[0:pw_len], font=("bold", 15))
-            self.entry_2.place(relx=0.7, rely=0.3, width=150,anchor=N)
-            Tk.update(self)
-            
-        self.password = pw_data
+        pass_block = True
+        data = self.wait_for_response(self.canvas_pass, pass_block)  
+        self.password = data
+        self.btn_1.config(state=NORMAL)
+        self.btn_2.config(state=NORMAL)
+        
+        
         # print(f"password is {self.password}")
         
 
@@ -155,24 +137,23 @@ class LogInWindow(tk.Frame):
 
     def _login_btn_clicked(self, controller):
         self.logbtn.config(command=ignore)
-        blank_data = [""]
     
-        DS.write_to_user_file(blank_data)
-        DS.write_to_batch_file(blank_data)
+        DS.write_to_user_file([""])
+        DS.write_to_batch_file([""])
         DS.write_to_admin_file('0')
-        
+
         # create a user object from the users input
         username = self.current_user
         password = self.password
         user = User(username, password)
-        self.canvas_name.destroy()
-        self.canvas_pass.destroy()  
-        Tk.update(self)
-            
+          
+     
         if SM.logIn(user):
                 controller.show_frame(SE.SessionSelectWindow)
         else:
             tm.showerror("Login error", "Incorrect username or password")
+           
+            self.refresh_window()
         self.logbtn.config(command=lambda: self.refresh_window())
             
             
@@ -182,12 +163,33 @@ class LogInWindow(tk.Frame):
             self.canvas_name.destroy()
             self.canvas_pass.destroy()
             controller.destroy()
+            
+            
+    def wait_for_response(self, master, pass_block):
+        block = pass_block
+        DS.write_to_from_keys(" ")
+        password_blank = "*********************"
+        # pw_data = DS.get_keyboard_data()
+        while 1:
+            pw_data = DS.get_keyboard_data()
+            pw_len = len(pw_data)
+            if pw_data[-1] == "+":
+                pw_data = pw_data[:-1]
+                break 
+            if block:
+                
+                ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
+            else:
+                ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,anchor=N)
+            Tk.update(master)
+       
+        return pw_data
         
     def get_keys(self):
       
         KY.display()
         
-        self.label_1.config(state=DISABLED)
-        self.label_2.config(state=DISABLED)
+        self.btn_1.config(state=DISABLED)
+        self.btn_2.config(state=DISABLED)
 
         
