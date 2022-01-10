@@ -196,13 +196,6 @@ class NanoZND(object):
             self.close_analyser_port()# close
             return False
 
-  
-    
-    def GetFileLocation(self):
-        return self.file_location
-    
-    def SetFileLocation(self, file):
-        self.file_location = file
         
     
     # Collect the data points and send to a .csv file

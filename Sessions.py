@@ -58,10 +58,10 @@ class SessionSelectWindow(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__()
         # create a choose session window
-        tk.Frame.__init__(self, parent, bg='#E0FFFF')
+        tk.Frame.__init__(self, parent, bg='#B1D0E0')
     
 # place(relx=0.28, rely=0.3,  anchor=CENTER)
-        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.deltex = (PhotoImage(file="images/deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
@@ -147,13 +147,14 @@ class NewSessionWindow(tk.Frame):
         self.batchQty = 0
 
         # Details Screen
-        tk.Frame.__init__(self, parent, bg='#E0FFFF')
+        tk.Frame.__init__(self, parent, bg='#B1D0E0')
 
         # batch_frame = tk.Frame(self, pady=3)
         probe_type_frame = tk.Frame(self, pady=3, padx=50, bg= '#E0FFFF')
         # button_frame = tk.Frame(self, pady=3)
         
-        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.deltex = (PhotoImage(file="images/deltex.gif"))
+        self.keyboard = (PhotoImage(file="images/keyboard.png"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
@@ -201,17 +202,19 @@ class NewSessionWindow(tk.Frame):
   
         
     def refresh_window(self):
-        self.canvas_type = Canvas(width=225, height=40)
-        self.canvas_type.place(x=350, y=200)
-        self.canvas_qty = Canvas(width=225, height=40)
-        self.canvas_qty.place(x=350, y=275)
-        self.type_text = self.canvas_type.create_text(130,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 16, "bold"))
-        self.qty_text = self.canvas_qty.create_text(130,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
+        self.canvas_type = Canvas(width=300, height=40)
+        self.canvas_type.place(x=370, y=200)
+        self.canvas_qty = Canvas(width=300, height=40)
+        self.canvas_qty.place(x=370, y=275)
+        self.type_text = self.canvas_type.create_text(200,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 16, "bold"))
+        self.qty_text = self.canvas_qty.create_text(200,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
       
         self.btn_1 = ttk.Button(self.canvas_type, text='Batch number: ',command=lambda:[self.get_keys(),self.type_entry()])
-        self.btn_1.place(relx=0.25, rely=0.3, anchor=N)
+        self.btn_1.place(relx=0.21, rely=0.3, anchor=N)
+        Label(self.canvas_type, image=self.keyboard, width=40).place(x=120,y=20, anchor=CENTER)
         self.btn_2 = ttk.Button(self.canvas_qty, text='Batch Qty: ', command=lambda:[self.get_keys(),self.qty_entry()])
-        self.btn_2.place(relx=0.2, rely=0.3, anchor=N)
+        self.btn_2.place(relx=0.18, rely=0.3, anchor=N)
+        Label(self.canvas_qty, image=self.keyboard, width=40).place(x=105,y=20, anchor=CENTER)
         self.text_area.config(state=NORMAL)
         self.text_area.insert('1.0',DS.get_username())
         self.text_area.insert('3.3','\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
@@ -298,9 +301,9 @@ class NewSessionWindow(tk.Frame):
 
 class ContinueSessionWindow(tk.Frame):
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent, bg='#E0FFFF')
+        tk.Frame.__init__(self, parent, bg='#B1D0E0')
         
-        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.deltex = (PhotoImage(file="images/deltex.gif"))
         ttk.Label(self, text=" ", image=self.deltex).place(relx=0.9, rely=0.1, 
                                                            anchor=CENTER)
         

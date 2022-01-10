@@ -55,10 +55,10 @@ class AdminWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
         self.file = StringVar()
-        self.file.set(ZND.GetFileLocation())
+        self.file.set(DS.get_location_file())
         self.control = controller
         
-        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.deltex = (PhotoImage(file="images/deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
      
@@ -102,7 +102,7 @@ class AdminWindow(tk.Frame):
         
         
     def refresh_window(self):
-           
+        DS.show_all_data()
         session_info = DS.get_user()
         # DS.write_to_admin_file(str([self.w2.get()]))
         DS.write_to_admin_file(str([self.checked_state.get()]))
@@ -177,11 +177,10 @@ class AdminWindow(tk.Frame):
      
         
     def _browse_btn_clicked(self):
-        filename = filedialog.askopenfilenames(initialdir = "/",title = "Select file",
-                                               filetypes = ((".csv files","*.csv"),
-                                                            ("all files","*.*")))     
-        ZND.SetFileLocation(filename)
-        self.file = ZND.GetFileLocation()   
+        
+        filename = filedialog.askdirectory(initialdir="/", title="Select file")   
+        DS.write_file_location(filename)
+        self.file.set(filename) 
         
 
 class ChangePasswordWindow(tk.Frame):
@@ -191,10 +190,13 @@ class ChangePasswordWindow(tk.Frame):
         self.name = ""
         self.canvas_1 = None
         self.canvas_2 = None
+        self.newPassword = ""
+        self.confirmPassword = ""
 
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
         
-        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.deltex = (PhotoImage(file="images/deltex.gif"))
+        self.keyboard = (PhotoImage(file="images/keyboard.png"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
@@ -216,16 +218,18 @@ class ChangePasswordWindow(tk.Frame):
         self.canvas_1.place(x=350, y=225)
         self.canvas_2 = Canvas(bg="#eae9e9",width=400, height=40)
         self.canvas_2.place(x=350, y=300)
-        self.pass1_text = self.canvas_1.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 16, "bold"))
-        self.pass2_text = self.canvas_2.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
+        self.pass1_text = self.canvas_1.create_text(240,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 16, "bold"))
+        self.pass2_text = self.canvas_2.create_text(240,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
       
         session_info = DS.get_user()
         self.CPWb1 = ttk.Button(self.canvas_1, text='Enter a new password', command=lambda:
             [self.get_keys(),self.password_entry()])
+        Label(self.canvas_1, image=self.keyboard, width=40).place(x=170,y=20, anchor=CENTER)
         self.CPWb1.place(relx=0.2, rely=0.3, anchor=N)
         
         self.CPWb2 = ttk.Button(self.canvas_2, text='Confirm new password', command=lambda: 
             [self.get_keys(),self.conform_pwd()])
+        Label(self.canvas_2, image=self.keyboard, width=40).place(x=170,y=20, anchor=CENTER)
         self.CPWb2.place(relx=0.2, rely=0.3, anchor=N)
       
         
@@ -301,7 +305,7 @@ class EditUserWindow(tk.Frame):
         
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
         
-        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.deltex = (PhotoImage(file="images/deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         
@@ -424,7 +428,8 @@ class AddUserWindow(tk.Frame):
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
         self.text_area.config(state=NORMAL)
         
-        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.deltex = (PhotoImage(file="images/deltex.gif"))
+        self.keyboard = (PhotoImage(file="images/keyboard.png"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
 
@@ -490,15 +495,18 @@ class AddUserWindow(tk.Frame):
         self.canvas_2.place(x=200, y=275)
         self.canvas_3 = Canvas(bg="#eae9e9",width=400, height=40)
         self.canvas_3.place(x=200, y=350)
-        self.name_text = self.canvas_1.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 16, "bold"))
-        self.pass1_text = self.canvas_2.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
-        self.pass2_text = self.canvas_3.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
+        self.name_text = self.canvas_1.create_text(240,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 16, "bold"))
+        self.pass1_text = self.canvas_2.create_text(240,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
+        self.pass2_text = self.canvas_3.create_text(240,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
         self.AUWl1 = ttk.Button(self.canvas_1, text='New user name: ',command=lambda:
             [self.get_keys(),self.name_entry()])
+        Label(self.canvas_1, image=self.keyboard, width=40).place(x=130,y=20, anchor=CENTER)
         self.AUWl2 = ttk.Button(self.canvas_2, text='Enter Password: ', command=lambda:
             [self.get_keys(),self.password_entry()])
+        Label(self.canvas_2, image=self.keyboard, width=40).place(x=130,y=20, anchor=CENTER)
         self.AUWl3 = ttk.Button(self.canvas_3, text='Confirm Password: ', command=lambda:
-            [self.get_keys,self.conform_pwd])
+            [self.get_keys(),self.conform_pwd()])
+        Label(self.canvas_3, image=self.keyboard, width=40).place(x=135,y=20, anchor=CENTER)
         self.AUWl1.place(relx=0.15, rely=0.3, anchor=N)
         self.AUWl2.place(relx=0.15, rely=0.3, anchor=N)
         self.AUWl3.place(relx=0.15, rely=0.3, anchor=N)

@@ -89,7 +89,7 @@ class FaultFindWindow(tk.Frame):
         self.crystal_error = "Check crystal"
         
         # Import images
-        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.deltex = (PhotoImage(file="images/deltex.gif"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
         

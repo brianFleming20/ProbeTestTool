@@ -55,7 +55,7 @@ def ignore():
 
 class Connection(tk.Frame):
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent, bg='#E0FFFF')
+        tk.Frame.__init__(self, parent, bg='#B1D0E0')
         
         # self.is_admin = ""
         self.znd_working = False
@@ -66,6 +66,8 @@ class Connection(tk.Frame):
         
         self.text_area = tk.Text(self, height=5, width=38)
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
+        self.deltex = (PhotoImage(file="images/deltex.gif"))
+        ttk.Label(self, text=" ", image=self.deltex).place(relx=0.9, rely=0.1, anchor=CENTER)
         
         self.label_9 = ttk.Label(self, text=" Press 'Continue' and wait to connect sensors... ")
         self.label_9.config(font=("Courier", 14))
@@ -120,13 +122,17 @@ class Connection(tk.Frame):
         
 
     def test_connections(self, controller):
-        while PM.ProbePresent() == True:
-            self.confm_btn.config(state=DISABLED)
-            tm.showerror('Connection Error','Remove the inserted probe from the tester.')
+        try:
+        
+            while PM.ProbePresent() == True:
+                self.confm_btn.config(state=DISABLED)
+                tm.showerror('Connection Error','Remove the inserted probe from the tester.')
             
-        # Check if all connections are true
-        self.confm_btn.config(state=NORMAL) 
-        self.test_comms()
+            # Check if all connections are true
+            self.confm_btn.config(state=NORMAL) 
+            self.test_comms()
+        except:
+            tm.showinfo("Port info","Please check all ports are connected.")
         if self.probe_working == True and self.znd_working == True and self.test_odm_connection() == True:
             controller.show_frame(PT.TestProgramWindow)
         else:

@@ -64,7 +64,8 @@ class AdminPorts(tk.Frame):
         
         tk.Frame.__init__(self, parent, bg='#E0FFFF')   
         
-        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.deltex = (PhotoImage(file="images/deltex.gif"))
+        self.keyboard = (PhotoImage(file="images/keyboard.png"))
         self.label_8 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_8.place(relx=0.9, rely=0.15, anchor=CENTER)
         
@@ -94,12 +95,16 @@ class AdminPorts(tk.Frame):
             self.canvas_4.place(x=375, y=345)
             self.btn_1 = ttk.Button(self.canvas_1, text="ODM monitor port", command=lambda:
                 [self.get_keys(), self.monitor_entry()])
+            Label(self.canvas_1, image=self.keyboard, width=40).place(x=120,y=20, anchor=CENTER)
             self.btn_2 = ttk.Button(self.canvas_2, text="Probe Interface Port", command=lambda:
                 [self.get_keys(), self.probe_entry()])
+            Label(self.canvas_2, image=self.keyboard, width=40).place(x=120,y=20, anchor=CENTER)
             self.btn_3 = ttk.Button(self.canvas_3, text="Analyser port", command=lambda:
                 [self.get_keys(), self.znd_entry()])
+            Label(self.canvas_3, image=self.keyboard, width=40).place(x=120,y=20, anchor=CENTER)
             self.btn_4 = ttk.Button(self.canvas_4, text="Probe Movement Interface", command=lambda:
                 [self.get_keys(), self.move_entry()])
+            Label(self.canvas_4, image=self.keyboard, width=40).place(x=120,y=20, anchor=CENTER)
             self.btn_1.place(relx=0.25, rely=0.3, anchor=N)
             self.btn_2.place(relx=0.25, rely=0.3, anchor=N)
             self.btn_3.place(relx=0.20, rely=0.3, anchor=N)

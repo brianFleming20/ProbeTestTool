@@ -27,6 +27,7 @@ to do:
 
 
 import pickle
+import os
 
 
 
@@ -114,9 +115,15 @@ class DataStore():
             pickle.dump(keys, key_input)
         key_input.close()
     
-        
-    ##########################################    
+    ##########################################   
     
+    def write_file_location(self, location):
+        with open('location', 'wb') as file:
+            pickle.dump(location, file)
+        file.close()
+
+    ##########################################
+
     def add_to_user_file(self, user_data):
         user_load = []
         user_load.extend( self.get_user())
@@ -175,7 +182,7 @@ class DataStore():
     def show_all_data(self):
             print(f"all data = main {self.get_user()}, batch {self.get_batch()}, admin {self.get_admin()}")
             print(f"Probe port {self.get_probe_port()}, Analyser port {self.get_analyser_port()}")
-            print(f"ODM port {self.get_ODM_port()}, Plot status {self.get_plot_status()}")
+            print(f"ODM port {self.get_ODM_port()} , file location {self.get_location_file()}")
 
      #########################################
 
@@ -257,5 +264,15 @@ class DataStore():
         self.write_to_user_file(user_status)
         
     ############################################
-    
+
+    def get_location_file(self):
+        path1 = os.path.join("C:\\Users", os.getenv('username'),"python-dev\PTT\location")
+        path2 = os.path.exists(path1)
+        if path2:
+            with open('location', 'rb') as load_file:
+                load = pickle.load(load_file)
+            load_file.close()
+        else: load = False
+        return load
+
         

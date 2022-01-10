@@ -49,16 +49,18 @@ def ignore():
 
 class LogInWindow(tk.Frame):
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent, bg='#E0FFFF')
+        tk.Frame.__init__(self, parent, bg='#B1D0E0')
         self.current_user = StringVar()
-        self.login_btn = (PhotoImage(file="login_btn.gif"))
-        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.login_btn = (PhotoImage(file="images/login_btn.gif"))
+        self.deltex = (PhotoImage(file="images/deltex.gif"))
+        self.keyboard = (PhotoImage(file="images/keyboard.png"))
         self.label_3 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_3.place(relx=0.9, rely=0.1, anchor=CENTER)
-        self.title = (PhotoImage(file="title.gif"))
+        self.title = (PhotoImage(file="images/title.gif"))
         self.label_4 = ttk.Label(self, image=self.title)
         self.label_4.place(relx=0.5, rely=0.1, anchor=CENTER)
-
+        self.current_user = ""
+        self.password = ""
        
         self.label_5 = ttk.Label(self, text="Good morning.", font=("bold", 20))
         self.label_6 = ttk.Label(self, text="Good afternoon.", font=("bold", 20))
@@ -94,13 +96,16 @@ class LogInWindow(tk.Frame):
         self.canvas_name.place(x=350, y=225)
         self.canvas_pass = Canvas(bg="#eae9e9",width=400, height=40)
         self.canvas_pass.place(x=350, y=300)
-        self.btn_1 = ttk.Button(self.canvas_name, text='Username', command=lambda: 
+        self.btn_1 = ttk.Button(self.canvas_name, text='Username ', command=lambda: 
             [self.get_keys(),self.name_entry()], width=20)
+        Label(self.canvas_name, image=self.keyboard, width=40).place(x=160,y=20, anchor=CENTER)
         self.btn_2 = ttk.Button(self.canvas_pass, text='Password', command=lambda: 
             [self.get_keys(),self.password_entry()], width=20)
+        Label(self.canvas_pass, image=self.keyboard, width=40).place(x=160,y=20, anchor=CENTER)
+        
         self.name_text = self.canvas_name.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 16, "bold"))
         self.pass_text = self.canvas_pass.create_text(220,20,text=" ",fill="black",font=(OnScreenKeys.FONT_NAME, 14, "bold"))
-      
+
         
        
         self.btn_1.place(relx=0.2, rely=0.2, anchor=N)
@@ -141,6 +146,7 @@ class LogInWindow(tk.Frame):
         DS.write_to_batch_file([""])
         DS.write_to_admin_file('0')
 
+
         # create a user object from the users input
         username = self.current_user
         password = self.password
@@ -166,7 +172,7 @@ class LogInWindow(tk.Frame):
             
     def wait_for_response(self, master, pass_block):
         block = pass_block
-        DS.write_to_from_keys(" ")
+        DS.write_to_from_keys(">")
         password_blank = "*********************"
         # pw_data = DS.get_keyboard_data()
         while 1:

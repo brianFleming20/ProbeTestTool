@@ -8,11 +8,9 @@ fix path variables
 import csv
 import os
 from time import gmtime, strftime
-import NanoZND
 import datastore
 
 DS = datastore.DataStore()
-ZND = NanoZND.NanoZND()
 
 
 class BatchManager(object):
@@ -195,10 +193,15 @@ class CSVManager(object):
     '''
     
     def __init__(self):
-        self.path = os.path.join("C:\\Users", os.getenv('username'), "Desktop\\PTT_Results", "")
+
+        filepath = DS.get_location_file()
+        if filepath == False:
+            self.path = os.path.join("C:\\Users", os.getenv('username'), "Desktop\\PTT_Results", "")
+        else:
+            self.path = filepath
         self.inProgressPath = os.path.join(self.path, "in_progress", "")
         self.completePath = os.path.join(self.path, "complete", "")
-        self.save_path = ""
+      
         
         #os.rmdir(self.inProgressPath)
         #os.rmdir(self.completePath)
@@ -210,7 +213,7 @@ class CSVManager(object):
             try:
                 os.makedirs(self.path, 0o777)
             except OSError:
-                print ("Creation of the directory %s failed" % self.path)
+                print ("Creation of the directory %s already exists." % self.path)
             else:
                 print ("Successfully created the directory %s" % self.path)
 
@@ -230,11 +233,6 @@ class CSVManager(object):
             else:
                 print ("Successfully created the directory %s" % self.completePath)
                 
-    
-    def get_save_path(self):
-        self.save_path = ZND.GetFileLocation()
-        print(f"file location is {self.save_path}")
-        print(f"set save path {self.path}")
                 
 
     def GetFileNamesInProgress(self):

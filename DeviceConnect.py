@@ -136,7 +136,7 @@ class ConnectionAdmin(tk.Frame):
         self.entry_3 = ttk.Entry(self, textvariable=self.analyser_usb, )
         
         self.entry_5 = ttk.Entry(self, textvariable=self.move_probe)
-        self.deltex = (PhotoImage(file="deltex.gif"))
+        self.deltex = (PhotoImage(file="images/deltex.gif"))
         self.label_8 = ttk.Label(self, text=" ", image=self.deltex)
         self.label_8.place(relx=0.9, rely=0.2, anchor=CENTER)
         
