@@ -10,6 +10,7 @@ from bitstring import BitArray
 import Datastore
 import PI
 import serial.tools.list_ports
+import sys
 
 DS = Datastore.Data_Store()
 PD = PI.ProbeData()
@@ -23,12 +24,15 @@ class PRI(object):
 
     def get_serial_port(self):
         port = DS.get_devices()['Probe']
-        self.ser = serial.Serial(port=port, baudrate=9600,
-                                 parity=serial.PARITY_NONE,
-                                 stopbits=serial.STOPBITS_ONE,
-                                 bytesize=serial.EIGHTBITS,
-                                 timeout=0.1,
-                                 )
+        try:
+            self.ser = serial.Serial(port=port)
+            self.ser.baudrate = 9600
+            self.ser.parity = serial.PARITY_NONE
+            self.ser.stopbits = serial.STOPBITS_ONE
+            self.ser.bytesize = serial.EIGHTBITS
+            self.ser.timeout = 0.25
+        except IOError:
+            pass
 
     def get_port_obj(self):
         return self.ser
@@ -44,6 +48,9 @@ class PRI(object):
         Returns True if a probe is present, False if not
         '''
         self.get_serial_port()
+        if not self.ser.isOpen():
+            self.ser.open()
+
         bit = self.send_probe_bits()
         self.ser.close()
         # check to see if the pin is pulled low by the probe
@@ -57,7 +64,7 @@ class PRI(object):
         # send data to probe interface #
         ################################
         self.send_data(b'4950')
-        time.sleep(0.05)  # allow time for the data to be received
+        time.sleep(0.1)  # allow time for the data to be received
         IOByte = self.read_data()
         bits = BitArray(hex=IOByte)
         bit = bits.bin[2:3]
@@ -171,12 +178,14 @@ class PRI(object):
 
     def check_probe_connection(self):
         result = False
+
         ports = serial.tools.list_ports.comports()
         for port, desc, hwid in sorted(ports):
-            self.ser = serial.Serial(port, baudrate=9600,parity=serial.PARITY_NONE,
+
+            self.ser = serial.Serial(port=port, baudrate=9600,parity=serial.PARITY_NONE,
                                  stopbits=serial.STOPBITS_ONE,
                                  bytesize=serial.EIGHTBITS,
-                                 timeout=0.3,)
+                                 timeout=0.5)
             self.ser.close()
 
             if '0403' in hwid:
@@ -188,14 +197,12 @@ class PRI(object):
         pass in hex bytes, send the whole lot down the serial port.
         '''
         # flush the buffers
-
         self.ser.flushInput()
         self.ser.flushOutput()
         self.ser.timeout = 0.5
-
         # convert the input to ASCII characters and send it
-
         self.ser.write(codecs.decode(data, "hex_codec"))
+
 
     def read_data(self):
         '''
@@ -204,10 +211,10 @@ class PRI(object):
         '''
         serialData = ''
 
+        self.ser.flush()
         while self.ser.inWaiting() > 0:
-            b = binascii.hexlify(self.ser.read(1))
+            b = binascii.hexlify(self.ser.readline())
             serialData += codecs.decode(b)
-
         return serialData
 
     def line_status(self):

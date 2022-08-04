@@ -33,6 +33,9 @@ DS = Datastore.Data_Store()
 
 class Keyboard():
     def __init__(self):
+        self.name_text = None
+        self.canvas = None
+        self.shift_lock = None
         self.keys = ""
 
     # First Line Button
@@ -203,7 +206,7 @@ class Keyboard():
         DS.write_to_from_keys(self.keys)
 
     def shift(self):
-        if self.shift_lock == False:
+        if not self.shift_lock:
             self.shift_lock = True
             # Comment out for testing
             # self.canvas.itemconfig(self.name_text, text="UPPER CASE")
@@ -213,7 +216,7 @@ class Keyboard():
             # self.canvas.itemconfig(self.name_text, text="lower case")
 
     def press(self, num):
-        if self.shift_lock == False:
+        if not self.shift_lock:
             self.keys = self.keys + str(num)
 
         else:

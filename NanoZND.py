@@ -4,7 +4,6 @@ Created on 24 Apr 2017
 '''
 
 import serial
-from tkinter import *
 import numpy as np
 from matplotlib import pyplot as plt
 import time
@@ -40,14 +39,13 @@ class NanoZND(object):
         return self.ser_ana
 
     def check_port_open(self):
-        if self.ser_ana == None:
+        if self.ser_ana is None:
             self.get_serial_port()
 
     def ReadAnalyserData(self):
         line = ""
         result = ""
         c = ""
-
         self.ser_ana.readline()  # discard empty line
         time.sleep(0.05)  # allow time for the data to be received
         while True:
@@ -70,11 +68,11 @@ class NanoZND(object):
         ports = serial.tools.list_ports.comports()
 
         for port, desc, hwid in sorted(ports):
-            self.ser_ana = serial.Serial(port=port, baudrate='115200',bytesize = 8,timeout = 0.05)
-            self.ser_ana.close()
+            self.ser_ana = serial.Serial(port=port, baudrate='115200', bytesize=8, timeout=0.05)
 
             if "400" in hwid:
                 result = self.ser_ana.port
+        self.ser_ana.close()
         return result
 
     def get_marker_1_command(self):
@@ -97,7 +95,6 @@ class NanoZND(object):
         self.send_data("marker 3\r")
         data = self.ReadAnalyserData()
         self.ser_ana.close()
-        print(data)
         x = []
         for line in data.split('\n'):
             if line:
@@ -106,9 +103,9 @@ class NanoZND(object):
         return result
 
     def fetch_frequencies(self):
-        self.check_port_open()
-        self.ser_ana.open()
-
+        self.get_serial_port()
+        if not self.ser_ana.isOpen():
+            self.ser_ana.open()
         self.send_data(f"frequencies\r")
 
         freq_data = self.ReadAnalyserData()
@@ -143,6 +140,9 @@ class NanoZND(object):
         self.ser_ana.close()  # close
 
     def tdr(self):
+        if not self.ser_ana.isOpen():
+            self.ser_ana.open()
+        # print(self.ReadAnalyserData())
         s11 = []
         c = 299792458
         v = 0.64
@@ -176,7 +176,7 @@ class NanoZND(object):
         plt.xlabel("Distance (m) Length of cable(%.5fm)" % cable_len)
         plt.ylabel("Magnitude")
         plt.title("Return loss Time domain")
-        if show == True:
+        if show:
             plt.show()
         else:
             plt.close('all')
@@ -199,7 +199,7 @@ class NanoZND(object):
     # Collect the data points and send to a .csv file
     def CSV_output(self, batch):
         data = []
-        data = self.analyser_data
+        # data = self.analyser_data
         b = []
         b.append(batch)
 

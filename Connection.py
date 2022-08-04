@@ -27,9 +27,11 @@ import ProbeManager
 import NanoZND
 import ODMPlus
 import ProbeTest
-import Sessions as SE
+import Sessions
 import Datastore
 import ProbeInterface
+import Ports
+import time
 
 BM = BatchManager.BatchManager()
 PM = ProbeManager.ProbeManager()
@@ -38,6 +40,7 @@ ODM = ODMPlus.ODMData()
 DS = Datastore.Data_Store()
 PT = ProbeTest
 PF = ProbeInterface.PRI()
+SE = Sessions
 
 
 def ignore():
@@ -64,17 +67,17 @@ class Connection(tk.Frame):
         ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
                   font=('Helvetica', 14)).place(x=850, y=57)
 
-        self.label_9 = ttk.Label(self, text=" Press 'Continue' and wait to connect sensors... ")
+        self.label_9 = ttk.Label(self, text=" Press 'Continue' and wait to connect sensors... ", background="#B1D0E0")
         self.label_9.config(font=("Courier", 14))
-        self.label_9.place(relx=0.5, rely=0.5, anchor=CENTER)
+        self.label_9.place(relx=0.5, rely=0.4, anchor=CENTER)
 
-        ttk.Label(self, text="NanoZND").place(relx=0.3, rely=0.6)
+        ttk.Label(self, text="NanoZND", background="#B1D0E0").place(relx=0.3, rely=0.6)
         ttk.Label(self, textvariable=self.znd, relief=SUNKEN, width=10).place(relx=0.38, rely=0.6)
 
-        ttk.Label(self, text=" Probe ").place(relx=0.45, rely=0.6)
+        ttk.Label(self, text=" Probe ", background="#B1D0E0").place(relx=0.45, rely=0.6)
         ttk.Label(self, textvariable=self.probe, relief=SUNKEN, width=10).place(relx=0.52, rely=0.6)
 
-        ttk.Label(self, text=" Monitor ").place(relx=0.6, rely=0.6)
+        ttk.Label(self, text=" Monitor ", background="#B1D0E0").place(relx=0.6, rely=0.6)
         ttk.Label(self, textvariable=self.odm, relief=SUNKEN, width=10).place(relx=0.68, rely=0.6)
 
         self.confm_btn = tk.Button(self, text='Continue',
@@ -82,9 +85,9 @@ class Connection(tk.Frame):
         self.confm_btn.place(relx=0.7, rely=0.8, anchor=CENTER)
         self.confm_btn.config(state=NORMAL)
 
-        tk.Button(self, text='Cancel', padx=2, pady=3,
-                  width=20, command=lambda:
-            self.control.show_frame(SE.SessionSelectWindow)).place(relx=0.3, rely=0.8, anchor=CENTER)
+        tk.Button(self, text='Cancel', padx=2, pady=3, width=20,
+                  command=lambda: self.control.show_frame(SE.SessionSelectWindow)).place(relx=0.3,
+                                                                                         rely=0.8, anchor=CENTER)
 
         self.bind('<Return>', self.test_connections)
         self.text_area.insert('1.0', "\nPlease continue to the next screen..")
@@ -95,29 +98,29 @@ class Connection(tk.Frame):
         self.znd.set("")
 
     def test_comms(self):
-        '''Tests all of the external device connections'''
+        # Tests all of the external device connections
         true_ports = []
 
-        probe_port = self.sort_probe_interface()
-
         analyser_port = self.sort_znd_interface()
+
+        probe_port = self.sort_probe_interface()
 
         odm_port = self.sort_odm_interface()
 
         true_ports.append(probe_port)
         true_ports.append(analyser_port)
         true_ports.append(odm_port)
-        ports = Ports(odm=odm_port, probe=probe_port, analyer=analyser_port)
+        ports = Ports.Ports(odm=odm_port, probe=probe_port, analyer=analyser_port)
         DS.write_device_to_file(ports)
 
         Tk.update(self)
-        if probe_port == False or analyser_port == False or odm_port == False:
+        if not probe_port or not analyser_port or not odm_port:
             return False
         else:
             return True
 
     def sort_probe_interface(self):
-        '''Tests the probe interface connection'''
+        # Tests the probe interface connection
 
         probe = PF.check_probe_connection()
 
@@ -127,7 +130,7 @@ class Connection(tk.Frame):
         return probe
 
     def sort_znd_interface(self):
-        '''Tests the analyser interface connection'''
+        # Tests the analyser interface connection
 
         read1 = ZND.get_vna_check()
 
@@ -137,42 +140,31 @@ class Connection(tk.Frame):
         return read1
 
     def sort_odm_interface(self):
-        '''Tests the ODM monitor interface connection'''
+        # Tests the ODM monitor interface connection
+        port = "Not in use"
+        if DS.get_devices()['odm_active']:
+            port = ODM.check_odm_port()
 
-        port = ODM.check_odm_port()
-
-        self.odm.set(port)
-        self.monitor_working = True
+            self.odm.set(port)
+            self.monitor_working = True
 
         return port
 
     def test_connections(self, controller):
 
         if self.test_comms():
-            if self.probe_working and self.znd_working and self.monitor_working:
+            if self.probe_working and self.znd_working:
+                time.sleep(1)
                 controller.show_frame(PT.TestProgramWindow)
             else:
                 tm.showinfo("Port info", "Please reset all ports.")
                 controller.show_frame(SE.SessionSelectWindow)
+        try:
+            while PM.ProbePresent():
+                self.confm_btn.config(state=DISABLED)
+                tm.showerror('Connection Error', 'Remove the inserted probe from the tester.')
 
-        while PM.ProbePresent():
-            self.confm_btn.config(state=DISABLED)
-            tm.showerror('Connection Error', 'Remove the inserted probe from the tester.')
-
-            # Check if all connections are true
-            self.confm_btn.config(state=NORMAL)
-
-
-class Ports():
-
-    def __init__(self, odm="", probe="", analyer="", move=""):
-        self.ODM = odm
-        self.Probe = probe
-        self.Analyser = analyer
-        self.Move = move
-
-
-class Location():
-
-    def __init__(self, file):
-        self.File = file
+                # Check if all connections are true
+                self.confm_btn.config(state=NORMAL)
+        except:
+            pass

@@ -4,7 +4,6 @@ Created on 28 Apr 2017
 '''
 
 from time import gmtime, strftime
-import time
 
 
 # class PI(object):

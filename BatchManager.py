@@ -8,9 +8,11 @@ import csv
 import os
 from time import gmtime, strftime
 import Datastore
+import Ports
+
 
 DS = Datastore.Data_Store()
-
+P = Ports
 
 class BatchManager(object):
 
@@ -21,14 +23,14 @@ class BatchManager(object):
         self.CSVM = CSVManager()
         self.current_batch = None
         self.batchQty = 0
-
+        self.blank_data = " "
         self.availableBatchs = []
         self.path = os.path.join("C:\\Users", os.getenv('username'), "Desktop\\PTT_Results", "")
         self.inProgressPath = os.path.join(self.path, "in_progress", "")
         self.inProgressPathTest = os.path.join(self.path, "in_progressTest")
         self.completePath = os.path.join(self.path, "complete", "")
 
-    def CreateBatch(self, batch, user, batch_qty):
+    def CreateBatch(self, batch, user):
         '''
         tick
         creates a new batch object and adds it to the availableSessions list and
@@ -36,36 +38,36 @@ class BatchManager(object):
         '''
 
         self.CSVM = CSVManager()
-        self.blank_data = " "
         batch_data = []
-
         # Check the batch quantity is not over 100 probes
-        if batch_qty <= 100 and batch_qty > 0:
+        if 100 >= batch.batchQty > 0:
 
             # Check the new batch number does not already exist
-            if batch.batchNumber not in self.CSVM.GetFileNamesInProgress() and batch.batchNumber not in self.CSVM.GetFileNamesComplete():
+            if batch.batchNumber not in self.CSVM.GetFileNamesComplete():
+                if batch.batchNumber not in self.CSVM.GetFileNamesInProgress():
                 # set the current batch to this batch
 
-                self.current_batch = batch
+                    # self.current_batch = batch
                 # create the info list for the first row
-                time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-                Stime_now = str(time_now)
-                info = [batch.batchNumber, self.blank_data, batch.probe_type, batch.batchQty, user, self.blank_data,
-                        self.blank_data, Stime_now]
+                    time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                    Stime_now = str(time_now)
+                    info = [batch.batchNumber, self.blank_data, batch.probe_type, batch.batchQty, user, self.blank_data,
+                            self.blank_data, Stime_now]
+                    self.CSVM.WriteCSVTitles(batch.batchNumber)  # create header
 
-                self.CSVM.WriteCSVTitles(batch.batchNumber)  # create header
+                    self.CSVM.WriteListOfListsCSV(info, batch.batchNumber)  # create the CSV file
+                    self.availableBatchs = self.CSVM.GetFileNamesInProgress()  # update the list of available batchs
 
-                self.CSVM.WriteListOfListsCSV(info, batch.batchNumber)  # create the CSV file
-                self.availableBatchs = self.CSVM.GetFileNamesInProgress()  # update the list of available batchs
+                    # batch_data.append(batch.batchNumber)
+                    # batch_data.append(batch.probe_type)
+                    # batch_data.append(batch_qty)
+                    batch_data = P.Probes(batch.probe_type, batch.batchNumber, 0, batch.batchQty)
+                    DS.write_probe_data(batch_data)
 
-                batch_data.append(batch.batchNumber)
-                batch_data.append(batch.probe_type)
-                batch_data.append(batch_qty)
-
-                DS.write_to_batch_file(batch_data)
-                return True
-            else:
-                return False
+                    # DS.write_to_batch_file(batch_data)
+                    return True
+                else:
+                    return False
         else:
             return False
 
@@ -80,7 +82,7 @@ class BatchManager(object):
 
         batch_number = DS.get_probe_data()['Batch']
         probe_type = DS.get_probe_data()['Probe_Type']
-        probesleft = DS.get_probe_data()['Left_to_test']
+        probes_left = DS.get_probe_data()['Left_to_test']
 
         # user_data = DS.get_user_file()
         user = DS.get_username()
@@ -88,8 +90,7 @@ class BatchManager(object):
         if batchnumber == batch_number:
             time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             Stime_now = str(time_now)
-            info = [batchnumber, self.blank_data, probe_type, probesleft, user, self.blank_data, self.blank_data,
-                    self.blank_data, Stime_now]
+            info = [batchnumber, " Suspended Batch ", probe_type, probes_left, user," "," ", " On ", Stime_now]
 
             self.CSVM.WriteListOfListsCSV(info, batchnumber)
             return True
@@ -98,11 +99,7 @@ class BatchManager(object):
             return False
 
     def updateBatchInfo(self):
-        session_data = []
-
-        session_data.append(DS.get_batch_file())
-
-        self.current_batch = self.GetBatchObject(session_data[0])
+        self.current_batch = self.GetBatchObject(DS.get_current_batch())
 
     def saveProbeInfoToCSVFile(self, list, batch):
         self.CSVM = CSVManager()
@@ -118,7 +115,6 @@ class BatchManager(object):
         pass in a batch object, check if this is in the availableBatchs list , if so:
         make the batch the current_batch
         '''
-
         if batch.batchNumber in self.CSVM.get_file_names():
             self.current_batch = batch
 
@@ -159,6 +155,7 @@ class BatchManager(object):
 
     def GetBatchObject(self, batchNumber):
         # get the batch's info list
+        global info
         info_line = self.CSVM.ReadLastLine(batchNumber)
 
         for item in info_line:
@@ -205,11 +202,11 @@ class CSVManager(object):
 
     def __init__(self):
 
-        filepath = DS.get_file_location()['File']
-        if filepath == False:
+        filepath = DS.get_file_location()
+        if not filepath:
             self.path = os.path.join("C:\\Users", os.getenv('username'), "Desktop\\PTT_Results", "")
         else:
-            self.path = filepath
+            self.path = filepath['File']
         self.inProgressPath = os.path.join(self.path, "in_progress", "")
         self.completePath = os.path.join(self.path, "complete", "")
         self.check_directories()
@@ -226,25 +223,31 @@ class CSVManager(object):
             try:
                 os.makedirs(self.path, 0o777)
             except OSError:
-                print("Creation of the directory %s already exists." % self.path)
+                pass
+                # print("Creation of the directory %s already exists." % self.path)
             else:
-                print("Successfully created the directory %s" % self.path)
+                pass
+                # print("Successfully created the directory %s" % self.path)
 
         if not os.path.isdir(self.inProgressPath):
             try:
                 os.makedirs(self.inProgressPath, 0o777)
             except OSError:
-                print("Creation of the directory %s failed" % self.inProgressPath)
+                pass
+                # print("Creation of the directory %s failed" % self.inProgressPath)
             else:
-                print("Successfully created the directory %s" % self.inProgressPath)
+                pass
+                # print("Successfully created the directory %s" % self.inProgressPath)
 
         if not os.path.isdir(self.completePath):
             try:
                 os.makedirs(self.completePath, 0o777)
             except OSError:
-                print("Creation of the directory %s failed" % self.completePath)
+                pass
+                # print("Creation of the directory %s failed" % self.completePath)
             else:
-                print("Successfully created the directory %s" % self.completePath)
+                # print("Successfully created the directory %s" % self.completePath)
+                pass
 
     def GetFileNamesInProgress(self):
         '''
@@ -365,12 +368,12 @@ class CSVManager(object):
         '''
         # create the full path
         fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
-        header = ['Batch No', 'Serial Number', 'Batch Type', 'Batch Qty', 'Username', 'Probe length data',
-                  'NanoVNA marker3', ' Passed ', 'Date and Time Tested']
+        header = ['Batch No', 'Serial Number', 'Batch Type', 'Batch Qty', 'Username', 'Probe length (tdr)',
+                  'NanoVNA marker3', ' ODM PV', 'Date and Time Tested']
         # write the list to the CSV file
         with open(fullPath, 'a+', newline='') as csvfile:
-            datawriter = csv.writer(csvfile)
-            datawriter.writerow(header)
+            data_writer = csv.writer(csvfile)
+            data_writer.writerow(header)
         csvfile.close()
 
     def MoveToCompleted(self, fileName):
@@ -410,7 +413,7 @@ class CSVManager(object):
             for line in datareader:
                 if "Batch No" in line:
                     pass
-                elif line == []:
+                elif not line:
                     pass
                 else:
                     eachBatch.append(line)
@@ -432,6 +435,7 @@ class CSVManager(object):
             return [lis]
 
 
+
 #             for i,x in enumerate(lis):              #print the list items
 #                 print (i,x)
 
@@ -446,3 +450,11 @@ class Batch(object):
         self.probesProgrammed = 0
         self.batchQty = 0
         self.probe_type = ''
+
+
+# class Probes:
+#     def __init__(self, probe_type, current_batch, passed, tested):
+#         self.Probe_Type = probe_type
+#         self.Current_Batch = current_batch
+#         self.Passed = passed
+#         self.Left = tested

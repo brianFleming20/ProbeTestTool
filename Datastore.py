@@ -22,6 +22,8 @@ import pickle
 import os
 import tkinter.messagebox as tm
 import json
+import Ports
+
 
 
 class Data_Store():
@@ -59,19 +61,6 @@ class Data_Store():
 
     #########################################
 
-    # def get_probes_state(self):
-    #
-    #     try:
-    #         with open('file.probes', 'rb') as probes:
-    #             probe_data = pickle.load(probes)
-    #
-    #     except FileNotFoundError as fileerror:
-    #         print(f"{fileerror} file not found")
-    #
-    #     return probe_data
-
-    #########################################
-
     def show_all_data(self):
         try:
             print(f"all data = main {self.get_user_data()['Name']}, batch {self.get_probe_data()['Probe_Type']}, "
@@ -84,19 +73,16 @@ class Data_Store():
     #########################################
 
     def get_probes_left_to_test(self):
-        # return self.get_batch_file()[1]
         return self.get_probe_data()['Left_to_test']
 
     ###########################################
 
     def get_current_batch(self):
-        # return self.get_batch_file()[0]
         return self.get_probe_data()['Batch']
 
     ############################################
 
     def get_current_probe_type(self):
-        # return self.get_batch_file()[1]
         return self.get_probe_data()['Probe_Type']
 
     ############################################
@@ -106,21 +92,13 @@ class Data_Store():
 
     ############################################
 
-    # def get_change_password_user(self):
-    #     user = []
-    #     user.extend(self.get_user_file())
-    #     name = user[-1]
-    #     user[-1] = ""
-    #     return name
-
-    ####################################################################
-
     def device_locations(self, data):
         devices = {
             "ODM": data.ODM,
             "Analyser": data.Analyser,
             "Probe": data.Probe,
             "Move": data.Move,
+            "odm_active": data.ODM_Active,
         }
         return devices
 
@@ -145,7 +123,9 @@ class Data_Store():
             with open(filepath, 'r') as load_user_file:
                 load_data = json.load(load_user_file)
         except FileNotFoundError:
-            pass
+            device_data = Ports.Ports()
+            self.write_device_to_file(device_data)
+
         else:
             return load_data
 
@@ -180,7 +160,9 @@ class Data_Store():
             with open(filepath, 'r') as load_user_file:
                 load_data = json.load(load_user_file)
         except FileNotFoundError:
-            pass
+            user_data = Ports.Users("",False)
+            self.write_user_data(user_data)
+            return self.user_dict(user_data)
         else:
             return load_data
 
@@ -214,7 +196,9 @@ class Data_Store():
             with open(filepath, 'r') as load_user_file:
                 load_data = json.load(load_user_file)
         except FileNotFoundError:
-            pass
+            probe_data = Ports.Probes("","",0,0)
+            self.write_probe_data(probe_data)
+            return self.probe_dict(probe_data)
         else:
             return load_data
 
@@ -245,6 +229,9 @@ class Data_Store():
             with open(filepath, 'r') as load_user_file:
                 load_data = json.load(load_user_file)
         except FileNotFoundError:
-            pass
+            loc = Ports.Location("")
+            self.write_file_location(loc)
+            return loc.File
         else:
             return load_data
+

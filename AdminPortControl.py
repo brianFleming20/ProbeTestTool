@@ -22,12 +22,13 @@ import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 import Datastore
-import AdminUser as AU
+import AdminUser
 import OnScreenKeys
-from Connection import Ports as P
+import Ports
 
 KY = OnScreenKeys.Keyboard()
 DS = Datastore.Data_Store()
+AU = AdminUser
 
 
 def ignore():
@@ -42,7 +43,7 @@ class AdminPorts(tk.Frame):
         self.com_port = "COM3"
         self.monitor = "COM5"
         self.move_probe = "Not Set"
-        connection_data = P(odm=self.monitor,probe=self.com_port,analyer=self.analyser_usb,move=self.move_probe)
+        connection_data = Ports.Ports(odm=self.monitor,probe=self.com_port,analyer=self.analyser_usb,move=self.move_probe)
         DS.write_device_to_file(connection_data)
 
         ttk.Label(self, text="Deltex", background="#FFDAB9", foreground="#003865",
@@ -104,7 +105,7 @@ class AdminPorts(tk.Frame):
         self.text_area.config(state=DISABLED)
 
     def _connect_btn_clicked(self, controller):
-        connection_data = P(odm=self.monitor,probe=self.com_port,analyer=self.analyser_usb,move=self.move_probe)
+        connection_data = Ports.Ports(odm=self.monitor,probe=self.com_port,analyer=self.analyser_usb,move=self.move_probe)
         DS.write_device_to_file(connection_data)
 
         controller.show_frame(AU.AdminWindow)

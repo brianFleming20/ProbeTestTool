@@ -24,7 +24,7 @@ class ODMData(object):
     def get_odm_port(self, port_number):
         self.odm_port = serial.Serial()
         self.odm_port.port = port_number
-        self.odm_port.baudrate='9600'
+        self.odm_port.baudrate = '9600'
         self.odm_port.bytesize = 8
         self.odm_port.timeout = 0.1
 
@@ -35,7 +35,7 @@ class ODMData(object):
         self.odm_port.close()
 
     def check_port_open(self):
-        if self.odm_port == None:
+        if self.odm_port is None:
             port_number = DS.get_devices()['ODM']
             self.get_odm_port(port_number)
 
@@ -50,19 +50,16 @@ class ODMData(object):
         self.check_port_open()
         self.odm_port.open()
         parameters = self.odm_port.readline()  # read line of ODM
-
-        while len(parameters) < 5:
+        while 1:
             parameters = self.odm_port.readline()
-            if len(parameters) == 0:
+            if len(parameters) > 5:
                 break
-        try:
-            for data in parameters:
-                temp += chr(data)
-                if data == ignor_bit:
-                    odm_result.append(temp[:-1])
-                    temp = ""
-        except:
-            tm.showerror(title='ODM Error', message='ODM Error...\nTrun on the monitor.')
+
+        for data in parameters:
+            temp += chr(data)
+            if data == ignor_bit:
+                odm_result.append(temp[:-1])
+                temp = ""
 
         self.close_port()
 
@@ -187,8 +184,8 @@ class ODMData(object):
         result = None
         ports = serial.tools.list_ports.comports()
         for port, desc, hwid in sorted(ports):
-            self.odm_port = serial.Serial(port=port, baudrate='9600',bytesize=8,stopbits=1,timeout=0.5)
-            self.odm_port.flushInput()
+            self.odm_port = serial.Serial(port=port, baudrate='9600', bytesize=8, stopbits=1, timeout=0.5)
+            # self.odm_port.flushInput()
             self.odm_port.close()
             if "04D8" in hwid:
                 result = self.odm_port.port

@@ -21,20 +21,22 @@ to do:
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
-import ProbeTest as PT
+import ProbeTest
 import BatchManager
 from ProbeManager import ProbeManager
-from SecurityManager import Users as U
 import Datastore
 import codecs
 import NanoZND
 import ODMPlus
+import Ports
 
 PM = ProbeManager()
 BM = BatchManager.BatchManager()
 ZND = NanoZND.NanoZND()
 ODM = ODMPlus.ODMData()
 DS = Datastore.Data_Store()
+PT = ProbeTest
+P = Ports
 
 
 def ignore():
@@ -76,9 +78,9 @@ class FaultFindWindow(tk.Frame):
 
     def display(self):
         # Import images
-        ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
+        ttk.Label(self.canvas_back, text="Deltex", background="#B1D0E0", foreground="#003865",
                   font=('Helvetica', 24, 'bold'), width=12).place(x=850, y=25)
-        ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
+        ttk.Label(self.canvas_back, text="medical", background="#B1D0E0", foreground="#A2B5BB",
                   font=('Helvetica', 14)).place(x=850, y=57)
 
         self.text_area = tk.Text(self.canvas_back, height=5, width=40)
@@ -100,20 +102,23 @@ class FaultFindWindow(tk.Frame):
         ttk.Label(self.canvas_back, textvariable=self.device_details, relief=SUNKEN,
                   width=30).place(relx=0.2, rely=0.44, anchor='w')
 
-        ttk.Label(self.canvas_back, text="cable length. ", background='#B1D0E0').place(relx=0.2, rely=0.53, anchor='w')
+        ttk.Label(self.canvas_back, text="cable length. ",
+                  background='#B1D0E0').place(relx=0.1, rely=0.53, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.cable_len, relief=SUNKEN,
-                  width=10).place(relx=0.35, rely=0.53, anchor='w')
+                  width=14, font=("Courier", 14)).place(relx=0.2, rely=0.53, anchor='w')
 
         ttk.Label(self.canvas_back, text='Serial Number: ', background='#B1D0E0').place(
             relx=0.68, rely=0.18, anchor='w')
-        ttk.Label(self.canvas_back, textvariable=self.serialNumber, relief=SUNKEN, width=28).place(relx=0.68, rely=0.25, anchor='w')
+        ttk.Label(self.canvas_back, textvariable=self.serialNumber, relief=SUNKEN, width=28).place(relx=0.68, rely=0.25,
+                                                                                                   anchor='w')
         ttk.Label(self.canvas_back, text='From Batch: ', background='#B1D0E0').place(
             relx=0.58, rely=0.25, anchor='w')
         ttk.Label(self.canvas_back, text='From Probe: ', background='#B1D0E0').place(
             relx=0.58, rely=0.3, anchor='w')
 
-        ttk.Label(self.canvas_back, textvariable=self.read_probe_number, relief=SUNKEN, width=28).place(relx=0.68, rely=0.3,
-                                                                                            anchor='w')
+        ttk.Label(self.canvas_back, textvariable=self.read_probe_number, relief=SUNKEN, width=28).place(relx=0.68,
+                                                                                                        rely=0.3,
+                                                                                                        anchor='w')
 
         ttk.Label(self.canvas_back, text="Probe parameter data", background='#B1D0E0').place(
             relx=0.7, rely=0.42, anchor="w")
@@ -129,30 +134,29 @@ class FaultFindWindow(tk.Frame):
 
         ttk.Label(self.canvas_back, text='Action: ', background='#B1D0E0').place(relx=0.1, rely=0.65, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.action, background='#99c2ff',
-                  width=40, relief=GROOVE).place(relx=0.2, rely=0.65, anchor='w')
+                  width=28, relief=GROOVE, font=("Courier", 16)).place(relx=0.2, rely=0.65, anchor='w')
 
-        self.cancel_btn = ttk.Button(self.canvas_back, text='Cancel',command= self.break_out)
-        self.cancel_btn.place(relx=0.6, rely=0.75, anchor=CENTER)
         ttk.Button(self.canvas_back, text='Show Graph',
                    command=lambda: self.show_plot()).place(relx=0.72, rely=0.58, anchor=CENTER)
         ttk.Label(self.canvas_back, textvariable=self.plot_text, relief=SUNKEN, font="bold",
                   width=5).place(relx=0.8, rely=0.58, anchor='w')
         ttk.Label(self.canvas_back, text='Faults found: ', background='#B1D0E0').place(
             relx=0.1, rely=0.75, anchor='w')
-        ttk.Label(self.canvas_back, textvariable=self.fault_message, relief=SUNKEN, font="bold",
-                                         width=30).place(relx=0.2, rely=0.75, anchor='w')
-        Label(self.canvas_back, text="Remove probe when finished",background="#B1D0E0").place(x=400,y=520)
+        ttk.Label(self.canvas_back, textvariable=self.fault_message, relief=SUNKEN, font=("Courier", 16),
+                  width=30).place(relx=0.2, rely=0.75, anchor='w')
+        Label(self.canvas_back, text="Remove probe when finished", background="#B1D0E0").place(x=400, y=520)
+
 
     def show_plot(self):
         admin = DS.user_admin_status()
         name = DS.get_username()
         if not DS.get_plot_status():
-            status = U(name,admin,plot=True)
+            status = P.Users(name, admin, plot=True)
             DS.write_user_data(status)
             self.plot_text.set("ON")
             self.control.attributes('-topmost', False)
         else:
-            status = U(name,admin,plot=False)
+            status = P.Users(name, admin, plot=False)
             DS.write_user_data(status)
             self.plot_text.set("OFF")
             self.control.attributes('-topmost', True)
@@ -182,46 +186,31 @@ class FaultFindWindow(tk.Frame):
         if ZND.get_analyser_port_number(self.analyser_port):
             self.device = " NanoNVA "
             self.device_details.set(self.device)
+        Tk.update(self)
 
     def refresh_window(self):
-        self.canvas_back = Canvas(bg='#B1D0E0',width=980,height=600)
+        self.canvas_back = Canvas(bg='#B1D0E0', width=980, height=600)
         self.canvas_back.place(x=10, y=10)
         self.display()
         self.setup()
         self.wait_for_test = True
         while PM.ProbePresent():
-            read = self.get_serial_numbers()
-            try:
-                self.read_probe_number.set(str(read, 'utf-8')[:16])
-            except:
-                self.read_probe_number.set("Unable to read")
+            self.get_serial_numbers()
             self.fault_find_probe()
-            self.update_odm_data()
-            # if PM.ProbePresent() and self.wait_for_test:
-            #     read = self.get_serial_numbers()
-            #     try:
-            #         self.read_probe_number.set(str(read, 'utf-8')[:16])
-            #     except:
-            #         self.read_probe_number.set("Unable to read")
-            #     self.fault_find_probe()
-            #     self.update_odm_data()
             if not PM.ProbePresent():
                 break
-        # if not PM.ProbePresent():
-        self.cancel_btn.config(state=NORMAL)
+            self.update_odm_data()
+
         self.action.set('No probe connected...')
         ttk.Label(self.canvas_back, textvariable=self.action, background='yellow',
-                          width=40, relief=GROOVE).place(relx=0.2, rely=0.65, anchor='w')
-                # Tk.update(self)
+                  width=28, relief=GROOVE, font=("Courier", 16)).place(relx=0.2, rely=0.65, anchor='w')
+        # Tk.update(self)
         self.fault_message.set("")
         self.analyser_freq3.set(0)
         self.cable_len.set(0)
         self.wait_for_test = False
         Tk.update(self)
-
-            # if not self.wait_for_test:
-            #     self.cancel_btn.config(state=NORMAL)
-            #     break
+        self.break_out()
 
     def get_serial_numbers(self):
         serial_number = BM.CSVM.ReadLastLine(DS.get_current_batch())
@@ -231,32 +220,31 @@ class FaultFindWindow(tk.Frame):
             self.serialNumber.set(serial_number[0][1])
         pcb_serial_number = PM.read_serial_number()
         binary_str = codecs.decode(pcb_serial_number, "hex")
-        return binary_str
+        self.read_probe_number.set(str(binary_str)[2:18])
 
     def update_odm_data(self):
-        serial_results = ODM.ReadSerialODM()
-        if serial_results == []:
-            serial_results = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.SD_data.set(serial_results[5])
-        self.FTc_data.set(serial_results[6])
-        self.PV_data.set(serial_results[9])
+        if DS.get_devices()['odm_active']:
+            serial_results = ODM.ReadSerialODM()
+            if not serial_results:
+                serial_results = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            self.SD_data.set(serial_results[5])
+            self.FTc_data.set(serial_results[6])
+            self.PV_data.set(serial_results[9])
 
     def fault_find_probe(self):
-        self.cable_length = 0
-        while PM.ProbePresent():
-            self.cancel_btn.config(state=DISABLED)
-            if not PM.ProbeIsProgrammed():
-                ttk.Label(self.canvas_back, textvariable=self.action, background='#99c2ff',
-                          width=40, relief=GROOVE).place(relx=0.2, rely=0.65, anchor='w')
-            else:
-                self.action.set('Programmed Probe connected')
-                ttk.Label(self.canvas_back, textvariable=self.action, background='#1fff1f',
-                          width=40, relief=GROOVE).place(relx=0.2, rely=0.65, anchor='w')
-            fault = self.test_probe()
-            self.fault_message.set(fault)
-            self.cable_len.set(self.cable_length)
-            # self.set_cable_length()
-            Tk.update(self)
+        self.cable_length = ZND.tdr()
+        if not PM.ProbeIsProgrammed():
+            self.action.set('New Probe connected')
+            ttk.Label(self.canvas_back, textvariable=self.action, background='#99c2ff',
+                        width=28, relief=GROOVE, font=("Courier", 16)).place(relx=0.2, rely=0.65, anchor='w')
+        else:
+            self.action.set('Programmed Probe connected')
+            ttk.Label(self.canvas_back, textvariable=self.action, background='#1fff1f',
+                        width=28, relief=GROOVE, font=("Courier", 16)).place(relx=0.2, rely=0.65, anchor='w')
+        fault = self.test_probe()
+        self.fault_message.set(fault)
+        self.cable_len.set(round(self.cable_length,3))
+        Tk.update(self)
 
     def test_probe(self):
         fault = "Unknown"
@@ -267,33 +255,33 @@ class FaultFindWindow(tk.Frame):
                            "Break in Red wire", "Crystal Fault",
                            "S/C Screen to Red wires"]
         # No Fault
-        if self.cable_length > 1.14 and self.cable_length < 1.25:
+        if 1.3 < self.cable_length < 1.5:
             fault = self.fault_text[0]
         # S/C Red / Black wires
-        if self.cable_length > 1.45 and self.cable_length < 1.40:
+        if 1.45 < self.cable_length < 1.40:
             fault = self.fault_text[3]
         # S/C in Blue / Green wires
-        if self.cable_length > -0.1 and self.cable_length < -0.00:
+        if -0.1 < self.cable_length < -0.00:
             fault = self.fault_text[4]
         # S/C Screen / Blue wire
-        if self.cable_length > 1.175 and self.cable_length < 1.19:
+        if 1.175 < self.cable_length < 1.19:
             fault = self.fault_text[8]
         # S/C Screen / Red wires
-        if self.cable_length > 0.005 and self.cable_length < 0.01:
+        if 0.005 < self.cable_length < 0.01:
             fault = self.fault_text[-1]
         # Green wire disconnected
-        if self.cable_length > 0.001 and self.cable_length < -0.001:
+        if 0.001 < self.cable_length < -0.001:
             fault = self.fault_text[6]
         # Black wire disconnected
-        if self.cable_length > 0.001 and self.cable_length < 0.003:
+        if 0.001 < self.cable_length < 0.003:
             fault = self.fault_text[7]
         # Break in Blue wire
-        if self.cable_length > -0.01 and self.cable_length < -0.01:
+        if self.cable_length > -0.01 > self.cable_length:
             fault = self.fault_text[5]
         # Break in Red wire
-        if self.cable_length > 1.3 and self.cable_length < 0.01:
+        if 1.3 < self.cable_length < 0.01:
             fault = self.fault_text[8]
         # Crystal fault
-        if self.cable_length > 000 and self.cable_length < 0.01:
+        if 000 < self.cable_length < 0.01:
             fault = self.fault_text[10]
         return fault

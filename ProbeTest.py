@@ -26,22 +26,25 @@ import tkinter.messagebox as tm
 import codecs
 from time import gmtime, strftime
 import BatchManager
-import InstrumentManager
 from ProbeManager import ProbeManager
-from ProbeManager import Probes as P
 import NanoZND
 import ODMPlus
-import Sessions as SE
-import FaultFinder as FF
+import Sessions
+import FaultFinder
 import Datastore
+import sys
+import Ports
+import time
 
 # create instances
-IM = InstrumentManager.InstrumentationManager()
 BM = BatchManager.BatchManager()
 PM = ProbeManager()
 ZND = NanoZND.NanoZND()
 ODM = ODMPlus.ODMData()
 DS = Datastore.Data_Store()
+P = Ports
+SE = Sessions
+FF = FaultFinder
 
 # define global variables
 PTT_Version = 'Deltex Medical : XXXX-XXXX Probe Test Tool V1'
@@ -76,17 +79,20 @@ class TestProgramWindow(tk.Frame):
         self.PV_data = IntVar()
         self.user_admin = False
         self.probes_passed.set(0)
-        self.lower_limit = 1.14
-        self.upper_limit = 1.24
+        # self.lower_limit = 1.14
+        self.lower_limit = 0.7
+        # self.upper_limit = 1.24
+        self.upper_limit = 1.5
         ###############################################################
         # import and set up images for the screen                     #
         ###############################################################
-        self.greenlight = (PhotoImage(file="GREEN.png"))
-        self.amberlight = (PhotoImage(file="AMBER.png"))
-        self.redlight = (PhotoImage(file="RED.png"))
-        self.greylight = (PhotoImage(file="GREY.png"))
-        self.complete_btn = (PhotoImage(file="completetesting.gif"))
-        self.suspend_btn = (PhotoImage(file="suspend.gif"))
+        sys.path.append('./PTT_Icons')
+        self.greenlight = (PhotoImage(file="./PTT_Icons/GREEN.png"))
+        self.amberlight = (PhotoImage(file="./PTT_Icons/AMBER.png"))
+        self.redlight = (PhotoImage(file="./PTT_Icons/RED.png"))
+        self.greylight = (PhotoImage(file="./PTT_Icons/GREY.png"))
+        self.complete_btn = (PhotoImage(file="./PTT_Icons/completetesting.gif"))
+        self.suspend_btn = (PhotoImage(file="./PTT_Icons/suspend.gif"))
         self.back_colour = "#A6D1E6"
 
     def display_layout(self):
@@ -100,53 +106,48 @@ class TestProgramWindow(tk.Frame):
         ttk.Label(self.canvas_back, text="medical", background=self.back_colour, foreground="#A2B5BB",
                   font=('Helvetica', 14)).place(x=850, y=57)
         self.text_area.delete('1.0', 'end')
-        ttk.Label(self.canvas_back, text='Batch number: ',background=self.back_colour).place(
+        ttk.Label(self.canvas_back, text='Batch number: ', background=self.back_colour).place(
             relx=0.1, rely=0.3, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.current_batch, relief=SUNKEN, font="bold",
-                  width=10).place(relx=0.3, rely=0.3, anchor='w')
-        ttk.Label(self.canvas_back, text='Probe type: ',background=self.back_colour).place(
+                  width=10).place(relx=0.25, rely=0.3, anchor='w')
+        ttk.Label(self.canvas_back, text='Probe type: ', background=self.back_colour).place(
             relx=0.1, rely=0.45, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.probe_type, relief=SUNKEN, font="bold",
-                  width=12).place(relx=0.3, rely=0.45, anchor='w')
-        ttk.Label(self.canvas_back, text='Connected to: ',background=self.back_colour).place(
+                  width=12).place(relx=0.25, rely=0.45, anchor='w')
+        ttk.Label(self.canvas_back, text='Connected to: ', background=self.back_colour).place(
             relx=0.73, rely=0.2, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.device_details, relief=SUNKEN,
                   width=30).place(relx=0.7, rely=0.25, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.odm_details, relief=SUNKEN,
                   width=30).place(relx=0.7, rely=0.30, anchor='w')
-        ttk.Label(self.canvas_back, text="Data from ODM",background=self.back_colour).place(
+        ttk.Label(self.canvas_back, text="Data from ODM", background=self.back_colour).place(
             relx=0.7, rely=0.42, anchor="w")
-        ttk.Label(self.canvas_back, text="SD",background=self.back_colour).place(relx=0.70, rely=0.46, anchor="w")
-        ttk.Label(self.canvas_back, text="FTc",background=self.back_colour).place(relx=0.77, rely=0.46, anchor="w")
-        ttk.Label(self.canvas_back, text="PV",background=self.back_colour).place(relx=0.85, rely=0.46, anchor="w")
+        ttk.Label(self.canvas_back, text="SD", background=self.back_colour).place(relx=0.70, rely=0.46, anchor="w")
+        ttk.Label(self.canvas_back, text="FTc", background=self.back_colour).place(relx=0.77, rely=0.46, anchor="w")
+        ttk.Label(self.canvas_back, text="PV", background=self.back_colour).place(relx=0.85, rely=0.46, anchor="w")
         ttk.Label(self.canvas_back, textvariable=self.SD_data, relief=SUNKEN, font="bold",
                   width=5).place(relx=0.69, rely=0.51, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.FTc_data, relief=SUNKEN, font="bold",
                   width=5).place(relx=0.76, rely=0.51, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.PV_data, relief=SUNKEN, font="bold",
                   width=5).place(relx=0.84, rely=0.51, anchor='w')
-        ttk.Label(self.canvas_back, text='Program/Test Status: ',background=self.back_colour).place(relx=0.1,
-                                                            rely=0.58, anchor='w')
-        self.status_image = ttk.Label(self.canvas_back, image=self.greylight)
-        self.status_image.place(relx=0.53, rely=0.56, anchor=CENTER)
-        ttk.Label(self.canvas_back, text='Probes Passed: ',background=self.back_colour).place(
-            relx=0.1, rely=0.75, anchor='w')
+        ttk.Label(self.canvas_back, text='Program/Test Status: ',
+                  background=self.back_colour, font=("Courier", 14)).place(x=400,y=200)
+        ttk.Label(self.canvas_back, text='Probes Passed: ', background=self.back_colour).place(
+            relx=0.1, rely=0.6, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.probes_passed, relief=SUNKEN, font="bold",
-                  width=10).place(relx=0.28, rely=0.75, anchor='w')
-        ttk.Label(self, text='Probes to test: ',background=self.back_colour).place(
+                  width=10).place(relx=0.25, rely=0.6, anchor='w')
+        ttk.Label(self.canvas_back, text='Probes to test: ', background=self.back_colour).place(
             relx=0.7, rely=0.75, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.left_to_test, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.83, rely=0.75, anchor='w')
-        ttk.Label(self.canvas_back, text='Action: ',background=self.back_colour).place(relx=0.1, rely=0.9, anchor='w')
-        ttk.Label(self.canvas_back, textvariable=self.action, background='yellow',
-                  width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
+        ttk.Label(self.canvas_back, text='Action: ', background=self.back_colour).place(x=100, y=550)
+
         #################################################################
         # Show interaction buttons                                      #
         #################################################################
-        ttk.Button(self.canvas_back, text='Complete Session', image=self.complete_btn, command=lambda:
-        self.cmplt_btn_clicked()).place(relx=0.68, rely=0.9, anchor=CENTER)
-        self.ssp_btn = ttk.Button(self.canvas_back, text='Suspend Session', image=self.suspend_btn, command=lambda:
-        self.suspnd_btn_clicked(self.control))
+        self.ssp_btn = ttk.Button(self.canvas_back, text='Suspend Session',
+                                  image=self.suspend_btn, command=lambda: self.suspnd_btn_clicked(self.control))
         self.ssp_btn.place(relx=0.85, rely=0.9, anchor=CENTER)
         self.session_on_going = True
         self.analyser_serial = None
@@ -157,30 +158,32 @@ class TestProgramWindow(tk.Frame):
         #########################################################
 
     def cmplt_btn_clicked(self):
-        self.session_complete = True
-        self.session_on_going = False
         if self.get_probes_left():
+            self.session_complete = True
+            self.session_on_going = False
             current_batch = DS.get_current_batch()
             BM.CompleteBatch(current_batch)
+            self.canvas_back.destroy()
             self.control.show_frame(SE.SessionSelectWindow)
         ###########################################################
         # Suspend button detected pressed                         #
         ###########################################################
 
     def suspnd_btn_clicked(self, controller):
-        self.session_complete = False
-        probe_data = P(self.probe_type.get(),self.current_batch.get(),self.probes_passed.get(),self.left_to_test.get())
-        DS.write_probe_data(probe_data)
-        BM.SuspendBatch(self.current_batch.get())
-        self.session_on_going = False
-        self.canvas_back.destroy()
-        controller.show_frame(SE.SessionSelectWindow)
+        if tm.askyesno(title="Batch Info", message="    Suspend Batch ?         "):
+            self.session_complete = False
+            probe_data = P.Probes(self.probe_type.get(), self.current_batch.get(), self.probes_passed.get(),
+                                  self.left_to_test.get())
+            DS.write_probe_data(probe_data)
+            BM.SuspendBatch(self.current_batch.get())
+            self.session_on_going = False
+            self.canvas_back.destroy()
+            controller.show_frame(SE.SessionSelectWindow)
         ###########################################################
         # Retrieve amount of probes left to test                  #
         ###########################################################
 
     def get_probes_left(self):
-        print(f"Probes left {self.left_to_test.get()}")
         if int(self.left_to_test.get()) < 1:
             return True
         else:
@@ -196,7 +199,7 @@ class TestProgramWindow(tk.Frame):
         ############################################################
 
     def reset(self):
-        self.canvas_back = Canvas(bg=self.back_colour,width=980,height=630)
+        self.canvas_back = Canvas(bg=self.back_colour, width=980, height=630)
         self.canvas_back.place(x=10, y=10)
         self.display_layout()
         time_now = strftime("%H:%M:%p", gmtime())
@@ -207,13 +210,11 @@ class TestProgramWindow(tk.Frame):
         self.display_layout()
         self.session_on_going = True
         current_user = DS.get_username()
-        # user = Probe()
         self.user_admin = DS.get_user_data()['Over_rite']
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
         current_batch = DS.get_current_batch()
         if current_batch == "000":
-            print(f"Current batch is {current_batch}")
             self.text_area.insert('1.0', current_user)
             self.text_area.insert('2.0', '\nPlease continue testing batch ')
         else:
@@ -227,9 +228,10 @@ class TestProgramWindow(tk.Frame):
         self.current_user.set(current_user)
         self.RLLimit = -1  # pass criteria for return loss measurement
         self.programmed = False
-        self.status_image.configure(image=self.greylight)
+        self.canvas_back.create_image(520, 350, image=self.greylight)
+        self.canvas_back.pack()
         ttk.Label(self.canvas_back, textvariable=self.action, background='yellow',
-                  width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
+                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
 
         ##############################
         # Collect analyser port data #
@@ -242,20 +244,21 @@ class TestProgramWindow(tk.Frame):
             "overrite off": "Probe re-programming disabled",
             "1": "Probe connected",
             "2": "Programmed Probe Detected",
-            "3": "This probe is already programmed.\nDo you wish to re-program and test?",
+            "3": "   New Serial Number ?        ",
             "4": "Information",
-            "5": "Probe can't be re-programmed\n Do you wish to fault find the probe?",
-            "6": "Connect New Probe",
-            "7": "Batch Complete",
-            "8": "Please press 'Complete Session' button.",
+            "5": "   Fault Find Probe ?       ",
+            "6": "  Connect New Probe",
+            "7": "Batch Complete.",
+            "8": "\nRemove probe.",
             "9": "Programming probe...",
             "10": "Testing probe...'",
-            "11": "Programming error...",
-            "12": "Unable to program\nPlease check probe chip. ",
+            "11": "\nProgramming error...",
+            "12": "\nUnable to program, \nPlease check probe chip. ",
             "13": "Probe Failed.",
-            "14": "Do you wish to fault find this probe?",
+            "14": "\n\nFault finding this probe.",
             "15": "Probe passed",
             "16": "\nPlease remove probe..."
+
         }
 
         #############################################################
@@ -273,9 +276,9 @@ class TestProgramWindow(tk.Frame):
         ##############################################################
 
     def check_probe_present(self):
-        if not PM.ProbePresent() and self.session_on_going:
+        if PM.ProbePresent() and self.session_on_going:
             ttk.Label(self.canvas_back, textvariable=self.action, background='yellow',
-                      width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
+                      width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
             return True
         else:
             return False
@@ -292,14 +295,14 @@ class TestProgramWindow(tk.Frame):
             device = " NanoNVA "
             check = True
         self.device_details.set(device)
-        ODM.check_port_open()
-        port_obj = ODM.get_port_obj()
-        port = DS.get_devices()['ODM']
-        if port_obj.port == port:
-            odm = " ODM Monitor "
-            check = True
+        if DS.get_devices()['odm_active']:
+            ODM.check_port_open()
+            port_data = ODM.ReadSerialODM()
+            if len(port_data) > 5:
+                odm = " ODM Monitor "
+                check = True
+            ODM.close_port()
         self.odm_details.set(odm)
-        ODM.close_port()
         return check
 
         ###############################################################
@@ -317,17 +320,17 @@ class TestProgramWindow(tk.Frame):
             if self.left_to_test.get() == 0:
                 self.session_on_going = False
                 self.session_complete = True
-            ttk.Label(self.canvas_back, textvariable=self.action, background='yellow',
-                      width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
             self.action.set(self.warning_text["6"])
+            self.show_gray_light()
+            self.programmed = False
             Tk.update(self)
-            if not self.check_probe_present():
+            if self.check_probe_present():
                 if not self.program_blank_probe():
-                #################################
-                # Check for programmed probe    #
-                # ask if admin is true, is so   #
-                # reprogram and test probe      #
-                #################################
+                    #################################
+                    # Check for programmed probe    #
+                    # ask if admin is true, is so   #
+                    # reprogram and test probe      #
+                    #################################
                     self.over_write_probe()
 
             ##############################
@@ -335,41 +338,37 @@ class TestProgramWindow(tk.Frame):
             ##############################
 
         if self.session_complete:
-            BM.CompleteBatch(BM.current_batch)
-            tm.showinfo(title=self.warning_text["7"], message=self.warning_text["8"])
-
-        ##############################
-        # Perform program and test   #
-        ##############################
+            # BM.CompleteBatch(BM.current_batch)
+            self.probe_canvas(f"{self.warning_text['7']} {self.warning_text['8']}")
+            time.sleep(2)
+            self.canvas_text.destroy()
+            self.cmplt_btn_clicked()
 
     def do_program_and_test(self, batch):
-        # Program and test probe #
-        print("************")
+        ################################
+        # Program and test probe       #
+        ################################
         self.programmed = False
         self.action.set(self.warning_text["9"])
         snum = self.program_probe(DS.get_current_probe_type())
-        results = self.test_probe()
-        odm_data = self.update_odm_data()
-        # Marker 3 data from the NanoVNA device #
-        self.action.set(self.warning_text["10"])
-        # If serial number is good, update results #
-        if not results:
-            snum = f"{snum}f"
-        if len(snum) > 5:
-            self.update_results(results, snum, odm_data, batch)
-        return snum
+        print(self.programmed)
+        if self.programmed:
+            results, marker, odm_data = self.test_probe()
+            if not results:
+                snum = f"{snum}f"
 
+            self.update_results(results, snum, odm_data, batch, marker)
+        else:
+            return False
+
+    def program_blank_probe(self):
         ###############################################################
         # Program a blank probe inserted into probe interface         #
         ###############################################################
-
-    def program_blank_probe(self):
-        if not PM.ProbeIsProgrammed() and self.session_on_going:
+        if not PM.ProbeIsProgrammed():
             self.set_reprogram_status()
-            # PM.test_chip()
             self.action.set(self.warning_text["1"])
             self.show_green_text()
-            self.update_odm_data()
             return self.do_program_and_test(self.current_batch.get())
         else:
             return False
@@ -385,65 +384,52 @@ class TestProgramWindow(tk.Frame):
             self.text_area.insert('3.0', "\n\n" + message)
             self.text_area.config(state=DISABLED)
 
+    def program_probe(self, probe_type):
         ############################
         # Program the probe        #
         ############################
-
-    def program_probe(self, probe_type):
+        result = False
+        self.action.set(self.warning_text["9"])
         self.show_amber_image()
         serialNumber = PM.ProgramProbe(probe_type)
         if not serialNumber:
-            tm.showerror(self.warning_text["11"],
-                         self.warning_text["12"])
-            self.action.set(self.warning_text["13"])
-            self.status_image.configure(image=self.redlight)
+            # tm.showerror(self.warning_text["11"],
+            #                 self.warning_text["12"])
+
+            self.canvas_back.create_image(520, 350, image=self.redlight)
+            self.canvas_back.pack()
             ttk.Label(self.canvas_back, textvariable=self.action, background='orange',
-                      width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
-            Tk.update(self)
-            snum = False
+                        width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
+            self.action.set(self.warning_text["13"])
+            self.probe_canvas(f"{self.warning_text['13']} {self.warning_text['12']} {self.warning_text['8']}")
+            while PM.ProbePresent():
+                pass
+            self.canvas_text.destroy()
+            self.show_gray_light()
+            self.programmed = False
         else:
-            snum = str(codecs.decode(serialNumber, "hex"), 'utf-8')[:16]
+            result = str(codecs.decode(serialNumber, "hex"), 'utf-8')[:16]
             self.programmed = True
-        return snum
+        return result
 
         ##########################################################
         # Over-write a programmed probe detected                 #
         ##########################################################
 
     def over_write_probe(self):
-
-        if self.session_on_going:
-            if PM.ProbeIsProgrammed() and DS.get_user_data()['Over_rite']:
-                    # ask for user input to reprogramme the probe #
-                if tm.askyesno(self.warning_text["2"],
-                                    self.warning_text["3"]):
-                    self.do_program_and_test(self.current_batch.get())
-                    self.set_reprogram_status()
-                else:
-                    tm.showinfo(title="Probe Inserted",message="Please remove inserted probe.")
-                    return False
-            else:
-                    # If user admin is false, user can't reprogram the probe ask user to fault find #
-                if tm.askyesno(title=self.warning_text["4"], message=self.warning_text["5"]):
-                    self.session_on_going = False
-                    self.ff_window()
-                    self.refresh_window()
-                else:
-                    tm.showinfo(title="Probe Inserted", message="Please remove the inserted probe.")
-
+        if PM.ProbeIsProgrammed():
+            self.programmed = True
+        if DS.get_user_data()['Over_rite']:
+            # ask for user input to reprogramme the probe #
+            if self.programmed and tm.askyesno(title=self.warning_text["2"], message=self.warning_text["3"]):
+                self.do_program_and_test(self.current_batch.get())
                 self.set_reprogram_status()
-                # if PM.ZND.get_marker_values()[0] < self.RLLimit and PM.ZND.get_marker_values()[1] < self.RLLimit:
-                Tk.update(self)
+                self.session_on_going = False
+                self.ff_window()
 
-        ####################################
-        # Redirect to fault finding window #
-        ####################################
-
-    def call_for_fault_find(self):
-        self.status_image.configure(image=self.redlight)
-        self.action.set(self.warning_text["13"])
-        ask = tm.askyesno(title=self.warning_text["13"], message=self.warning_text["14"])
-        if ask:
+        if self.programmed and tm.askyesno(title=self.warning_text["4"], message=self.warning_text["5"]):
+            self.session_on_going = False
+            self.set_reprogram_status()
             self.ff_window()
 
         ################################
@@ -451,7 +437,8 @@ class TestProgramWindow(tk.Frame):
         ################################
 
     def ff_window(self):
-        probe_data = P(self.probe_type.get(),self.current_batch.get(),self.probes_passed.get(),self.left_to_test.get())
+        probe_data = P.Probes(self.probe_type.get(), self.current_batch.get(), self.probes_passed.get(),
+                              self.left_to_test.get())
         DS.write_probe_data(probe_data)
         self.canvas_back.destroy()
         self.control.show_frame(FF.FaultFindWindow)
@@ -461,39 +448,43 @@ class TestProgramWindow(tk.Frame):
         ##################################
 
     def show_green_image(self):
-        self.status_image.configure(image=self.greenlight)
+        self.canvas_back.create_image(520, 350, image=self.greenlight)
+        self.canvas_back.pack()
         ttk.Label(self.canvas_back, textvariable=self.action, background='#1fff1f',
-                  width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
+                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
         Tk.update(self)
 
     def show_amber_image(self):
-        self.status_image.configure(image=self.amberlight)
+        self.canvas_back.create_image(520, 350, image=self.amberlight)
+        self.canvas_back.pack()
         ttk.Label(self.canvas_back, textvariable=self.action, background='#FF7F3F',
-                  width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
+                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
         Tk.update(self)
 
     def show_red_light(self):
+        self.canvas_back.create_image(520, 350, image=self.redlight)
+        self.canvas_back.pack()
         self.display_message(self.warning_text["13"])
-        self.status_image.configure(image=self.redlight)
         ttk.Label(self.canvas_back, textvariable=self.action, background='#FF7F3F',
-                  width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
+                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
         Tk.update(self)
 
     def show_gray_light(self):
-        self.status_image.config(image=self.greylight)
+        self.canvas_back.create_image(520, 350, image=self.greylight)
+        self.canvas_back.pack()
         ttk.Label(self.canvas_back, textvariable=self.action, background='yellow',
-                  width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
+                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
         Tk.update(self)
 
     def show_blue_meaasge(self):
         self.action.set('Testing probe...')
         ttk.Label(self.canvas_back, textvariable=self.action, background='#548CFF',
-                  width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
+                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
         Tk.update(self)
 
     def show_green_text(self):
         ttk.Label(self.canvas_back, textvariable=self.action, background='#1fff1f',
-                  width=40, relief=GROOVE).place(relx=0.3, rely=0.9, anchor='w')
+                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
         Tk.update(self)
 
         #######################
@@ -501,66 +492,60 @@ class TestProgramWindow(tk.Frame):
         #######################
 
     def test_probe(self):
-        canvas_text = None
+        self.action.set(self.warning_text["10"])
         self.show_blue_meaasge()
-        results = False
+        odm_data = self.update_odm_data()
         results = PM.TestProbe()
-        if results:
-            marker_data = TestProgramWindow.get_marker_data(self)
-            # print(f"get marker data {marker_data}")
-            if self.lower_limit < marker_data < self.upper_limit:
-                self.show_green_image()
-                canvas_text = Canvas(bg="#eae9e9", width=300, height=100)
-                canvas_text.place(x=400, y=300)
-                Label(canvas_text, text=self.warning_text["15"] + self.warning_text["16"], font=("Courier", 12)).place(
-                    x=150, y=40, anchor=N)
-            else:
-                self.show_red_light()
-                canvas_text = Canvas(bg="#eae9e9", width=300, height=100)
-                canvas_text.place(x=400, y=280)
-                self.call_for_fault_find()
-                Label(canvas_text, text=self.warning_text["16"], font=("Courier", 12)).place(x=150, y=40, anchor=N)
-        while PM.ProbePresent():
-            pass
+        marker_data = ZND.get_marker_3_command()
+        ###################################################
+        # Probe passed                                    #
+        ###################################################
+        if self.lower_limit < results < self.upper_limit:
+            self.show_green_image()
+            self.probe_canvas(f"{self.warning_text['15']} {self.warning_text['16']}")
+            while self.check_probe_present():
+                pass
+            self.canvas_text.destroy()
 
+        else:
+            ####################################################
+            # Probe failed                                     #
+            ####################################################
+            self.show_red_light()
+            self.probe_canvas(f"{self.warning_text['13']} {self.warning_text['14']}")
+            time.sleep(1)
+            self.canvas_text.destroy()
+
+        ###############################################
+        # Reset probe testing                         #
+        ###############################################
         self.show_gray_light()
-        canvas_text.destroy()
-        return results
+        return results, marker_data, odm_data
 
-        #############################
-        # Returns cable length data #
-        #############################
-
-    def get_marker_data(self):
-        ZND.flush_analyser_port()
-        return ZND.tdr()
-
-        ################################
-        # Collect the ODM monitor data #
-        ################################
+    ################################
+    # Collect the ODM monitor data #
+    ################################
 
     def update_odm_data(self):
+        if DS.get_devices()['odm_active']:
+            serial_results = ODM.ReadSerialODM()
+            if not serial_results:
+                serial_results = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            self.SD_data.set(serial_results[5])
+            self.FTc_data.set(serial_results[6])
+            self.PV_data.set(serial_results[9])
 
-        serial_results = ODM.ReadSerialODM()
-        if serial_results == []:
-            serial_results = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.SD_data.set(serial_results[5])
-        self.FTc_data.set(serial_results[6])
-        self.PV_data.set(serial_results[9])
-
-        return serial_results
+            return serial_results
 
         ######################################
         # Update the results to the CSV file #
         ######################################
 
-    def update_results(self, results, snum, odm_data, batch):
+    def update_results(self, results, snum, odm_data, batch, marker):
         data_list_to_file = []
-        odm_results = odm_data
-        if odm_results is None:
-            odm_to_file = "ODM not used"
-        else:
-            odm_to_file = str(odm_results[9])
+        odm_to_file = "ODM not used"
+        if DS.get_devices()['odm_active'] and self.programmed:
+            odm_to_file = str(odm_data[9])
         results_to_file = str(results)
         probes_left = self.left_to_test.get()
         probes_passed = self.probes_passed.get()
@@ -568,9 +553,18 @@ class TestProgramWindow(tk.Frame):
         self.probes_passed.set(probes_passed + 1)
         data_list_to_file.append(" ")  # by pass the batch number column
         data_list_to_file.append(snum)  # insert serial number
-        data_list_to_file.append(self.probe_type.get())  # insert probe type
         data_list_to_file.append(" ")
+        data_list_to_file.append(probes_left)
         data_list_to_file.append(self.current_user.get())  # insert the logged in user
-        data_list_to_file.append(odm_to_file)  # insert ODM data
-        data_list_to_file.append(results_to_file)
+        data_list_to_file.append(results_to_file)  # insert ODM data
+        data_list_to_file.append(marker)
+        data_list_to_file.append(odm_to_file)
         BM.saveProbeInfoToCSVFile(data_list_to_file, batch)  # save to file
+
+    def probe_canvas(self, message):
+        self.canvas_text = Canvas(bg="#eae9e9", width=350, height=120)
+        self.canvas_text.place(x=350, y=400)
+        Label(self.canvas_text, text=message, font=("Courier", 12)).place(
+            x=50, y=20)
+        Tk.update(self)
+

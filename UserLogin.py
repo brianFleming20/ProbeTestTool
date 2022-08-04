@@ -37,12 +37,11 @@ from tkinter import ttk
 import tkinter.messagebox as tm
 import SecurityManager
 from SecurityManager import User
-from SecurityManager import Users as U
-from ProbeManager import Probes as P
 import BatchManager
-import Sessions as SE
+import Sessions
 import Datastore
 import OnScreenKeys
+import Ports
 
 from time import gmtime, strftime
 
@@ -50,6 +49,8 @@ SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
 DS = Datastore.Data_Store()
 KY = OnScreenKeys.Keyboard()
+P = Ports
+SE = Sessions
 
 
 def ignore():
@@ -59,6 +60,8 @@ def ignore():
 class LogInWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#B1D0E0')
+        self.canvas_pass = None
+        self.canvas_name = None
         self.control = controller
         time_now = strftime("%H:%M:%p", gmtime())
         DS.write_to_from_keys("  ")
@@ -88,6 +91,12 @@ class LogInWindow(tk.Frame):
         self.current_user = ""
         self.password = ""
 
+    def entry(self):
+        self.canvas_name = Canvas(bg="#eae9e9", width=400, height=45)
+        self.canvas_name.place(x=350, y=225)
+        self.canvas_pass = Canvas(bg="#eae9e9", width=400, height=45)
+        self.canvas_pass.place(x=350, y=300)
+
     def refresh_window(self):
         self.logbtn.config(command=lambda: self._login_btn_clicked())
         ###################################
@@ -96,15 +105,15 @@ class LogInWindow(tk.Frame):
         ###################################
         self.set_username("brian")
         self.set_password("password")
-        reset_user = U("","")
+        reset_user = P.Users("","")
         DS.write_user_data(reset_user)
-        probe_data = P("","",0,0)
+        probe_data = P.Probes("","",0,0)
         DS.write_probe_data(probe_data)
-
-        self.canvas_name = Canvas(bg="#eae9e9", width=400, height=45)
-        self.canvas_name.place(x=350, y=225)
-        self.canvas_pass = Canvas(bg="#eae9e9", width=400, height=45)
-        self.canvas_pass.place(x=350, y=300)
+        self.entry()
+        # self.canvas_name = Canvas(bg="#eae9e9", width=400, height=45)
+        # self.canvas_name.place(x=350, y=225)
+        # self.canvas_pass = Canvas(bg="#eae9e9", width=400, height=45)
+        # self.canvas_pass.place(x=350, y=300)
         self.btn_1 = ttk.Button(self.canvas_name, text='Username ', command=lambda:
         [self.get_keys(), self.name_entry()], width=20)
         Label(self.canvas_name, text="-->").place(x=170, y=12)
@@ -141,7 +150,6 @@ class LogInWindow(tk.Frame):
         # print(f"password is {self.password}")
 
     def _login_btn_clicked(self):
-
         self.canvas_name.destroy()
         self.canvas_pass.destroy()
         ########################################
@@ -157,7 +165,8 @@ class LogInWindow(tk.Frame):
             user = User(username, password)
             if SM.logIn(user):
                 self.canvas_go()
-                self.control.show_frame(SE.SessionSelectWindow)
+                self.sessions()
+                # self.control.show_frame(SE.SessionSelectWindow)
             else:
                 tm.showerror("Login error", "Incorrect username or password")
                 self.refresh_window()
@@ -167,7 +176,7 @@ class LogInWindow(tk.Frame):
             self.refresh_window()
 
     def quit(self):
-        shut = tm.askyesno("Shutting Down", "Do you wish to proceed?")
+        shut = tm.askyesno("   Shutting Down   ", "   Do you wish to proceed?     ")
         #################################
         # Clear screen and distroy app  #
         #################################
@@ -220,3 +229,6 @@ class LogInWindow(tk.Frame):
     def canvas_go(self):
         self.canvas_name.destroy()
         self.canvas_pass.destroy()
+
+    def sessions(self):
+        self.control.show_frame(SE.SessionSelectWindow)

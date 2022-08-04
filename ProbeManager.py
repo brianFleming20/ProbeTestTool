@@ -3,15 +3,14 @@ Created on 28 Apr 2017
 @author: jackw
 '''
 import PI
-import InstrumentManager as IM
-import BatchManager
+import InstrumentManager
 import NanoZND
 import Datastore
 import ProbeInterface
 
-BM = BatchManager.BatchManager()
 PF = ProbeInterface.PRI()
 DS = Datastore.Data_Store()
+IM = InstrumentManager
 
 
 class ProbeManager(object):
@@ -32,20 +31,11 @@ class ProbeManager(object):
         self.dev = dev
         self.show = False
 
-    # def ConnectToProbeInterface(self, com_port):
-    #     '''
-    #     Check for the same port name as sent from the connection class to set
-    #     correct port number.
-    #     '''
-    #     return PF.check_port_number(com_port)
-
     def TestProbe(self):
         try:
-            r = self.ZND.get_trace_values()
-            # r = True
+            r = self.NanoZND.tdr()
         except:
-            r = -1
-
+            r = False
         return r
 
     def ProgramProbe(self, probe_type):
@@ -54,44 +44,44 @@ class ProbeManager(object):
         program the probe as that type
         returns the probes serial number if programming was succesful, False if not
         '''
-        probeData = self.PD.GenerateDataString(probe_type)
-        # get first two lots of 8 bights for error checking
-        # write the data to the probe
-        if probeData == False:
-            return False
-        else:
-            # result = self.test_chip()
-            # if result:
-            PF.probe_write(probeData[0])
-            # else:
-            #     return False
-
-        # check to see if programming was succesful
-        pd = ''.join(probeData[1])
-        check = PF.read_all_bytes()
-        if check == pd:
-            sn = PF.read_serial_number()
-            return sn
-        else:
-            return False
+        if self.test_chip():
+            probeData = self.PD.GenerateDataString(probe_type)
+        ######################################################
+        # get first two lots of 8 bights for error checking  #
+        # write the data to the probe                        #
+        ######################################################
+            if not probeData:
+                return False
+            else:
+                PF.probe_write(probeData[0])
+        ##############################################
+        # check to see if programming was successful #
+        ##############################################
+            pd = ''.join(probeData[1])
+            check = PF.read_all_bytes()
+            if check == pd:
+                sn = PF.read_serial_number()
+                return sn
+            else:
+                return False
 
     def test_chip(self):
-        zeros = '0000000000000000000000000000'
-        ones = '1111111111111111111111111111'
-        try:
-            PF.probe_write(zeros)
-            PF.probe_write(ones)
+        check = 0
+        data = self.PD.GenerateDataString("blank")
+        PF.probe_write(data)
+        result = PF.read_serial_number()
+        for num in result:
+            check += 1
+        if check == len(result):
             return True
-        except Exception as e:
-            print(f"test board error {e}")
+        else:
             return False
 
     def ProbePresent(self):
         '''
         returns True of a probe is inserted into Probe Interface, false if not
         '''
-
-        if PF.probe_present() == True:
+        if PF.probe_present():
             return True
         else:
             return False
@@ -105,25 +95,3 @@ class ProbeManager(object):
 
     def read_serial_number(self):
         return PF.read_serial_number()
-
-
-class Probe:
-
-    def __init__(self):
-        self.over_write = '0'
-
-    def get_over_write(self):
-        if self.over_write == '0':
-            return False
-        elif self.over_write == '1':
-            return True
-
-    def set_over_write(self, state):
-        self.over_write = state
-
-class Probes():
-    def __init__(self, probe_type, current_batch, passed, tested):
-        self.Probe_Type = probe_type
-        self.Current_Batch = current_batch
-        self.Passed = passed
-        self.Left = tested

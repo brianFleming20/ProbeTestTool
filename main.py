@@ -20,15 +20,23 @@ to do:
 import tkinter as tk
 from tkinter import *
 
-import UserLogin as UL
-import Sessions as SE
-import DeviceConnect as DC
-import ProbeTest as PT
-import AdminUser as AU
-import FaultFinder as FF
-import Connection as CO
-import AdminPortControl as AP
+import UserLogin
+import Sessions
+import DeviceConnect
+import ProbeTest
+import AdminUser
+import FaultFinder
+import Connection
+import AdminPortControl
 
+UL = UserLogin
+SE = Sessions
+DC = DeviceConnect
+PT = ProbeTest
+AU = AdminUser
+FF = FaultFinder
+CO = Connection
+AP = AdminPortControl
 
 # define global variables
 PTT_Version = 'Deltex Medical : P0035 Probe Test Tool V2.2'
@@ -103,6 +111,13 @@ class WindowController(tk.Tk):
             # self.protocol("WM_DELETE_WINDOW", disable_event)
 
         self.show_frame(UL.LogInWindow)
+
+        try:
+            import pyi_splash
+            pyi_splash.update_text('UI Loaded ...')
+            pyi_splash.close()
+        except:
+            pass
 
     def show_frame(self, newFrame):
 

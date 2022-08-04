@@ -16,8 +16,10 @@ DS.write_to_user_file(user_data)
 '''
 import Datastore
 import pickle
+import Ports
 
 DS = Datastore.Data_Store()
+P = Ports
 
 
 class SecurityManager(object):
@@ -28,9 +30,6 @@ class SecurityManager(object):
     """
 
     def __init__(self):
-        '''
-        '''
-
         self.editingUser = False
         self.SMDB = SecManDB()
         self.is_admin_status = False
@@ -52,13 +51,13 @@ class SecurityManager(object):
         if len(user.name) > 0 or len(user.password) > 0:
             nuser = self.SMDB.getUser(user)
 
-        if nuser == False:  # is the username a valid username?
+        if not nuser:  # is the username a valid username?
             return False
 
         if nuser.password == user.password:  # is the password correct?
 
             # DS.write_to_user_file([nuser.name, nuser.admin])
-            login_user = Users(name=nuser.name,admin=nuser.admin)
+            login_user = P.Users(name=nuser.name, admin=nuser.admin)
             DS.write_user_data(login_user)
 
             return True
@@ -77,7 +76,7 @@ class SecurityManager(object):
         tick
         checks if the user's name is already in the dict, if not it stores the user object to the users file
         '''
-        if self.SMDB.getUser(user.name) == False:
+        if not self.SMDB.getUser(user.name):
             self.SMDB.putUser(user)
             return True
         else:
@@ -102,12 +101,13 @@ class SecurityManager(object):
         checks to see if the user is in the user dict and the logged in user has admin privelages. if so, changes the password accordingly
         """
 
-        name = DS.get_change_password_user()
+        name = DS.get_user_data()['Change_password']
         user = self.GetUserObject(name)
         user_details = user.password
         user.password = password
 
         self.SMDB.putUser(user)
+
         return True
 
     def GetUserObject(self, userName):
@@ -126,7 +126,9 @@ class SecurityManager(object):
 
 
 class SecManDB(object):
-    '''This class handles all of the opening and closing of the CSV'''
+    ##############################################################
+    # This class handles all the opening and closing of the CSV  #
+    ##############################################################
 
     def __init__(self):
         """Return a Customer object whose name is *name* and starting
@@ -146,11 +148,11 @@ class SecManDB(object):
             name = user
             user = User(name, "*")
         try:
-            with open('userfile.pickle', 'rb') as handle:
+            with open('./userfile.pickle', 'rb') as handle:
                 userDict = pickle.load(handle)
 
         except FileExistsError as e:
-            with open('userfile.pickle', 'w') as handle:
+            with open('./userfile.pickle', 'w') as handle:
                 pickle.dump(handle, self.empty)
                 thisUser = False
         else:
@@ -169,10 +171,10 @@ class SecManDB(object):
         '''
         userList = []
         try:
-            with open('userfile.pickle', 'rb') as handle:
+            with open('./userfile.pickle', 'rb') as handle:
                 userDict = pickle.load(handle)
         except FileNotFoundError:
-            with open('userfile.pickle', 'wb') as handle:
+            with open('./userfile.pickle', 'wb') as handle:
                 pickle.dump(handle, self.empty)
                 return False
         else:
@@ -196,16 +198,16 @@ class SecManDB(object):
         details[1] = user.admin
 
         try:
-            with open('userfile.pickle', 'rb') as handle:
+            with open('./userfile.pickle', 'rb') as handle:
                 userDict = pickle.load(handle)
 
         except FileNotFoundError:
-            with open('userfile.pickle', 'wb') as handle:
+            with open('./userfile.pickle', 'wb') as handle:
                 userDict = {user.name: details}
                 pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
         else:
             userDict[user.name] = details
-            with open('userfile.pickle', 'wb') as handle:
+            with open('./userfile.pickle', 'wb') as handle:
                 pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
             return True
 
@@ -215,13 +217,13 @@ class SecManDB(object):
         removes a given user from the user list
         '''
 
-        with open('userfile.pickle', 'rb') as handle:
+        with open('./userfile.pickle', 'rb') as handle:
             userDict = pickle.load(handle)
 
         if user in userDict:
             userDict.pop(user)
 
-        with open('userfile.pickle', 'wb') as handle:
+        with open('./userfile.pickle', 'wb') as handle:
             pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
         return True
 
@@ -236,17 +238,18 @@ class User(object):
         self.password = password
         self.admin = admin
 
+
 # SM = SecurityManager()
 
 # with open('filename.pickle', 'rb') as handle:
 # userDict = pickle.load(handle)
 # print(userDict)
 
-class Users():
-
-    def __init__(self, name, admin, plot=False, over_right=False, pw_user=""):
-        self.Name = name
-        self.Admin = admin
-        self.Plot = plot
-        self.Over_rite = over_right
-        self.Change_password = pw_user
+# class Users:
+#
+#     def __init__(self, name, admin, plot=False, over_right=False, pw_user=""):
+#         self.Name = name
+#         self.Admin = admin
+#         self.Plot = plot
+#         self.Over_rite = over_right
+#         self.Change_password = pw_user

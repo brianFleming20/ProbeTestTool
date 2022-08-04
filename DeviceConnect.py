@@ -25,10 +25,10 @@ import BatchManager
 import ProbeManager
 import NanoZND
 import ODMPlus
-import Sessions as SE
+import Sessions
 import Connection
 import Datastore
-from Connection import Ports as P
+from Connection import Ports
 
 BM = BatchManager.BatchManager()
 PM = ProbeManager.ProbeManager()
@@ -36,6 +36,8 @@ NanoZND = NanoZND.NanoZND()
 ODM = ODMPlus.ODMData()
 CO = Connection
 DS = Datastore.Data_Store()
+SE = Sessions
+P = Ports
 
 def ignore():
     return 'break'
@@ -83,7 +85,7 @@ class ConnectionWindow(tk.Frame):
 
         self.is_admin = DS.user_admin_status()
 
-        if self.is_admin == True:
+        if self.is_admin:
             controller.show_frame()
         else:
             controller.show_frame(CO.Connection)
@@ -147,15 +149,15 @@ class ConnectionAdmin(tk.Frame):
         self.text_area = tk.Text(self, height=5, width=38)
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
 
-        def refresh_window(self):
-            user_data = []
-            user_data.append(DS.get_username())
-            self.is_admin = user_data[1]
+    def refresh_window(self):
+        user_data = []
+        user_data.append(DS.get_username())
+        self.is_admin = user_data[1]
 
-            self.text_area.config(state=NORMAL)
-            self.text_area.insert('2.0', user_data[0])
-            self.text_area.insert('2.0', '\n\nPlease check any external devices\nand press continue...')
-            self.text_area.config(state=DISABLED)
+        self.text_area.config(state=NORMAL)
+        self.text_area.insert('2.0', DS.user_admin_status())
+        self.text_area.insert('2.0', '\n\nPlease check any external devices\nand press continue...')
+        self.text_area.config(state=DISABLED)
 
     def _connect_btn_clicked(self, controller):
         connection = P(odm=self.monitor.get(),probe=self.com_port.get(),analyer=self.analyser_usb.get())
