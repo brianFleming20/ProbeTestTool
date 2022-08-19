@@ -14,6 +14,7 @@ import Ports
 DS = Datastore.Data_Store()
 P = Ports
 
+
 class BatchManager(object):
 
     def __init__(self):
@@ -25,7 +26,7 @@ class BatchManager(object):
         self.batchQty = 0
         self.blank_data = " "
         self.availableBatchs = []
-        self.path = os.path.join("C:\\Users", os.getenv('username'), "Desktop\\PTT_Results", "")
+        self.path = os.path.join("C:\\Users", os.getenv('username'), "Documents\\PTT_Results", "")
         self.inProgressPath = os.path.join(self.path, "in_progress", "")
         self.inProgressPathTest = os.path.join(self.path, "in_progressTest")
         self.completePath = os.path.join(self.path, "complete", "")
@@ -101,22 +102,13 @@ class BatchManager(object):
     def updateBatchInfo(self):
         self.current_batch = self.GetBatchObject(DS.get_current_batch())
 
-    def saveProbeInfoToCSVFile(self, list, batch):
+    def saveProbeInfoToCSVFile(self, data, batch):
         self.CSVM = CSVManager()
         data_list = []
-        data_list.extend(list)
+        data_list.extend(data)
         time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         data_list.append(time_now)
         return self.CSVM.WriteProbeDataToFile(data_list, batch)
-
-    def ResumeBatch(self, batch):
-        '''
-        tick
-        pass in a batch object, check if this is in the availableBatchs list , if so:
-        make the batch the current_batch
-        '''
-        if batch.batchNumber in self.CSVM.get_file_names():
-            self.current_batch = batch
 
     def CompleteBatch(self, batch):
         '''
@@ -195,24 +187,23 @@ class BatchManager(object):
         info = self.GetBatchObject(batchNumber)
 
 
+
+
 class CSVManager(object):
     '''
     A TaTT specific wrapper for the CSV Module
     '''
 
     def __init__(self):
-
+        default_loc = "/PTT_Results"
         filepath = DS.get_file_location()
         if not filepath:
-            self.path = os.path.join("C:\\Users", os.getenv('username'), "Desktop\\PTT_Results", "")
+            self.path = os.path.join("C:\\Users", os.getenv('username'), "Documents\\PTT_Results", "")
         else:
             self.path = filepath['File']
         self.inProgressPath = os.path.join(self.path, "in_progress", "")
         self.completePath = os.path.join(self.path, "complete", "")
         self.check_directories()
-
-        # os.rmdir(self.inProgressPath)
-        # os.rmdir(self.completePath)
 
     def check_directories(self):
 
@@ -224,30 +215,19 @@ class CSVManager(object):
                 os.makedirs(self.path, 0o777)
             except OSError:
                 pass
-                # print("Creation of the directory %s already exists." % self.path)
-            else:
-                pass
-                # print("Successfully created the directory %s" % self.path)
 
         if not os.path.isdir(self.inProgressPath):
             try:
                 os.makedirs(self.inProgressPath, 0o777)
             except OSError:
                 pass
-                # print("Creation of the directory %s failed" % self.inProgressPath)
-            else:
-                pass
-                # print("Successfully created the directory %s" % self.inProgressPath)
 
         if not os.path.isdir(self.completePath):
             try:
                 os.makedirs(self.completePath, 0o777)
             except OSError:
                 pass
-                # print("Creation of the directory %s failed" % self.completePath)
-            else:
-                # print("Successfully created the directory %s" % self.completePath)
-                pass
+
 
     def GetFileNamesInProgress(self):
         '''
@@ -255,7 +235,6 @@ class CSVManager(object):
 
         '''
 
-        # inprogress = "inprogress"
         batches = []
         try:
             list = os.listdir(self.inProgressPath)
@@ -297,7 +276,7 @@ class CSVManager(object):
         return a list of batchs in the in specified folder
         '''
         type_ = None
-        if file_type == "inprogresss":
+        if file_type == "in_progress":
             type_ = self.inProgressPath
         elif file_type == "complete":
             type_ = self.completePath
@@ -354,7 +333,6 @@ class CSVManager(object):
         try:
             with open(fullPath, 'a', newline='') as file:
 
-                # write pribe data to existing in-progress file
                 datawriter = csv.writer(file)
                 datawriter.writerow(data_list)
                 return True
@@ -452,9 +430,3 @@ class Batch(object):
         self.probe_type = ''
 
 
-# class Probes:
-#     def __init__(self, probe_type, current_batch, passed, tested):
-#         self.Probe_Type = probe_type
-#         self.Current_Batch = current_batch
-#         self.Passed = passed
-#         self.Left = tested

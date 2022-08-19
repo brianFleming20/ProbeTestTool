@@ -14,6 +14,9 @@ import serial.tools.list_ports
 
 DS = Datastore.Data_Store()
 
+INDUCTANCE = 0.003526
+TEST_CABLE = 0.59
+
 
 class NanoZND(object):
     '''
@@ -25,15 +28,17 @@ class NanoZND(object):
         self.show_plot = False
         self.analyser_port = None
         self.ser_ana = None
-        self.cable_length_calibration = 3.3
 
     def get_serial_port(self):
         port = DS.get_devices()['Analyser']
-        self.ser_ana = serial.Serial()
-        self.ser_ana.port = port
-        self.ser_ana.baudrate = '115200'
-        self.ser_ana.bytesize = 8
-        self.ser_ana.timeout = 0.05
+        try:
+            self.ser_ana = serial.Serial()
+            self.ser_ana.port = port
+            self.ser_ana.baudrate = '115200'
+            self.ser_ana.bytesize = 8
+            self.ser_ana.timeout = 0.05
+        except IOError:
+            return False
 
     def get_znd_obj(self):
         return self.ser_ana
@@ -72,35 +77,30 @@ class NanoZND(object):
 
             if "400" in hwid:
                 result = self.ser_ana.port
-        self.ser_ana.close()
+        if self.ser_ana:
+            self.ser_ana.close()
         return result
-
-    def get_marker_1_command(self):
-        #port = DS.get_analyser_port()
-        self.get_serial_port()  # open
-        self.send_data(f"marker 1\r")
-        # self.analyser_port.close() #close
-        return self.ReadAnalyserData()
-
-    # def get_marker_2_command(self):
-
-    #     self.analyser_port.write(f"marker 2\r".encode('ascii'))
-    #     return self.ReadAnalyserData()
 
     def get_marker_3_command(self):
         result = None
-        self.check_port_open()
-        self.ser_ana.open()
+        bottom,top = self.get_inv_markers()
 
-        self.send_data("marker 3\r")
-        data = self.ReadAnalyserData()
-        self.ser_ana.close()
-        x = []
-        for line in data.split('\n'):
-            if line:
-                x.extend([int(d, 16) for d in line.strip().split(' ')])
-                result = np.array(x, dtype=np.int16)
-        return result
+        return bottom
+
+    def get_inv_markers(self):
+        s11, data = self.fetch_frequencies()
+        value1 = 10
+        value2 = 0
+        for num in s11:
+            # inv = 1 / num
+            if num < value1:
+                value1 = num
+        for num in s11:
+            # inv = 1/num
+            if num > value2:
+                value2 = num
+        return value1,value2
+
 
     def fetch_frequencies(self):
         self.get_serial_port()
@@ -142,33 +142,22 @@ class NanoZND(object):
     def tdr(self):
         if not self.ser_ana.isOpen():
             self.ser_ana.open()
-        # print(self.ReadAnalyserData())
-        s11 = []
-        c = 299792458
-        v = 0.64
+        c = 3 * 10**8
+        v = 0.85
         s11, freq = self.fetch_frequencies()
-        index = 0
-        step = 0
-        for fr in freq:
-            if fr == 4200000:
-                index = step
-            step += 1
-            # print(index)
+        bottom,top = self.get_inv_markers()
         window = np.blackman(len(s11))
-        step_size = s11[1] - s11[0]
+        step_size = s11[1] - s11[2]
         windowed_s11 = window * s11
-        NFFT = 2 ** 14
+        NFFT = 2 ** 8
         td = np.abs(np.fft.ifft(windowed_s11, NFFT))
-        step = np.ones(NFFT)
 
         time_axis = np.linspace(0, 1 / step_size, NFFT)
         d_axis = time_axis * v * c
-        peak = 1 / np.max(td)
+        time1 = 1/((top - bottom) * 10**6)
+        value = (time1 * v * c * INDUCTANCE) / 2
 
-        calc = (1 / td[index])
-        value = (peak - calc) / 2
-        # print(f"value {abs(value)}")
-        cable_len = abs(value / self.cable_length_calibration) - 1
+        cable_len = value - TEST_CABLE
         td_10 = td * 1000
         plt.grid(True)
         show = DS.get_plot_status()
@@ -181,20 +170,6 @@ class NanoZND(object):
         else:
             plt.close('all')
         return cable_len
-
-    # Return the analyser port number
-    def get_analyser_port_number(self, port):
-        analyser_port = ""
-        self.check_port_open()
-        self.ser_ana.open()  # open
-        analyser_port = self.ser_ana.port
-
-        if analyser_port == port:
-            self.ser_ana.close()  # close
-            return True
-        else:
-            self.ser_ana.close()  # close
-            return False
 
     # Collect the data points and send to a .csv file
     def CSV_output(self, batch):

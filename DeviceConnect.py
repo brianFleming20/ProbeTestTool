@@ -120,10 +120,10 @@ class ConnectionAdmin(tk.Frame):
 
         self.entry_5 = ttk.Entry(self, textvariable=self.move_probe)
 
-        ttk.Label(self, text="Deltex", background="#E0FFFF", foreground="#003865",
-                  font=('Helvetica', 24, 'bold'), width=12).place(x=850, y=25)
-        ttk.Label(self, text="medical", background="#E0FFFF", foreground="#A2B5BB",
-                  font=('Helvetica', 14)).place(x=850, y=57)
+        ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
+                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
+        ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
+                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
 
         self.label_1.place(relx=0.275, rely=0.3, anchor=CENTER)
         self.label_2.place(relx=0.275, rely=0.5, anchor=CENTER)

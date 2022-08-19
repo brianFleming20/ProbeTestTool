@@ -107,7 +107,7 @@ class WindowController(tk.Tk):
 
             frame.grid(row=0, column=0, sticky="nsew")
             # self.attributes('-fullscreen', True)
-            self.attributes('-toolwindow', True)
+            # self.attributes('-toolwindow', True)
             # self.protocol("WM_DELETE_WINDOW", disable_event)
 
         self.show_frame(UL.LogInWindow)
@@ -128,7 +128,6 @@ class WindowController(tk.Tk):
         # Does the frame have a refresh method, if so call it.
         if hasattr(newFrame, 'refresh_window') and callable(getattr(newFrame, 'refresh_window')):
             self.frames[newFrame].refresh_window()
-
 
 
 app = WindowController()

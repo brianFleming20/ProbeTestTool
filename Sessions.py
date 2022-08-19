@@ -25,15 +25,17 @@ from tkinter.ttk import *
 import tkinter.messagebox as tm
 import BatchManager
 from BatchManager import Batch
-# from BatchManager import Probes
 import SecurityManager
 import UserLogin
 import Connection
 import AdminUser
 import Datastore
 import OnScreenKeys
-from time import gmtime, strftime
+import codecs
+from time import gmtime, strftime, sleep
 import Ports
+import ProbeTest
+import ProbeInterface
 
 BM = BatchManager.BatchManager()
 SM = SecurityManager.SecurityManager()
@@ -43,6 +45,8 @@ P = Ports
 UL = UserLogin
 CO = Connection
 AU = AdminUser
+PT = ProbeTest
+PI = ProbeInterface.PRI()
 
 
 def ignore():
@@ -59,15 +63,10 @@ class SessionSelectWindow(tk.Frame):
         ##################################
         # create a choose session window #
         ##################################
-        tk.Frame.__init__(self, parent, bg='#B1D0E0')
+        tk.Frame.__init__(self, parent, bg="#B1D0E0")
         self.complete_canvas = None
         self.control = controller
-        ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
-                  font=('Helvetica', 24, 'bold'), width=12).place(x=850, y=25)
-        ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
-                  font=('Helvetica', 14)).place(x=850, y=57)
-        self.text_area = tk.Text(self, height=5, width=38)
-        self.text_area.place(x=40, y=70)
+
 
     def refresh_window(self):
         ####################################################
@@ -77,32 +76,51 @@ class SessionSelectWindow(tk.Frame):
         ################################
         # Window title                 #
         ################################
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        self.cent_x = ws / 2
+        self.cent_y = hs / 2
+        ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
+                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
+        ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
+                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
+        self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
+        self.text_area.place(x=40, y=70)
         time_now = strftime("%H:%M:%p", gmtime())
-        self.NSWL1 = ttk.Label(self, text='Session Sellection Window. ', justify=RIGHT, font=("Courier", 20, "bold"))
+        self.NSWL1 = ttk.Label(self, text='Session Selection Window. ', justify=RIGHT,
+                               font=("Courier", 24, "bold"), background="#B1D0E0")
         self.NSWL1.place(relx=0.5, rely=0.05, anchor=CENTER)
+        ports = P.Ports()
+        DS.write_device_to_file(ports)
         ################################
         # Start a new batch session    #
         ################################
-        ttk.Button(self, text='Start a new session', command=lambda: self.control.show_frame(NewSessionWindow),
-                   width=BTN_WIDTH).place(height=35, width=180, x=200, y=180)
+        btn1 = tk.Button(self, text='Start a new session', background="#5FD068", command=lambda: self.control.show_frame(NewSessionWindow))
+        btn1.place(height=50, width=250, relx=0.2, rely=0.35)
         ################################
         # Continue a suspended batch   #
         ################################
-        self.SSW_b2 = ttk.Button(self, text='Continue a previous session',
-                                 command=lambda: self.control.show_frame(ContinueSessionWindow), width=BTN_WIDTH)
-        self.SSW_b2.place(height=35, width=180, x=500, y=180)
+        self.SSW_b2 = tk.Button(self, text='Continue a previous session', background="#FFCB42",
+                             command=lambda: self.control.show_frame(ContinueSessionWindow), width=BTN_WIDTH)
+
+        self.SSW_b2.place(height=50, width=250, relx=0.5, rely=0.35)
+        ################################
+        # Retest failed probe          #
+        ################################
+        self.failed = tk.Button(self, text='Re-test Failed Probe.', background="#FFCB42", command=self.failed_probe)
+        self.failed.place(height=30, width=200, relx=0.52, rely=0.45)
+
         ################################
         # Display completed batches    #
         ################################
-        ttk.Button(self, text='Completed Batches', command=lambda:
-        self.completed_btn_clicked(),
-                   width=BTN_WIDTH).place(height=35, width=180, x=200, y=350)
+        btn2 = tk.Button(self, text='Completed Batches', background="#40DFEF", command=self.completed_btn_clicked)
+        btn2.place(height=50, width=250, relx=0.2, rely=0.65)
         ################################
         # Access admin window          #
         ################################
-        self.SSW_b4 = ttk.Button(self, text='Admin area',
-                                 command=lambda: self.control.show_frame(AU.AdminWindow), width=BTN_WIDTH)
-        self.SSW_b4.place(height=35, width=180, x=500, y=350)
+        self.SSW_b4 = tk.Button(self, text='Admin area', background="#FFDAB9",
+                             command=lambda: self.control.show_frame(AU.AdminWindow), width=BTN_WIDTH)
+        self.SSW_b4.place(height=50, width=250, relx=0.5, rely=0.65)
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
         if "AM" in time_now:
@@ -110,10 +128,8 @@ class SessionSelectWindow(tk.Frame):
         else:
             self.text_area.insert('1.0', 'Good Afternoon ')
         self.text_area.config(state=DISABLED)
-        self.SSW_b3 = ttk.Button(self, text='Log Out', command=lambda:
-        [SM.logOut(), self.control.show_frame(UL.LogInWindow)], width=BTN_WIDTH)
-        self.SSW_b3.place(height=35, width=180, x=850, y=530, anchor=E)
-
+        self.SSW_b3 = tk.Button(self, text='Log Out', background="#F37878", command=self.logout, width=BTN_WIDTH)
+        self.SSW_b3.place(height=40, width=180, relx=0.85, rely=0.8, anchor=E)
         user_info = DS.user_admin_status()
 
         if not user_info:
@@ -132,7 +148,7 @@ class SessionSelectWindow(tk.Frame):
 
     def completed_btn_clicked(self):
         self.complete_canvas = Canvas(bg="#eae9e9", width=200, height=300)
-        self.complete_canvas.place(x=730, y=180)
+        self.complete_canvas.place(relx=0.73, rely=0.25)
         self.complete_canvas.create_text(100, 20, text="Probes Completed", fill="black",
                                          font=(OnScreenKeys.FONT_NAME, 12, "bold"))
         ttk.Button(self.complete_canvas, text="Close",
@@ -144,6 +160,36 @@ class SessionSelectWindow(tk.Frame):
             self.complete_canvas.create_text(80, position, text=f"{probes}", fill="black",
                                              font=(OnScreenKeys.FONT_NAME, 10))
 
+    def logout(self):
+        SM.logOut()
+        self.control.show_frame(UL.LogInWindow)
+
+    def failed_probe(self):
+        probe_port = CO.sort_probe_interface(self)
+        port = P.Ports(probe=probe_port)
+        DS.write_device_to_file(port)
+        while not PI.probe_present():
+            PT.probe_canvas(self, " Insert a failed probe. ", False)
+        PT.text_destroy(self)
+        while PI.probe_present():
+            binary_str = codecs.decode(PI.read_serial_number(), "hex")
+            print(f"serial number = {str(binary_str)[2:18]}")
+            PT.probe_canvas(self, " Insert a failed probe. \n(12345H) \nIs this Batch number correct?", True)
+
+        PT.probe_canvas(self, " (12345H) \nRe-testing - DP240 - probe", False)
+        sleep(3)
+        PT.text_destroy(self)
+        PT.probe_canvas(self, " (12345H) \nDP240 - probe passed", False)
+        sleep(3)
+        PT.text_destroy(self)
+
+    def yes_answer(self):
+        print("Yes pressed")
+        PT.text_destroy(self)
+
+    def no_answer(self):
+        print("No pressed")
+        PT.text_destroy(self)
 
 
 class NewSessionWindow(tk.Frame):
@@ -161,28 +207,34 @@ class NewSessionWindow(tk.Frame):
         self.control = controller
 
     def refresh_window(self):
-        self.canvas_back = Canvas(bg='#B1D0E0', width=980, height=600)
-        self.canvas_back.place(x=10, y=10)
-        self.canvas_type = Canvas(width=300, height=45)
-        self.canvas_type.place(x=400, y=250)
-        self.canvas_qty = Canvas(width=300, height=45)
-        self.canvas_qty.place(x=400, y=350)
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        self.canvas_back = Canvas(bg='#B1D0E0', width=ws - 10, height=hs - 10)
+        self.canvas_back.place(x=5, y=5)
+        self.canvas_type = Canvas(width=400, height=50)
+        self.canvas_type.place(relx=0.5, rely=0.4)
+        self.canvas_qty = Canvas(width=400, height=50)
+        self.canvas_qty.place(relx=0.5, rely=0.55)
         probe_type_frame = tk.Frame(self.canvas_back, pady=3, padx=50, bg='#E0FFFF')
 
         ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
-                  font=('Helvetica', 24, 'bold'), width=12).place(x=850, y=25)
+                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
-                  font=('Helvetica', 14)).place(x=850, y=57)
-
-        self.text_area = tk.Text(self.canvas_back, height=5, width=38)
+                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
+        self.batchQty = 100
+        self.batchNumber = None
+        self.probe_type.set("")
+        self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
 
-        probe_type_frame.place(relx=0.25, rely=0.55, anchor=CENTER)
+        probe_type_frame.place(relx=0.20, rely=0.5, anchor=CENTER)
 
         ttk.Label(self.canvas_back, text='Probe selection window. ',
-                  justify=RIGHT, font=("Courier", 20, "bold")).place(relx=0.5, rely=0.05, anchor=CENTER)
+                  justify=RIGHT, font=("Courier", 20, "bold"), background="#B1D0E0").place(relx=0.5, rely=0.05,
+                                                                                           anchor=CENTER)
 
-        ttk.Label(self.canvas_back, text='Select Probe Type: ').place(x=180, y=190)
+        ttk.Label(self.canvas_back, text='Select Probe Type: ',
+                  justify=RIGHT, font=("Courier", 18, "bold"), background="#B1D0E0").place(relx=0.12, rely=0.3)
 
         self.probe_type = StringVar(probe_type_frame, "DP240")
         # Dictionary to create multiple buttons
@@ -195,36 +247,34 @@ class NewSessionWindow(tk.Frame):
                   "KDP72 [9081-7001]": 'KDP  '}
 
         for (text, value) in values.items():
-            Radiobutton(probe_type_frame, text=text, variable=self.probe_type,
-                        value=value).pack(side=TOP, ipady=5)
+            style = Style(probe_type_frame)
+            style.configure("TRadiobutton", font=("arial", 14, "bold"))
+            rbn = Radiobutton(probe_type_frame, text=text, variable=self.probe_type,
+                              value=value)
+            rbn.pack(side=TOP, ipady=5)
 
-        tk.Button(self.canvas_back, text='Confirm', padx=2, pady=3,
-                  width=BTN_WIDTH, command=lambda: [self.canvas_type.destroy(),
-                                                    self.canvas_qty.destroy(),
-                                                    self.confm_btn_clicked()]).place(relx=0.85,
-                                                                                     rely=0.88,
-                                                                                     anchor=CENTER)
+        tk.Button(self.canvas_back, text='Continue', font=("Courier", 14), width=20, height=2,
+                  command=self.to_devices).place(relx=0.82, rely=0.8, anchor=CENTER)
 
-        tk.Button(self.canvas_back, text='Cancel', padx=2, pady=3, width=BTN_WIDTH,
-                  command=lambda:
-                  [self.canvas_type.destroy(), self.canvas_qty.destroy(), self.canvas_back.destroy(),
-                   self.control.show_frame(SessionSelectWindow)]).place(relx=0.65, rely=0.88, anchor=CENTER)
+        tk.Button(self.canvas_back, text='Cancel', font=("Courier", 11),
+                  command=self.back).place(relx=0.56, rely=0.8, anchor=CENTER)
 
         self.bind('<Return>', self.confm_btn_clicked)
-        self.type_text = self.canvas_type.create_text(200, 20, text=" ", fill="black",
+        self.type_text = self.canvas_type.create_text(250, 20, text=" ", fill="black",
                                                       font=(OnScreenKeys.FONT_NAME, 8, "bold"))
-        self.qty_text = self.canvas_qty.create_text(200, 20, text=" ", fill="black",
+        self.qty_text = self.canvas_qty.create_text(220, 20, text=" ", fill="black",
                                                     font=(OnScreenKeys.FONT_NAME, 8, "bold"))
 
         self.btn_1 = ttk.Button(self.canvas_type, text='Batch number: ',
                                 command=lambda: [self.get_keys(), self.batch_entry()])
         self.btn_1.place(relx=0.21, rely=0.3, anchor=N)
-        Label(self.canvas_type, text="-->").place(x=120, y=12)
+        Label(self.canvas_type, text="-->").place(x=180, y=18)
         self.btn_2 = ttk.Button(self.canvas_qty, text='Batch Qty: ',
                                 command=lambda: [self.get_keys(), self.qty_entry()])
         self.btn_2.place(relx=0.18, rely=0.3, anchor=N)
-        Label(self.canvas_qty, text="-->").place(x=120, y=12)
-        ttk.Label(self.canvas_qty, text=self.batchQty, font=("bold", 14)).place(relx=0.75, rely=0.3, width=140, anchor=N)
+        Label(self.canvas_qty, text="-->").place(x=180, y=18)
+        ttk.Label(self.canvas_qty, text=self.batchQty, font=("bold", 14)).place(relx=0.75, rely=0.3, width=140,
+                                                                                anchor=N)
         self.text_area.config(state=NORMAL)
         self.text_area.insert('1.0', DS.get_username())
         self.text_area.insert('3.3', '\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
@@ -257,8 +307,7 @@ class NewSessionWindow(tk.Frame):
             if len(data) > 0 and data[-1] == "+":
                 data = data[:-1]
                 break
-            master.itemconfig(label, text=data)
-            ttk.Label(master, text=data, font=("bold", 14)).place(relx=0.75, rely=0.3, width=140, anchor=N)
+            master.itemconfig(label, text=data, font=("bold", 14))
             Tk.update(master)
         return data
 
@@ -273,10 +322,11 @@ class NewSessionWindow(tk.Frame):
         if not check_qty and not check_batch:
             self.refresh_window()
         if not self.create_new_batch(check_batch, batch_type, qty, name):
+            self.canvas_back.destroy()
             self.refresh_window()
-        self.canvas_back.destroy()
-        self.control.show_frame(CO.Connection)
-
+        else:
+            self.canvas_back.destroy()
+            self.control.show_frame(CO.Connection)
 
     def check_batch_qty(self, qty):
         check = True
@@ -293,13 +343,16 @@ class NewSessionWindow(tk.Frame):
         newBatch.probe_type = batch_type
         newBatch.batchQty = qty
         check = True
-        DAnswer = tm.askyesno('Confirm', 'Are batch details correct?')
+        DAnswer = tm.askyesno(title='Confirm',
+                              message=f'Are batch details correct?\n\n Batch number {batch} \n Batch Qty{self.batchQty}')
         if DAnswer:
             # create the batch file
             if not BM.CreateBatch(newBatch, name):
                 tm.showerror('Error', 'Batch number not unique')
                 check = False
-        return check
+            return check
+        else:
+            return False
 
     def convert_batch_number(self, batch):
         if self.check_batch_number(batch):
@@ -308,47 +361,59 @@ class NewSessionWindow(tk.Frame):
             confirm_batch = batch_numbers + batch_letter
             return confirm_batch
 
-    def check_batch_number(self,number):
+    def check_batch_number(self, number):
         check = True
         if len(number) == 0:
             tm.showerror('Error', 'Enter a batch number')
             check = False
         return check
 
+    def back(self):
+        self.canvas_type.destroy()
+        self.canvas_qty.destroy()
+        self.canvas_back.destroy()
+        self.control.show_frame(SessionSelectWindow)
+
+    def to_devices(self):
+        self.canvas_type.destroy()
+        self.canvas_qty.destroy()
+        self.confm_btn_clicked()
+
 
 class ContinueSessionWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#B1D0E0')
-
+        self.control = controller
         ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
-                  font=('Helvetica', 24, 'bold'), width=12).place(x=850, y=25)
+                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
-                  font=('Helvetica', 14)).place(x=850, y=57)
+                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
 
-        self.text_area = tk.Text(self, height=5, width=38)
+        self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
 
-        ttk.Label(self, text='Choose a session to resume').place(relx=0.5,
-                                                                 rely=0.05, anchor=CENTER)
+        ttk.Label(self, text='Choose a session to resume', font=("Courier", 18), background="#B1D0E0").place(relx=0.5,
+                                                                                                             rely=0.05,
+                                                                                                             anchor=CENTER)
 
-        ttk.Label(self, text="Batch number").place(relx=0.35, rely=0.3)
-        ttk.Label(self, text="Batch type").place(relx=0.55, rely=0.3)
+        ttk.Label(self, text="Batch number", font=("Courier", 16), background="#B1D0E0").place(relx=0.28, rely=0.32)
+        ttk.Label(self, text="Batch type", font=("Courier", 16), background="#B1D0E0").place(relx=0.58, rely=0.32)
 
         self.sessionListBox = Listbox(self)
-        self.sessionListBox.place(relx=0.4, rely=0.4, anchor=CENTER)
-        self.sessionListBox.config(height=4, width=20)
+        self.sessionListBox.place(relx=0.38, rely=0.45, anchor=CENTER)
+        self.sessionListBox.config(height=4, width=20, font=("Courier", 18))
 
-        self.probe_typeListBox = Listbox(self)
-        self.probe_typeListBox.place(relx=0.6, rely=0.4, anchor=CENTER)
-        self.probe_typeListBox.config(height=4, width=15)
+        self.probe_typeListBox = Listbox(self, font=("Courier", 12))
+        self.probe_typeListBox.place(relx=0.65, rely=0.45, anchor=CENTER)
+        self.probe_typeListBox.config(height=4, width=15, font=("Courier", 16))
 
-        self.continue_btn = ttk.Button(
-            self, text='Continue Session', command=lambda: self.continue_btn_clicked(controller))
-        self.continue_btn.place(height=35, width=180, x=880, y=530, anchor=E)
+        self.continue_btn = tk.Button(
+            self, text='Continue Session', height=2, font=("Courier",14), command=self.continue_btn_clicked)
+        self.continue_btn.place( relx=0.88, rely=0.82, anchor=E)
 
         self.cancel_btn = ttk.Button(
-            self, text='Cancel', command=lambda: controller.show_frame(SessionSelectWindow))
-        self.cancel_btn.place(height=30, width=80, x=625, y=530, anchor=E)
+            self, text='Cancel', command=lambda: self.control.show_frame(SessionSelectWindow))
+        self.cancel_btn.place(height=35, width=90, relx=0.62, rely=0.82, anchor=E)
 
     def refresh_window(self):
         # #create a list of the current users using the dictionary of users
@@ -376,7 +441,7 @@ class ContinueSessionWindow(tk.Frame):
             self.probe_typeListBox.insert(END, item)
         self.probe_typeListBox.config(state=DISABLED)
 
-    def continue_btn_clicked(self, controller):
+    def continue_btn_clicked(self):
         lstid = self.sessionListBox.curselection()
         if len(lstid) != 0:
             lstBatch = self.sessionListBox.get(lstid[0])
@@ -384,7 +449,7 @@ class ContinueSessionWindow(tk.Frame):
             probe_data = P.Probes(batch.probe_type, batch.batchNumber, 0, batch.batchQty)
             DS.write_probe_data(probe_data)
 
-            controller.show_frame(CO.Connection)
+            self.control.show_frame(CO.Connection)
 
     def set_display(self):
         self.text_area.config(state=NORMAL)

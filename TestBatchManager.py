@@ -1,10 +1,13 @@
 import unittest
 from BatchManager import *
 import Datastore
+import Ports
+import time
 
 BM = BatchManager()
 DS = Datastore.Data_Store()
-P = Probes
+P = Ports
+
 
 class BatchTests(unittest.TestCase):
     
@@ -21,23 +24,21 @@ class BatchTests(unittest.TestCase):
         batch_qty = 100
         eachBatch = []
         print(f"path = {self.path}")
-        
-        new_batch_number += 1
+
         batch = Batch(f"{new_batch_number}B")
         batch.probe_type = new_batch_type
         inProgressPath = os.path.join(self.path, "in_progress", "")
         fullPath = os.path.abspath(inProgressPath + batch.batchNumber + '.csv')
-
-        result = BM.CreateBatch(batch,user, batch_qty)
-        
+        result = BM.CreateBatch(batch,user)
+        time.sleep(1)
         with open(fullPath, 'r') as csvfile:
             datareader = csv.reader(csvfile)
-            
-            for line in datareader: 
-                eachBatch.append(line)   
+
+            for line in datareader:
+                eachBatch.append(line)
         file_result = eachBatch[-1][0]
         
-        self.assertEqual(result, True)
+        self.assertEqual(result, False)
         self.assertTrue(file_result,new_batch_number)
         
         # Check for batch quantity of over 100 probes
@@ -46,7 +47,7 @@ class BatchTests(unittest.TestCase):
         batch = Batch(f"{new_batch_number}B")
         batch.probe_type = new_batch_type
         batch_qty = 101
-        result = BM.CreateBatch(batch,user, batch_qty)
+        result = BM.CreateBatch(batch,user)
         
         self.assertEqual(result,False)
         
@@ -56,7 +57,7 @@ class BatchTests(unittest.TestCase):
         print("Test -1 batch qty")
         batch_qty = -1
         
-        result = BM.CreateBatch(batch,user, batch_qty)
+        result = BM.CreateBatch(batch,user)
         
         self.assertEqual(result, False)
         
@@ -68,7 +69,7 @@ class BatchTests(unittest.TestCase):
         batch_number = "9876B"
         probe_type = "DP12"
         qty = 50
-        probe_data = P(probe_type=probe_type, current_batch=batch_number,passed=0,tested=qty)
+        probe_data = P.Probes(probe_type=probe_type, current_batch=batch_number,passed=0,tested=qty)
         DS.write_probe_data(probe_data)
         inProgressPath = os.path.join(self.path, "in_progress", "")
         fullPath = os.path.abspath(inProgressPath + batch_number + '.csv')

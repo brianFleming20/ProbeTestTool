@@ -78,14 +78,13 @@ class LoginTests(unittest.TestCase):
         print("Test user login")
 
         name = "brian"       
-        password = "password"
+        password = "my-password"
         self.UL.entry()
         self.UL.set_username(name)
         self.UL.set_password(password)
 
-
-
         result = self.UL._login_btn_clicked()
+        print(result)
         self.assertEqual(result, True)
         
         

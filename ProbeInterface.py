@@ -182,14 +182,15 @@ class PRI(object):
         ports = serial.tools.list_ports.comports()
         for port, desc, hwid in sorted(ports):
 
-            self.ser = serial.Serial(port=port, baudrate=9600,parity=serial.PARITY_NONE,
-                                 stopbits=serial.STOPBITS_ONE,
-                                 bytesize=serial.EIGHTBITS,
-                                 timeout=0.5)
-            self.ser.close()
+            self.ser = serial.Serial(port=port, baudrate=9600, parity=serial.PARITY_NONE,
+                                     stopbits=serial.STOPBITS_ONE,
+                                     bytesize=serial.EIGHTBITS,
+                                     timeout=0.5)
 
             if '0403' in hwid:
                 result = self.ser.port
+        if self.ser:
+            self.ser.close()
         return result
 
     def send_data(self, data):
@@ -199,10 +200,9 @@ class PRI(object):
         # flush the buffers
         self.ser.flushInput()
         self.ser.flushOutput()
-        self.ser.timeout = 0.5
+        self.ser.timeout = 0.2
         # convert the input to ASCII characters and send it
         self.ser.write(codecs.decode(data, "hex_codec"))
-
 
     def read_data(self):
         '''

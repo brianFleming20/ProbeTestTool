@@ -61,7 +61,6 @@ class FaultFindWindow(tk.Frame):
         self.device_details = StringVar()
         self.serialNumber = StringVar()
         self.read_probe_number = StringVar()
-        self.analyser_freq3 = IntVar()
         self.cable_len = IntVar()
         self.fault_message = StringVar()
         self.plot_text = StringVar()
@@ -78,53 +77,58 @@ class FaultFindWindow(tk.Frame):
 
     def display(self):
         # Import images
-        ttk.Label(self.canvas_back, text="Deltex", background="#B1D0E0", foreground="#003865",
-                  font=('Helvetica', 24, 'bold'), width=12).place(x=850, y=25)
-        ttk.Label(self.canvas_back, text="medical", background="#B1D0E0", foreground="#A2B5BB",
-                  font=('Helvetica', 14)).place(x=850, y=57)
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        self.canvas_back = Canvas(bg='#B1D0E0', width=ws - 10, height=hs - 10)
+        self.canvas_back.place(x=5, y=5)
+        ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
+                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
+        ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
+                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
 
-        self.text_area = tk.Text(self.canvas_back, height=5, width=40)
-        self.text_area.place(x=40, y=70)
+        self.text_area = tk.Text(self.canvas_back, font=("Courier",14),height=5, width=40)
+        self.text_area.place(relx=0.07, rely=0.07)
         self.text_area.delete('1.0', 'end')
 
-        ttk.Label(self.canvas_back, text='Batch number: ', background='#B1D0E0').place(
+        ttk.Label(self.canvas_back, text='Batch number: ', background='#B1D0E0', font=("Courier",14)).place(
             relx=0.1, rely=0.3, anchor='w')
-        ttk.Label(self.canvas_back, textvariable=self.current_batch, relief=SUNKEN, font="bold",
+        ttk.Label(self.canvas_back, textvariable=self.current_batch, font=("Courier",14), relief=SUNKEN,
                   width=15).place(relx=0.2, rely=0.3, anchor='w')
 
-        ttk.Label(self.canvas_back, text='Probe type: ', background='#B1D0E0').place(
+        ttk.Label(self.canvas_back, text='Probe type: ', background='#B1D0E0', font=("Courier",14)).place(
             relx=0.1, rely=0.38, anchor='w')
-        ttk.Label(self.canvas_back, textvariable=self.probe_type, relief=SUNKEN, font="bold",
+        ttk.Label(self.canvas_back, textvariable=self.probe_type, relief=SUNKEN, font=("Courier",14),
                   width=10).place(relx=0.2, rely=0.38, anchor='w')
 
-        ttk.Label(self.canvas_back, text='Connected to: ', background='#B1D0E0').place(
+        ttk.Label(self.canvas_back, text='Connected to: ', background='#B1D0E0', font=("Courier",14)).place(
             relx=0.1, rely=0.44, anchor='w')
-        ttk.Label(self.canvas_back, textvariable=self.device_details, relief=SUNKEN,
+        ttk.Label(self.canvas_back, textvariable=self.device_details, font=("Courier",14),relief=SUNKEN,
                   width=30).place(relx=0.2, rely=0.44, anchor='w')
 
         ttk.Label(self.canvas_back, text="cable length. ",
-                  background='#B1D0E0').place(relx=0.1, rely=0.53, anchor='w')
+                  background='#B1D0E0', font=("Courier",14)).place(relx=0.1, rely=0.53, anchor='w')
+        ttk.Label(self.canvas_back, text="meters", background='#B1D0E0', font=("Courier",14)).place(relx=0.35, rely=0.53, anchor="w")
         ttk.Label(self.canvas_back, textvariable=self.cable_len, relief=SUNKEN,
                   width=14, font=("Courier", 14)).place(relx=0.2, rely=0.53, anchor='w')
 
-        ttk.Label(self.canvas_back, text='Serial Number: ', background='#B1D0E0').place(
+        ttk.Label(self.canvas_back, text='Serial Number: ', background='#B1D0E0', font=("Courier",14)).place(
             relx=0.68, rely=0.18, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.serialNumber, relief=SUNKEN, width=28).place(relx=0.68, rely=0.25,
                                                                                                    anchor='w')
-        ttk.Label(self.canvas_back, text='From Batch: ', background='#B1D0E0').place(
+        ttk.Label(self.canvas_back, text='From Batch: ', background='#B1D0E0', font=("Courier",14)).place(
             relx=0.58, rely=0.25, anchor='w')
-        ttk.Label(self.canvas_back, text='From Probe: ', background='#B1D0E0').place(
+        ttk.Label(self.canvas_back, text='From Probe: ', background='#B1D0E0', font=("Courier",14)).place(
             relx=0.58, rely=0.3, anchor='w')
 
         ttk.Label(self.canvas_back, textvariable=self.read_probe_number, relief=SUNKEN, width=28).place(relx=0.68,
                                                                                                         rely=0.3,
                                                                                                         anchor='w')
 
-        ttk.Label(self.canvas_back, text="Probe parameter data", background='#B1D0E0').place(
+        ttk.Label(self.canvas_back, text="Probe parameter data", background='#B1D0E0', font=("Courier",14)).place(
             relx=0.7, rely=0.42, anchor="w")
-        ttk.Label(self.canvas_back, text="SD", background='#B1D0E0').place(relx=0.70, rely=0.46, anchor="w")
-        ttk.Label(self.canvas_back, text="FTc", background='#B1D0E0').place(relx=0.77, rely=0.46, anchor="w")
-        ttk.Label(self.canvas_back, text="PV", background='#B1D0E0').place(relx=0.85, rely=0.46, anchor="w")
+        ttk.Label(self.canvas_back, text="SD", background='#B1D0E0', font=("Courier",14)).place(relx=0.70, rely=0.46, anchor="w")
+        ttk.Label(self.canvas_back, text="FTc", background='#B1D0E0', font=("Courier",14)).place(relx=0.77, rely=0.46, anchor="w")
+        ttk.Label(self.canvas_back, text="PV", background='#B1D0E0', font=("Courier",14)).place(relx=0.85, rely=0.46, anchor="w")
         ttk.Label(self.canvas_back, textvariable=self.SD_data, relief=SUNKEN, font="bold",
                   width=5).place(relx=0.69, rely=0.51, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.FTc_data, relief=SUNKEN, font="bold",
@@ -132,7 +136,7 @@ class FaultFindWindow(tk.Frame):
         ttk.Label(self.canvas_back, textvariable=self.PV_data, relief=SUNKEN, font="bold",
                   width=5).place(relx=0.84, rely=0.51, anchor='w')
 
-        ttk.Label(self.canvas_back, text='Action: ', background='#B1D0E0').place(relx=0.1, rely=0.65, anchor='w')
+        ttk.Label(self.canvas_back, text='Action: ', background='#B1D0E0', font=("Courier",14)).place(relx=0.1, rely=0.65, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.action, background='#99c2ff',
                   width=28, relief=GROOVE, font=("Courier", 16)).place(relx=0.2, rely=0.65, anchor='w')
 
@@ -140,12 +144,14 @@ class FaultFindWindow(tk.Frame):
                    command=lambda: self.show_plot()).place(relx=0.72, rely=0.58, anchor=CENTER)
         ttk.Label(self.canvas_back, textvariable=self.plot_text, relief=SUNKEN, font="bold",
                   width=5).place(relx=0.8, rely=0.58, anchor='w')
-        ttk.Label(self.canvas_back, text='Faults found: ', background='#B1D0E0').place(
+        ttk.Label(self.canvas_back, text='Faults found: ', background='#B1D0E0', font=("Courier",14)).place(
             relx=0.1, rely=0.75, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.fault_message, relief=SUNKEN, font=("Courier", 16),
                   width=30).place(relx=0.2, rely=0.75, anchor='w')
-        Label(self.canvas_back, text="Remove probe when finished", background="#B1D0E0").place(x=400, y=520)
-
+        Label(self.canvas_back, text="Remove probe when finished", background="#B1D0E0",
+              font=("Courier",14)).place(relx=0.4, rely=0.85)
+        self.setup()
+        Tk.update(self)
 
     def show_plot(self):
         admin = DS.user_admin_status()
@@ -163,53 +169,41 @@ class FaultFindWindow(tk.Frame):
         self.cable_length = round(ZND.tdr(), 3)
 
     def break_out(self):
+        if DS.get_plot_status():
+            self.show_plot()
         self.canvas_back.destroy()
         self.control.show_frame(PT.TestProgramWindow)
 
     def setup(self):
         self.text_area.delete('1.0', 'end')
         self.RLLimit = -1  # pass criteria for return loss measurement
-        self.plot_text.set("OFF")
         ZND.flush_analyser_port()
         ZND.set_vna_controls()
+        batch_data = DS.get_probe_data()
         self.text_area.insert('1.0', DS.get_username())
         self.text_area.insert('2.0', '\nFault finding batch ')
-        self.text_area.insert('2.30', DS.get_current_batch())
-        self.probe_type.set(DS.get_current_probe_type())
-        self.current_batch.set(DS.get_current_batch())
+        self.text_area.insert('2.30', batch_data['Batch'])
+        self.probe_type.set(batch_data['Probe_Type'])
+        self.current_batch.set(batch_data['Batch'])
         self.current_user.set(DS.get_username())
         self.device_details.set(self.device)
         self.serialNumber.set(" ")
         self.read_probe_number.set(" ")
         self.text_area.config(state=DISABLED)
         self.fault_message.set("")
-        if ZND.get_analyser_port_number(self.analyser_port):
+        vna = ZND.get_vna_check()
+        if vna == DS.get_devices()['Analyser']:
             self.device = " NanoNVA "
             self.device_details.set(self.device)
         Tk.update(self)
 
     def refresh_window(self):
-        self.canvas_back = Canvas(bg='#B1D0E0', width=980, height=600)
-        self.canvas_back.place(x=10, y=10)
         self.display()
-        self.setup()
-        self.wait_for_test = True
+        self.get_serial_numbers()
+        self.plot_text.set("OFF")
         while PM.ProbePresent():
-            self.get_serial_numbers()
             self.fault_find_probe()
-            if not PM.ProbePresent():
-                break
-            self.update_odm_data()
 
-        self.action.set('No probe connected...')
-        ttk.Label(self.canvas_back, textvariable=self.action, background='yellow',
-                  width=28, relief=GROOVE, font=("Courier", 16)).place(relx=0.2, rely=0.65, anchor='w')
-        # Tk.update(self)
-        self.fault_message.set("")
-        self.analyser_freq3.set(0)
-        self.cable_len.set(0)
-        self.wait_for_test = False
-        Tk.update(self)
         self.break_out()
 
     def get_serial_numbers(self):
@@ -230,32 +224,35 @@ class FaultFindWindow(tk.Frame):
             self.SD_data.set(serial_results[5])
             self.FTc_data.set(serial_results[6])
             self.PV_data.set(serial_results[9])
+            Tk.update(self)
 
     def fault_find_probe(self):
-        self.cable_length = ZND.tdr()
         if not PM.ProbeIsProgrammed():
-            self.action.set('New Probe connected')
+            self.action.set('No serial number detected')
             ttk.Label(self.canvas_back, textvariable=self.action, background='#99c2ff',
-                        width=28, relief=GROOVE, font=("Courier", 16)).place(relx=0.2, rely=0.65, anchor='w')
+                      width=28, relief=GROOVE, font=("Courier", 16)).place(relx=0.2, rely=0.65, anchor='w')
         else:
             self.action.set('Programmed Probe connected')
             ttk.Label(self.canvas_back, textvariable=self.action, background='#1fff1f',
-                        width=28, relief=GROOVE, font=("Courier", 16)).place(relx=0.2, rely=0.65, anchor='w')
+                      width=28, relief=GROOVE, font=("Courier", 16)).place(relx=0.2, rely=0.65, anchor='w')
+        Tk.update(self)
         fault = self.test_probe()
         self.fault_message.set(fault)
-        self.cable_len.set(round(self.cable_length,3))
-        Tk.update(self)
+        self.update_odm_data()
+
 
     def test_probe(self):
+        self.cable_length = ZND.tdr()
+        self.cable_len.set(round(self.cable_length, 3))
         fault = "Unknown"
-        self.fault_text = ["No Fault", "Unkown", "Break in Blue wire",
+        self.fault_text = ["No Fault", "Unknown", "Break in Blue wire",
                            "S/C in Red/Black wires", "S/C in Blue/Green wires",
                            "Break in Black wire", "Break in Green wire",
                            "Signal wires connected", "S/C Screen to Blue wire",
                            "Break in Red wire", "Crystal Fault",
                            "S/C Screen to Red wires"]
         # No Fault
-        if 1.3 < self.cable_length < 1.5:
+        if 0.82 < self.cable_length < 0.9:
             fault = self.fault_text[0]
         # S/C Red / Black wires
         if 1.45 < self.cable_length < 1.40:

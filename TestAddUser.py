@@ -114,7 +114,9 @@ class AdminTests(unittest.TestCase):
         username = "User"
         self.A.set_unsername(username)
         
-        result = self.A.check_user_admin()
+        self.A.check_admin()
+
+        result = self.A.allow_add_admin
         
         self.assertEqual(result, False)
 

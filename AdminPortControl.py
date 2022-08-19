@@ -47,14 +47,14 @@ class AdminPorts(tk.Frame):
         DS.write_device_to_file(connection_data)
 
         ttk.Label(self, text="Deltex", background="#FFDAB9", foreground="#003865",
-                  font=('Helvetica', 24, 'bold'), width=12).place(x=850, y=25)
+                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#FFDAB9", foreground="#A2B5BB",
-                  font=('Helvetica', 14)).place(x=850, y=57)
+                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
 
         self.connectBtn = ttk.Button(
             self, text="Continue", command=lambda:
             [self.destroy_canvas(), self._connect_btn_clicked(controller)])
-        self.connectBtn.place(height=35, width=150, x=850, y=530, anchor=CENTER)
+        self.connectBtn.place(height=35, width=150, relx=0.85, rely=0.82, anchor=CENTER)
         # self.bind('<Return>', self._connect_btn_clicked)
 
         self.cancelBtn = ttk.Button(
@@ -62,18 +62,18 @@ class AdminPorts(tk.Frame):
             [self.destroy_canvas(), controller.show_frame(AU.AdminWindow)])
         self.cancelBtn.place(relx=0.7, rely=0.82, anchor=CENTER)
 
-        self.text_area = tk.Text(self, height=5, width=38)
+        self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
         self.text_area.place(x=40, y=70)
 
     def refresh_window(self):
         self.canvas_1 = Canvas(bg="#eae9e9", width=300, height=45)
-        self.canvas_1.place(x=350, y=120)
+        self.canvas_1.place(relx=0.35, rely=0.3)
         self.canvas_2 = Canvas(bg="#eae9e9", width=300, height=45)
-        self.canvas_2.place(x=350, y=195)
+        self.canvas_2.place(relx=0.35, rely=0.4)
         self.canvas_3 = Canvas(bg="#eae9e9", width=300, height=45)
-        self.canvas_3.place(x=350, y=270)
+        self.canvas_3.place(relx=0.35, rely=0.5)
         self.canvas_4 = Canvas(bg="#eae9e9", width=300, height=45)
-        self.canvas_4.place(x=350, y=345)
+        self.canvas_4.place(relx=0.35, rely=0.6)
         self.btn_1 = ttk.Button(self.canvas_1, text="ODM monitor port", command=lambda:
         [self.get_keys(), self.monitor_entry()])
         Label(self.canvas_1, text="-->").place(x=170, y=12)

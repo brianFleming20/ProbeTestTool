@@ -28,13 +28,14 @@ import Ports
 
 class Data_Store():
     def __init__(self):
-        self.file_data = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+        self.file_data = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
     ########################
     # Main data file read  #
     ########################
     #######################################
 
     def get_keyboard_data(self):
+
         try:
             with open('file.keys', 'rb') as load_keys:
                 keys_data = pickle.load(load_keys)

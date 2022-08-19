@@ -3,10 +3,10 @@ Created on 24 Apr 2017
 @author: Brian F
 '''
 
-import tkinter.messagebox as tm
 import serial
 import Datastore
 import serial.tools.list_ports
+import time
 
 DS = Datastore.Data_Store()
 
@@ -22,11 +22,14 @@ class ODMData(object):
         self.ser = None
 
     def get_odm_port(self, port_number):
-        self.odm_port = serial.Serial()
-        self.odm_port.port = port_number
-        self.odm_port.baudrate = '9600'
-        self.odm_port.bytesize = 8
-        self.odm_port.timeout = 0.1
+        try:
+            self.odm_port = serial.Serial()
+            self.odm_port.port = port_number
+            self.odm_port.baudrate = '9600'
+            self.odm_port.bytesize = 8
+            self.odm_port.timeout = 0.1
+        except IOError:
+            return False
 
     def get_port_obj(self):
         return self.odm_port
@@ -35,13 +38,13 @@ class ODMData(object):
         self.odm_port.close()
 
     def check_port_open(self):
-        if self.odm_port is None:
+        if not self.odm_port:
             port_number = DS.get_devices()['ODM']
             self.get_odm_port(port_number)
 
     def ReadSerialODM(self):
-
         # initalise parameters
+        sec = 5
         ignor_bit = 44
         odm_result = []
         temp = ""
@@ -50,8 +53,11 @@ class ODMData(object):
         self.check_port_open()
         self.odm_port.open()
         parameters = self.odm_port.readline()  # read line of ODM
-        while 1:
+        while sec:
             parameters = self.odm_port.readline()
+            if sec > 0:
+                time.sleep(0.5)
+                sec -= 1
             if len(parameters) > 5:
                 break
 
@@ -181,7 +187,7 @@ class ODMData(object):
     #     return serial_result
 
     def check_odm_port(self):
-        result = None
+        result = False
         ports = serial.tools.list_ports.comports()
         for port, desc, hwid in sorted(ports):
             self.odm_port = serial.Serial(port=port, baudrate='9600', bytesize=8, stopbits=1, timeout=0.5)
@@ -189,8 +195,6 @@ class ODMData(object):
             self.odm_port.close()
             if "04D8" in hwid:
                 result = self.odm_port.port
-            else:
-                result = False
         return result
 
     def read_data(self):

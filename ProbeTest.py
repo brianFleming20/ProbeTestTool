@@ -24,7 +24,6 @@ from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox as tm
 import codecs
-from time import gmtime, strftime
 import BatchManager
 from ProbeManager import ProbeManager
 import NanoZND
@@ -59,6 +58,30 @@ def ignore():
     return 'break'
 
 
+LOWER_LIMIT = 0.9
+UPPER_LIMIT = 1.5
+
+
+def probe_canvas(self, message, btn):
+    self.session_on_going = False
+    self.canvas_text = Canvas(bg="#eae9e9", width=350, height=180)
+    self.canvas_text.place(x=self.cent_x - 150, y=self.cent_y - 20)
+    Label(self.canvas_text, text=message, font=("Courier", 12)).place(
+        x=50, y=20)
+    btn1 = Button(self.canvas_text, text="Yes", command=self.yes_answer, width=10, height=2)
+    btn2 = Button(self.canvas_text, text="No", command=self.no_answer, width=10, height=2)
+    Tk.update(self)
+    if btn:
+        btn1.place(x=90, y=120)
+        btn2.place(x=190, y=120)
+        Tk.update(self)
+
+
+def text_destroy(self):
+    self.canvas_text.destroy()
+
+
+
 class TestProgramWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -74,15 +97,14 @@ class TestProgramWindow(tk.Frame):
         self.device_details = StringVar()
         self.odm_details = StringVar()
         self.probe_type = StringVar()
+        self.reflection = StringVar()
         self.SD_data = IntVar()
         self.FTc_data = IntVar()
         self.PV_data = IntVar()
         self.user_admin = False
         self.probes_passed.set(0)
-        # self.lower_limit = 1.14
-        self.lower_limit = 0.7
-        # self.upper_limit = 1.24
-        self.upper_limit = 1.5
+        self.info_canvas = True
+
         ###############################################################
         # import and set up images for the screen                     #
         ###############################################################
@@ -91,40 +113,44 @@ class TestProgramWindow(tk.Frame):
         self.amberlight = (PhotoImage(file="./PTT_Icons/AMBER.png"))
         self.redlight = (PhotoImage(file="./PTT_Icons/RED.png"))
         self.greylight = (PhotoImage(file="./PTT_Icons/GREY.png"))
-        self.complete_btn = (PhotoImage(file="./PTT_Icons/completetesting.gif"))
-        self.suspend_btn = (PhotoImage(file="./PTT_Icons/suspend.gif"))
         self.back_colour = "#A6D1E6"
 
     def display_layout(self):
         #################################################################
         # Display main screen layout                                    #
         #################################################################
-        self.text_area = tk.Text(self.canvas_back, height=5, width=40)
-        self.text_area.place(x=40, y=70)
-        ttk.Label(self.canvas_back, text="Deltex", background=self.back_colour, foreground="#003865",
-                  font=('Helvetica', 24, 'bold'), width=12).place(x=850, y=25)
-        ttk.Label(self.canvas_back, text="medical", background=self.back_colour, foreground="#A2B5BB",
-                  font=('Helvetica', 14)).place(x=850, y=57)
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        self.canvas_back = Canvas(bg=self.back_colour, width=ws - 10, height=hs - 10)
+        self.canvas_back.place(x=5, y=5)
+        self.cent_x = ws / 2
+        self.cent_y = hs / 2
+        self.text_area = tk.Text(self.canvas_back, font=("Courier",14),height=5, width=40)
+        self.text_area.place(relx=0.07, rely=0.07)
+        ttk.Label(self.canvas_back, text="Deltex", background="#B1D0E0", foreground="#003865",
+                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
+        ttk.Label(self.canvas_back, text="medical", background="#B1D0E0", foreground="#A2B5BB",
+                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
         self.text_area.delete('1.0', 'end')
-        ttk.Label(self.canvas_back, text='Batch number: ', background=self.back_colour).place(
+        ttk.Label(self.canvas_back, text='Batch number: ', background=self.back_colour, font=("Courier",14)).place(
             relx=0.1, rely=0.3, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.current_batch, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.25, rely=0.3, anchor='w')
-        ttk.Label(self.canvas_back, text='Probe type: ', background=self.back_colour).place(
+        ttk.Label(self.canvas_back, text='Probe type: ', background=self.back_colour, font=("Courier",14)).place(
             relx=0.1, rely=0.45, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.probe_type, relief=SUNKEN, font="bold",
                   width=12).place(relx=0.25, rely=0.45, anchor='w')
-        ttk.Label(self.canvas_back, text='Connected to: ', background=self.back_colour).place(
+        ttk.Label(self.canvas_back, text='Connected to: ', background=self.back_colour, font=("Courier",14)).place(
             relx=0.73, rely=0.2, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.device_details, relief=SUNKEN,
                   width=30).place(relx=0.7, rely=0.25, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.odm_details, relief=SUNKEN,
                   width=30).place(relx=0.7, rely=0.30, anchor='w')
-        ttk.Label(self.canvas_back, text="Data from ODM", background=self.back_colour).place(
+        ttk.Label(self.canvas_back, text="Data from ODM", background=self.back_colour, font=("Courier",14)).place(
             relx=0.7, rely=0.42, anchor="w")
-        ttk.Label(self.canvas_back, text="SD", background=self.back_colour).place(relx=0.70, rely=0.46, anchor="w")
-        ttk.Label(self.canvas_back, text="FTc", background=self.back_colour).place(relx=0.77, rely=0.46, anchor="w")
-        ttk.Label(self.canvas_back, text="PV", background=self.back_colour).place(relx=0.85, rely=0.46, anchor="w")
+        ttk.Label(self.canvas_back, text="SD", background=self.back_colour, font=("Courier",14)).place(relx=0.70, rely=0.46, anchor="w")
+        ttk.Label(self.canvas_back, text="FTc", background=self.back_colour, font=("Courier",14)).place(relx=0.77, rely=0.46, anchor="w")
+        ttk.Label(self.canvas_back, text="PV", background=self.back_colour, font=("Courier",14)).place(relx=0.85, rely=0.46, anchor="w")
         ttk.Label(self.canvas_back, textvariable=self.SD_data, relief=SUNKEN, font="bold",
                   width=5).place(relx=0.69, rely=0.51, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.FTc_data, relief=SUNKEN, font="bold",
@@ -132,23 +158,29 @@ class TestProgramWindow(tk.Frame):
         ttk.Label(self.canvas_back, textvariable=self.PV_data, relief=SUNKEN, font="bold",
                   width=5).place(relx=0.84, rely=0.51, anchor='w')
         ttk.Label(self.canvas_back, text='Program/Test Status: ',
-                  background=self.back_colour, font=("Courier", 14)).place(x=400,y=200)
-        ttk.Label(self.canvas_back, text='Probes Passed: ', background=self.back_colour).place(
+                  background=self.back_colour, font=("Courier", 14)).place(relx=0.4,rely=0.32)
+        ttk.Label(self.canvas_back, text='Probes Passed: ', background=self.back_colour, font=("Courier",14)).place(
             relx=0.1, rely=0.6, anchor='w')
+        ttk.Label(self.canvas_back, text="Reflection Test", font="bold",
+                  background=self.back_colour).place(relx=0.1,rely=0.72)
+        ttk.Label(self.canvas_back, textvariable=self.reflection,font=("Courier", 14), relief=SUNKEN,
+                  width=20).place(relx=0.25, rely=0.72)
         ttk.Label(self.canvas_back, textvariable=self.probes_passed, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.25, rely=0.6, anchor='w')
-        ttk.Label(self.canvas_back, text='Probes to test: ', background=self.back_colour).place(
+        ttk.Label(self.canvas_back, text='Probes to test: ', background=self.back_colour, font=("Courier",14)).place(
             relx=0.7, rely=0.75, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.left_to_test, relief=SUNKEN, font="bold",
                   width=10).place(relx=0.83, rely=0.75, anchor='w')
-        ttk.Label(self.canvas_back, text='Action: ', background=self.back_colour).place(x=100, y=550)
+        ttk.Label(self.canvas_back, text='Action: ', background=self.back_colour,
+                  font=("Courier",14)).place(relx=0.1, rely=0.83)
 
         #################################################################
         # Show interaction buttons                                      #
         #################################################################
-        self.ssp_btn = ttk.Button(self.canvas_back, text='Suspend Session',
-                                  image=self.suspend_btn, command=lambda: self.suspnd_btn_clicked(self.control))
-        self.ssp_btn.place(relx=0.85, rely=0.9, anchor=CENTER)
+        self.ssp_btn = Button(self.canvas_back, text='  Suspend Batch  ',
+                              font=("Courier", 14, "bold"), background="#EF5B0C",
+                              highlightthickness=0,command=self.suspnd_btn_clicked)
+        self.ssp_btn.place(relx=0.85, rely=0.88, anchor=CENTER)
         self.session_on_going = True
         self.analyser_serial = None
         self.probes_passed.set(0)
@@ -169,16 +201,18 @@ class TestProgramWindow(tk.Frame):
         # Suspend button detected pressed                         #
         ###########################################################
 
-    def suspnd_btn_clicked(self, controller):
+    def suspnd_btn_clicked(self):
         if tm.askyesno(title="Batch Info", message="    Suspend Batch ?         "):
             self.session_complete = False
+            self.session_on_going = False
             probe_data = P.Probes(self.probe_type.get(), self.current_batch.get(), self.probes_passed.get(),
                                   self.left_to_test.get())
             DS.write_probe_data(probe_data)
             BM.SuspendBatch(self.current_batch.get())
-            self.session_on_going = False
             self.canvas_back.destroy()
-            controller.show_frame(SE.SessionSelectWindow)
+            self.control.show_frame(SE.SessionSelectWindow)
+        else:
+            self.refresh_window()
         ###########################################################
         # Retrieve amount of probes left to test                  #
         ###########################################################
@@ -199,15 +233,8 @@ class TestProgramWindow(tk.Frame):
         ############################################################
 
     def reset(self):
-        self.canvas_back = Canvas(bg=self.back_colour, width=980, height=630)
-        self.canvas_back.place(x=10, y=10)
         self.display_layout()
-        time_now = strftime("%H:%M:%p", gmtime())
-        if "AM" in time_now:
-            self.text_area.insert('1.0', 'Good Morning ')
-        else:
-            self.text_area.insert('1.0', 'Good Afternoon ')
-        self.display_layout()
+        self.set_display()
         self.session_on_going = True
         current_user = DS.get_username()
         self.user_admin = DS.get_user_data()['Over_rite']
@@ -227,18 +254,13 @@ class TestProgramWindow(tk.Frame):
         self.current_batch.set(DS.get_current_batch())
         self.current_user.set(current_user)
         self.RLLimit = -1  # pass criteria for return loss measurement
-        self.programmed = False
-        self.canvas_back.create_image(520, 350, image=self.greylight)
         self.canvas_back.pack()
-        ttk.Label(self.canvas_back, textvariable=self.action, background='yellow',
-                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
-
+        self.reflection.set("--->")
         ##############################
         # Collect analyser port data #
         ##############################
         ZND.flush_analyser_port()
         ZND.set_vna_controls()
-        self.set_display()
         self.warning_text = {
             "overrite on": "Probe re-programming enabled.",
             "overrite off": "Probe re-programming disabled",
@@ -258,7 +280,6 @@ class TestProgramWindow(tk.Frame):
             "14": "\n\nFault finding this probe.",
             "15": "Probe passed",
             "16": "\nPlease remove probe..."
-
         }
 
         #############################################################
@@ -278,7 +299,7 @@ class TestProgramWindow(tk.Frame):
     def check_probe_present(self):
         if PM.ProbePresent() and self.session_on_going:
             ttk.Label(self.canvas_back, textvariable=self.action, background='yellow',
-                      width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
+                      width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.75)
             return True
         else:
             return False
@@ -291,17 +312,22 @@ class TestProgramWindow(tk.Frame):
         check = False
         odm = "ODM not running"
         device = "Not connected to analyser"
-        if ZND.get_analyser_port_number(DS.get_devices()['Analyser']):
+        vna = ZND.get_vna_check()
+        if vna == DS.get_devices()['Analyser']:
             device = " NanoNVA "
             check = True
         self.device_details.set(device)
         if DS.get_devices()['odm_active']:
-            ODM.check_port_open()
-            port_data = ODM.ReadSerialODM()
-            if len(port_data) > 5:
-                odm = " ODM Monitor "
-                check = True
-            ODM.close_port()
+            try:
+                ODM.check_port_open()
+                port_data = ODM.ReadSerialODM()
+            except IOError:
+                port_data = "000"
+            else:
+                if len(port_data) > 5:
+                    odm = " ODM Monitor "
+                    check = True
+                    ODM.close_port()
         self.odm_details.set(odm)
         return check
 
@@ -312,16 +338,16 @@ class TestProgramWindow(tk.Frame):
     def refresh_window(self):
         self.reset()
         self.set_reprogram_status()
-
+        self.show_gray_light()
         ################################################################
         #                     Main loop                                #
         ################################################################
         while self.session_on_going:
+            self.info_canvas = True
             if self.left_to_test.get() == 0:
                 self.session_on_going = False
                 self.session_complete = True
             self.action.set(self.warning_text["6"])
-            self.show_gray_light()
             self.programmed = False
             Tk.update(self)
             if self.check_probe_present():
@@ -337,9 +363,8 @@ class TestProgramWindow(tk.Frame):
             # Go to fault finding window #
             ##############################
 
-        if self.session_complete:
-            # BM.CompleteBatch(BM.current_batch)
-            self.probe_canvas(f"{self.warning_text['7']} {self.warning_text['8']}")
+        if self.session_complete and not self.check_probe_present():
+            self.probe_canvas(f"{self.warning_text['7']} {self.warning_text['8']}", False)
             time.sleep(2)
             self.canvas_text.destroy()
             self.cmplt_btn_clicked()
@@ -351,7 +376,6 @@ class TestProgramWindow(tk.Frame):
         self.programmed = False
         self.action.set(self.warning_text["9"])
         snum = self.program_probe(DS.get_current_probe_type())
-        print(self.programmed)
         if self.programmed:
             results, marker, odm_data = self.test_probe()
             if not results:
@@ -365,7 +389,7 @@ class TestProgramWindow(tk.Frame):
         ###############################################################
         # Program a blank probe inserted into probe interface         #
         ###############################################################
-        if not PM.ProbeIsProgrammed():
+        if PM.ProbePresent() and not PM.ProbeIsProgrammed():
             self.set_reprogram_status()
             self.action.set(self.warning_text["1"])
             self.show_green_text()
@@ -384,26 +408,22 @@ class TestProgramWindow(tk.Frame):
             self.text_area.insert('3.0', "\n\n" + message)
             self.text_area.config(state=DISABLED)
 
+        #################################################
+        # Test the inserted probe                       #
+        #################################################
+
     def program_probe(self, probe_type):
-        ############################
-        # Program the probe        #
-        ############################
         result = False
         self.action.set(self.warning_text["9"])
         self.show_amber_image()
         serialNumber = PM.ProgramProbe(probe_type)
         if not serialNumber:
-            # tm.showerror(self.warning_text["11"],
-            #                 self.warning_text["12"])
-
             self.canvas_back.create_image(520, 350, image=self.redlight)
             self.canvas_back.pack()
             ttk.Label(self.canvas_back, textvariable=self.action, background='orange',
                         width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
             self.action.set(self.warning_text["13"])
-            self.probe_canvas(f"{self.warning_text['13']} {self.warning_text['12']} {self.warning_text['8']}")
-            while PM.ProbePresent():
-                pass
+            self.probe_canvas(f"{self.warning_text['13']} {self.warning_text['12']} {self.warning_text['8']}", True)
             self.canvas_text.destroy()
             self.show_gray_light()
             self.programmed = False
@@ -417,8 +437,10 @@ class TestProgramWindow(tk.Frame):
         ##########################################################
 
     def over_write_probe(self):
-        if PM.ProbeIsProgrammed():
+        if PM.ProbeIsProgrammed() and PM.ProbePresent():
             self.programmed = True
+            self.action.set(self.warning_text["2"])
+            Tk.update(self)
         if DS.get_user_data()['Over_rite']:
             # ask for user input to reprogramme the probe #
             if self.programmed and tm.askyesno(title=self.warning_text["2"], message=self.warning_text["3"]):
@@ -426,11 +448,8 @@ class TestProgramWindow(tk.Frame):
                 self.set_reprogram_status()
                 self.session_on_going = False
                 self.ff_window()
-
-        if self.programmed and tm.askyesno(title=self.warning_text["4"], message=self.warning_text["5"]):
-            self.session_on_going = False
-            self.set_reprogram_status()
-            self.ff_window()
+        else:
+            self.probe_canvas("Do you want to Fault Find.", True)
 
         ################################
         # Show Fault find window       #
@@ -440,6 +459,7 @@ class TestProgramWindow(tk.Frame):
         probe_data = P.Probes(self.probe_type.get(), self.current_batch.get(), self.probes_passed.get(),
                               self.left_to_test.get())
         DS.write_probe_data(probe_data)
+        self.session_on_going = False
         self.canvas_back.destroy()
         self.control.show_frame(FF.FaultFindWindow)
 
@@ -448,43 +468,43 @@ class TestProgramWindow(tk.Frame):
         ##################################
 
     def show_green_image(self):
-        self.canvas_back.create_image(520, 350, image=self.greenlight)
+        self.canvas_back.create_image(self.cent_x, self.cent_y, image=self.greenlight)
         self.canvas_back.pack()
         ttk.Label(self.canvas_back, textvariable=self.action, background='#1fff1f',
-                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
+                  width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.75)
         Tk.update(self)
 
     def show_amber_image(self):
-        self.canvas_back.create_image(520, 350, image=self.amberlight)
+        self.canvas_back.create_image(self.cent_x, self.cent_y, image=self.amberlight)
         self.canvas_back.pack()
         ttk.Label(self.canvas_back, textvariable=self.action, background='#FF7F3F',
-                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
+                  width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.75)
         Tk.update(self)
 
     def show_red_light(self):
-        self.canvas_back.create_image(520, 350, image=self.redlight)
+        self.canvas_back.create_image(self.cent_x, self.cent_y, image=self.redlight)
         self.canvas_back.pack()
         self.display_message(self.warning_text["13"])
         ttk.Label(self.canvas_back, textvariable=self.action, background='#FF7F3F',
-                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
+                  width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.75)
         Tk.update(self)
 
     def show_gray_light(self):
-        self.canvas_back.create_image(520, 350, image=self.greylight)
+        self.canvas_back.create_image(self.cent_x, self.cent_y, image=self.greylight)
         self.canvas_back.pack()
         ttk.Label(self.canvas_back, textvariable=self.action, background='yellow',
-                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
+                  width=25, relief=GROOVE, font=("Courier", 16)).place(relx=0.25, rely=0.83)
         Tk.update(self)
 
     def show_blue_meaasge(self):
         self.action.set('Testing probe...')
         ttk.Label(self.canvas_back, textvariable=self.action, background='#548CFF',
-                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
+                  width=25, relief=GROOVE, font=("Courier", 16)).place(relx=0.25, rely=0.75)
         Tk.update(self)
 
     def show_green_text(self):
         ttk.Label(self.canvas_back, textvariable=self.action, background='#1fff1f',
-                  width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
+                  width=25, relief=GROOVE, font=("Courier", 16)).place(relx=0.25, rely=0.75)
         Tk.update(self)
 
         #######################
@@ -496,13 +516,13 @@ class TestProgramWindow(tk.Frame):
         self.show_blue_meaasge()
         odm_data = self.update_odm_data()
         results = PM.TestProbe()
-        marker_data = ZND.get_marker_3_command()
+        marker_data = ZND.tdr()
         ###################################################
         # Probe passed                                    #
         ###################################################
-        if self.lower_limit < results < self.upper_limit:
+        if LOWER_LIMIT < results < UPPER_LIMIT:
             self.show_green_image()
-            self.probe_canvas(f"{self.warning_text['15']} {self.warning_text['16']}")
+            self.probe_canvas(f"{self.warning_text['15']} {self.warning_text['16']}", False)
             while self.check_probe_present():
                 pass
             self.canvas_text.destroy()
@@ -512,9 +532,7 @@ class TestProgramWindow(tk.Frame):
             # Probe failed                                     #
             ####################################################
             self.show_red_light()
-            self.probe_canvas(f"{self.warning_text['13']} {self.warning_text['14']}")
-            time.sleep(1)
-            self.canvas_text.destroy()
+            self.probe_canvas(f"{self.warning_text['13']} {self.warning_text['14']}", True)
 
         ###############################################
         # Reset probe testing                         #
@@ -561,10 +579,28 @@ class TestProgramWindow(tk.Frame):
         data_list_to_file.append(odm_to_file)
         BM.saveProbeInfoToCSVFile(data_list_to_file, batch)  # save to file
 
-    def probe_canvas(self, message):
-        self.canvas_text = Canvas(bg="#eae9e9", width=350, height=120)
-        self.canvas_text.place(x=350, y=400)
+    def probe_canvas(self, message, btn):
+        self.session_on_going = False
+        self.canvas_text = Canvas(bg="#eae9e9", width=350, height=180)
+        self.canvas_text.place(x=self.cent_x - 150, y=self.cent_y - 20)
         Label(self.canvas_text, text=message, font=("Courier", 12)).place(
             x=50, y=20)
+        btn1 = Button(self.canvas_text, text="Yes", command=self.yes_answer, width=10, height=2)
+        btn2 = Button(self.canvas_text, text="No", command=self.no_answer, width=10, height=2)
         Tk.update(self)
+        if btn:
+            btn1.place(x=90, y=120)
+            btn2.place(x=190, y=120)
+            Tk.update(self)
 
+    def yes_answer(self):
+        self.info_canvas = False
+        self.canvas_text.destroy()
+        self.session_on_going = False
+        self.ff_window()
+
+    def no_answer(self):
+        self.info_canvas = False
+        self.canvas_text.destroy()
+        self.session_on_going = True
+        self.refresh_window()

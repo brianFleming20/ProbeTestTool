@@ -63,41 +63,41 @@ class LogInWindow(tk.Frame):
         self.canvas_pass = None
         self.canvas_name = None
         self.control = controller
-        time_now = strftime("%H:%M:%p", gmtime())
         DS.write_to_from_keys("  ")
         self.current_user = None
         self.password = None
-        ttk.Label(self, text="Deltex",background="#B1D0E0",foreground="#003865",
-                  font=('Helvetica', 24,'bold'), width=12).place(x=850, y=25)
-        ttk.Label(self, text="medical",background="#B1D0E0",foreground="#A2B5BB",
-                  font=('Helvetica', 14)).place(x=850,y=57)
-        # self.title = (PhotoImage(file="title.gif"))
-        self.label_4 = ttk.Label(self, text="           Probe Test Tool", background="#3AB4F2",width=25, font=('Helvetica', 20))
-        self.label_4.place(relx=0.5, rely=0.1, anchor=CENTER)
-        self.label_5 = ttk.Label(self, text="Good morning.", font=("bold", 20),background="#B1D0E0")
-        self.label_6 = ttk.Label(self, text="Good afternoon.", font=("bold", 20),background="#B1D0E0")
-        self.setup()
-        self.logbtn = Button(self, text="Log In", font=("Courier", 14),width=18,background="#3AB4F2",
-                             command=self._login_btn_clicked)
-        self.logbtn.place(x=650, y=400)
-        ttk.Button(self, text="Exit", width=20, command=self.quit).place(relx=0.88, rely=0.8, anchor=CENTER)
-        self.bind('<Return>', lambda event: self._login_btn_clicked)
-        if "AM" in time_now:
-            self.label_5.place(relx=0.5, rely=0.25, anchor=CENTER)
-        else:
-            self.label_6.place(relx=0.5, rely=0.25, anchor=CENTER)
 
     def setup(self):
         self.current_user = ""
         self.password = ""
 
     def entry(self):
-        self.canvas_name = Canvas(bg="#eae9e9", width=400, height=45)
-        self.canvas_name.place(x=350, y=225)
-        self.canvas_pass = Canvas(bg="#eae9e9", width=400, height=45)
-        self.canvas_pass.place(x=350, y=300)
+        self.canvas_name = Canvas(bg="#eae9e9", width=500, height=55)
+        self.canvas_name.place(relx=0.35, rely=0.32)
+        self.canvas_pass = Canvas(bg="#eae9e9", width=500, height=55)
+        self.canvas_pass.place(relx=0.35, rely=0.40)
 
     def refresh_window(self):
+        ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
+                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
+        ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
+                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
+        time_now = strftime("%H:%M:%p", gmtime())
+        self.label_4 = ttk.Label(self, text="           Probe Test Tool", background="#3AB4F2", width=25,
+                                 font=('Helvetica', 24))
+        self.label_4.place(relx=0.5, rely=0.1, anchor=CENTER)
+        self.label_5 = ttk.Label(self, text="Good morning.", font=("bold", 20), background="#B1D0E0")
+        self.label_6 = ttk.Label(self, text="Good afternoon.", font=("bold", 20), background="#B1D0E0")
+        self.setup()
+        self.logbtn = Button(self, text="Log In", font=("Courier", 18), width=18, background="#3AB4F2",
+                             highlightthickness=0, command=self._login_btn_clicked)
+        self.logbtn.place(relx=0.65, rely=0.64)
+        ttk.Button(self, text="Exit", width=20, command=self.quit).place(relx=0.88, rely=0.8, anchor=CENTER)
+        self.bind('<Return>', lambda event: self._login_btn_clicked)
+        if "AM" in time_now:
+            self.label_5.place(relx=0.5, rely=0.25, anchor=CENTER)
+        else:
+            self.label_6.place(relx=0.5, rely=0.25, anchor=CENTER)
         self.logbtn.config(command=lambda: self._login_btn_clicked())
         ###################################
         # Testing data only               #
@@ -110,26 +110,22 @@ class LogInWindow(tk.Frame):
         probe_data = P.Probes("","",0,0)
         DS.write_probe_data(probe_data)
         self.entry()
-        # self.canvas_name = Canvas(bg="#eae9e9", width=400, height=45)
-        # self.canvas_name.place(x=350, y=225)
-        # self.canvas_pass = Canvas(bg="#eae9e9", width=400, height=45)
-        # self.canvas_pass.place(x=350, y=300)
-        self.btn_1 = ttk.Button(self.canvas_name, text='Username ', command=lambda:
-        [self.get_keys(), self.name_entry()], width=20)
-        Label(self.canvas_name, text="-->").place(x=170, y=12)
-        self.btn_2 = ttk.Button(self.canvas_pass, text='Password', command=lambda:
-        [self.get_keys(), self.password_entry()], width=20)
-        Label(self.canvas_pass, text="-->").place(x=170, y=12)
-        self.name_text = self.canvas_name.create_text(250, 20, text=" ", fill="black",
+
+        self.btn_1 = Button(self.canvas_name, text='Username ',font=("Courier", 12), command=self.name_entry, width=20)
+        Label(self.canvas_name, text="-->").place(x=245, y=14)
+        self.btn_2 = Button(self.canvas_pass, text='Password',font=("Courier", 12), command=self.password_entry, width=20)
+        Label(self.canvas_pass, text="-->").place(x=245, y=14)
+        self.name_text = self.canvas_name.create_text(350, 20, text=" ", fill="black",
                                                       font=(OnScreenKeys.FONT_NAME, 16, "bold"))
-        self.pass_text = self.canvas_pass.create_text(250, 20, text=" ", fill="black",
+        self.pass_text = self.canvas_pass.create_text(350, 20, text=" ", fill="black",
                                                       font=(OnScreenKeys.FONT_NAME, 14, "bold"))
-        self.btn_1.place(x=20, y=12)
-        self.btn_2.place(x=20, y=12)
+        self.btn_1.place(x=18, y=14)
+        self.btn_2.place(x=18, y=14)
         self.control.attributes('-topmost', True)
 
     def name_entry(self):
         self.set_username("")
+        self.get_keys()
         pass_block = False
         data = self.wait_for_response(self.canvas_name, pass_block)
         self.current_user = data
@@ -140,6 +136,7 @@ class LogInWindow(tk.Frame):
 
     def password_entry(self):
         self.set_password("")
+        self.get_keys()
         pass_block = True
         data = self.wait_for_response(self.canvas_pass, pass_block)
         self.password = data
@@ -158,15 +155,13 @@ class LogInWindow(tk.Frame):
         username = self.get_username()
         password = self.get_password()
         if len(username) > 0 and len(password) > 0:
-
-            #######################
-            # Create user object  #
-            #######################
+            #######################################
+            # Create user object with admin false #
+            #######################################
             user = User(username, password)
             if SM.logIn(user):
                 self.canvas_go()
                 self.sessions()
-                # self.control.show_frame(SE.SessionSelectWindow)
             else:
                 tm.showerror("Login error", "Incorrect username or password")
                 self.refresh_window()

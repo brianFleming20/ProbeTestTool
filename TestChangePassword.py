@@ -3,11 +3,12 @@ import AdminUser
 from SecurityManager import *
 import Datastore
 import tkinter as tk
+import Ports
 
 AU = AdminUser
 DS = Datastore.Data_Store()
 SM = SecurityManager()
-U = Users
+U = Ports
 
 class AdminTests(unittest.TestCase):
 
@@ -65,7 +66,7 @@ class AdminTests(unittest.TestCase):
         self.A.set_password(password1)
         self.A.set_confirm(password2)
         # create user obj and add change password transfer name
-        user_data = U(username,False,pw_user=user)
+        user_data = U.Users(username,False,pw_user=user)
         DS.write_user_data(user_data)
         
         result1 = self.A.change_password(password1)
