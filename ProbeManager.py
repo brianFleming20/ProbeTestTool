@@ -38,14 +38,14 @@ class ProbeManager(object):
             r = False
         return r
 
-    def ProgramProbe(self, probe_type):
+    def ProgramProbe(self, probe_type, test):
         '''
         pass in a string containing the probe type
         program the probe as that type
         returns the probes serial number if programming was succesful, False if not
         '''
         if self.test_chip():
-            probeData = self.PD.GenerateDataString(probe_type)
+            probeData = self.PD.GenerateDataString(probe_type, test)
         ######################################################
         # get first two lots of 8 bights for error checking  #
         # write the data to the probe                        #
@@ -67,7 +67,7 @@ class ProbeManager(object):
 
     def test_chip(self):
         check = 0
-        data = self.PD.GenerateDataString("blank")
+        data = self.PD.GenerateDataString("blank",True)
         PF.probe_write(data)
         result = PF.read_serial_number()
         for num in result:

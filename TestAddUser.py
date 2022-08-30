@@ -2,12 +2,14 @@ import unittest
 import AdminUser
 import Datastore
 import tkinter as tk
+import SecurityManager
 
 AU = AdminUser
 DS = Datastore.Data_Store
+SC = SecurityManager
 
 
-class AdminTests(unittest.TestCase):
+class AdminTestsNewUser(unittest.TestCase):
 
     def setUp(self):
         self.parent = tk.Tk()
@@ -94,6 +96,14 @@ class AdminTests(unittest.TestCase):
         username = "User3"
         password = "1234"
         confirm = "1234"
+
+        usr = SC.User(username,password)
+
+        users = SC.SecManDB.getUser(self,usr)
+        if not users:
+            pass
+        else:
+            SC.SecManDB.removeUser(self,username)
         
         self.A._setDefaults()
         
@@ -103,7 +113,7 @@ class AdminTests(unittest.TestCase):
         
         result = self.A.add_user(False)
         
-        self.assertEqual(result, False)
+        self.assertEqual(result, True)
 
     # Test not allow more than 2 admin
     def test_not_2_admin(self):
@@ -119,6 +129,24 @@ class AdminTests(unittest.TestCase):
         result = self.A.allow_add_admin
         
         self.assertEqual(result, False)
+
+    def test_user_exsists(self):
+        print("User already exists")
+
+        username = "Brian"
+        password = "1234"
+        confirm = "1234"
+
+        self.A._setDefaults()
+
+        self.A.set_unsername(username)
+        self.A.set_new_password(password)
+        self.A.set_confirm_pass(confirm)
+
+        result = self.A.add_user(False)
+
+        self.assertEqual(result, False)
+
 
 
 if __name__ == '__main__':

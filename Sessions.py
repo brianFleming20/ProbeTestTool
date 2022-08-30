@@ -36,6 +36,7 @@ from time import gmtime, strftime, sleep
 import Ports
 import ProbeTest
 import ProbeInterface
+import os
 
 BM = BatchManager.BatchManager()
 SM = SecurityManager.SecurityManager()
@@ -64,8 +65,14 @@ class SessionSelectWindow(tk.Frame):
         # create a choose session window #
         ##################################
         tk.Frame.__init__(self, parent, bg="#B1D0E0")
+        self.probe_date = False
+        self.probe_type = False
         self.complete_canvas = None
         self.control = controller
+        self.info_canvas = None
+        self.batch_from_file = None
+        self.canvas_text = None
+        self.test = False
 
 
     def refresh_window(self):
@@ -168,28 +175,101 @@ class SessionSelectWindow(tk.Frame):
         probe_port = CO.sort_probe_interface(self)
         port = P.Ports(probe=probe_port)
         DS.write_device_to_file(port)
-        while not PI.probe_present():
-            PT.probe_canvas(self, " Insert a failed probe. ", False)
-        PT.text_destroy(self)
-        while PI.probe_present():
-            binary_str = codecs.decode(PI.read_serial_number(), "hex")
-            print(f"serial number = {str(binary_str)[2:18]}")
-            PT.probe_canvas(self, " Insert a failed probe. \n(12345H) \nIs this Batch number correct?", True)
+        PT.probe_canvas(self, " Insert a failed probe. \n or press Cancel", True)
+        self.info_canvas = None
 
-        PT.probe_canvas(self, " (12345H) \nRe-testing - DP240 - probe", False)
-        sleep(3)
-        PT.text_destroy(self)
-        PT.probe_canvas(self, " (12345H) \nDP240 - probe passed", False)
-        sleep(3)
+    def remove_probe(self):
+        self.info_canvas = False
+        PT.probe_canvas(self, "Please remove probe", False)
+        while PI.probe_present():
+            pass
         PT.text_destroy(self)
 
     def yes_answer(self):
-        print("Yes pressed")
+        while not PI.probe_present():
+            pass
         PT.text_destroy(self)
 
+        binary_str = codecs.decode(PI.read_serial_number(), "hex")
+        serial_number = str(binary_str)[2:18]
+        probe_type = serial_number[:4]
+        self.probe_date = serial_number[8:]
+        filepath = DS.get_file_location()
+        path = filepath['File']
+        inProgressPath = os.path.join(path, "in_progress", "")
+        completePath = os.path.join(path, "complete", "")
+        print("start")
+        if self.probe_date:
+            PT.probe_canvas(self, "Checking in-progress folder", False)
+            self.check_folder(inProgressPath,self.probe_date, probe_type)
+            PT.text_destroy(self)
+        elif self.probe_date:
+            PT.probe_canvas(self, "Checking Complete folder", False)
+            self.check_folder(completePath,self.probe_date, probe_type)
+            PT.text_destroy(self)
+        else:
+            self.passed_probe()
+
+    def check_folder(self, folder, probe_date, probe_data):
+        for file_loc in os.listdir(folder):
+            lines = BM.CSVM.ReadAllLines(file_loc[:-4])
+            for batch in lines:
+                self.batch_from_file = file_loc[:-4]
+                SN = batch[0][1:-1]
+                if len(SN) > 5:
+                    if 'Fail' in SN:
+                        print("found")
+                        self.probe_type = self.get_probe_type(probe_data[:-1])
+                        print(f"{probe_date} - {SN[8:]}")
+                        if SN[8:] == probe_date:
+                            self.test = True
+                    # else:
+                    #     PT.text_destroy(self)
+        if self.test:
+            print("Testing found probe")
+            retest = tm.askyesno(title="Inserted probe",
+                                 message=f"({self.batch_from_file})\n Is this Batch number correct")
+
+            if retest:
+                PT.probe_canvas(self, f" ({self.batch_from_file}) \nRe-testing - {self.probe_type} - probe", False)
+                PT.text_destroy(self)
+                sleep(2)
+                PT.probe_canvas(self, f" ({self.batch_from_file}) \n{self.probe_type} - probe passed", False)
+                sleep(3)
+                PT.text_destroy(self)
+                self.remove_probe()
+        else:
+            return False
+
     def no_answer(self):
-        print("No pressed")
+        self.info_canvas = False
         PT.text_destroy(self)
+
+    def passed_probe(self):
+        self.info_canvas = False
+        PT.probe_canvas(self, "Please remove the probe.\n\nInsert a failed probe.", False)
+        while PI.probe_present():
+            pass
+        PT.text_destroy(self)
+
+    def get_probe_type(self,probe_data):
+        probe_type = "---"
+        if probe_data == "2F0":
+            probe_type = "DP240"
+        elif probe_data == "20C":
+            probe_type = "DP12"
+        elif probe_data == "206":
+            probe_type = "DP6"
+        elif probe_data == "648":
+            probe_type = "I2C"
+        elif probe_data == "618":
+            probe_type = "I2P"
+        elif probe_data == "606":
+            probe_type = "I2S"
+        elif probe_data == "548":
+            probe_type = "KDP72"
+
+        return probe_type
 
 
 class NewSessionWindow(tk.Frame):
@@ -333,9 +413,10 @@ class NewSessionWindow(tk.Frame):
         if qty > 100:
             tm.showerror('Batch Error', "Enter a correct batch quantity\nYou can't have more than 100.")
             check = False
-        if qty < 1:
+        if qty < 100:
             tm.showerror('Batch Error', "Enter a correct batch quantity\nYou can't have less than one.")
             check = False
+
         return check
 
     def create_new_batch(self, batch, batch_type, qty, name):
@@ -360,12 +441,16 @@ class NewSessionWindow(tk.Frame):
             batch_letter = batch[-1].upper()
             confirm_batch = batch_numbers + batch_letter
             return confirm_batch
+        else:
+            return False
 
-    def check_batch_number(self, number):
-        check = True
-        if len(number) == 0:
-            tm.showerror('Error', 'Enter a batch number')
-            check = False
+    def check_batch_number(self, batch):
+        check = False
+        if len(batch) == 0:
+            tm.showerror("error","Enter a batch number")
+        check = [True for element in batch if element.isalpha()]
+        if not check:
+            tm.showerror("Error","Batch number in-complete")
         return check
 
     def back(self):
@@ -417,7 +502,6 @@ class ContinueSessionWindow(tk.Frame):
 
     def refresh_window(self):
         # #create a list of the current users using the dictionary of users
-
         self.sessionList = []
         self.probe_typeList = []
 

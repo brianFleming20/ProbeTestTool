@@ -141,7 +141,7 @@ class AdminWindow(tk.Frame):
         self.checkbutton.place(relx=0.6, rely=0.4)
         self.show_user_options()
 
-        self.odm_button = Checkbutton(text=" Set ODM In-active Running",
+        self.odm_button = Checkbutton(text=" Set Monitor In-active Running",
                                       variable=self.odm_active, command=self.set_odm_state, font=("Courier", 12))
         self.odm_button.place(relx=0.6, rely=0.5)
         self.odm_active.get()
@@ -171,8 +171,6 @@ class AdminWindow(tk.Frame):
                                                                                         width=180, relx=0.88, rely=0.82,
                                                                                         anchor=E)
         ttk.Button(self.canvas_back, text="Browse", command=lambda: self.get_browse_file()).place(relx=0.48, rely=0.75)
-        self.clear = ttk.Button(self.canvas_back, text="...", command=lambda: self.clear_probe())
-        self.clear.place(x=880, y=570, width=30)
         self.location.set(DS.get_file_location()['File'])
         title = ttk.Label(self.canvas_back, text="File storage location", font=("Courier", 14), background='#FFDAB9')
         title.place(relx=0.1, rely=0.7)
@@ -187,7 +185,6 @@ class AdminWindow(tk.Frame):
         file = LO.Location(file=filename)
         DS.write_file_location(file)
         self.location.set(filename)
-        # LO.Location(file=filename)
         Tk.update(self)
 
     #############################################
@@ -196,13 +193,6 @@ class AdminWindow(tk.Frame):
     def set_admin_state(self):
         user = LO.Users(DS.get_username(), DS.user_admin_status(), over_right=self.admin_state.get())
         DS.write_user_data(user)
-
-    def clear_probe(self):
-        check = tm.askokcancel(title='Wipe probe', message='Insert probe to be wiped.')
-        if check:
-            snum = P.GenerateDataString('blank')
-            PR.probe_write(snum)
-            self.clear.config(state=DISABLED)
 
     def set_odm_state(self):
         odm_state = LO.Ports(active=self.odm_active.get())

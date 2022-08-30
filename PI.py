@@ -45,7 +45,7 @@ class ProbeData(object):
         self.KDP72TypeBytes = ['35', '34', '38', '44']
         self.Blank = ['00', '00', '00', '00', '00']
 
-    def GenerateDataString(self, probe_type):
+    def GenerateDataString(self, probe_type, test):
         '''
         Pass in a probe type, returns the full 255 byte probe data including time stamped serial number
 
@@ -117,21 +117,32 @@ class ProbeData(object):
         timeStamp = strftime("%Y%m%d%H%M%S", gmtime())
         timeStampFormatted = timeStamp[2:]
         timeStampASCII = []
-        for item in timeStampFormatted:
+
+        if not test:
+            time_list = f"Fail{timeStampFormatted}"
+        else:
+            time_list = timeStampFormatted
+        for item in time_list:
             x = (ord(item))
             timeStampASCII.append(format((x), "x"))
+
         # stick the type bytes and the timestamp together (good)
 
         serialNumber = typeBytes + timeStampASCII
 
         # put them in a format that can be sent via the SC18IM
+        ##############################################################
+        # for using month and day on to probe use in upper [10:-2]   #
+        # for using year and month on to probe use in upper [8:-4]  #
+        ##############################################################
         lower = serialNumber[0:8]
         upper = serialNumber[8:]
+        if not test:
+            upper = serialNumber[8:-4]
         slower = ''.join(lower)
         supper = ''.join(upper)
         firstByte = firstStart + slower + end
         secondByte = secondStart + supper + end
-
         # add them to the probe data list
         probeData.insert(0, secondByte)
         probeData.insert(0, firstByte)

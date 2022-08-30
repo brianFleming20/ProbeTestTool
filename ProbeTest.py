@@ -63,15 +63,14 @@ UPPER_LIMIT = 1.5
 
 
 def probe_canvas(self, message, btn):
-    self.session_on_going = False
     self.canvas_text = Canvas(bg="#eae9e9", width=350, height=180)
     self.canvas_text.place(x=self.cent_x - 150, y=self.cent_y - 20)
     Label(self.canvas_text, text=message, font=("Courier", 12)).place(
         x=50, y=20)
-    btn1 = Button(self.canvas_text, text="Yes", command=self.yes_answer, width=10, height=2)
-    btn2 = Button(self.canvas_text, text="No", command=self.no_answer, width=10, height=2)
+    btn1 = Button(self.canvas_text, text="Continue", command=self.yes_answer, width=10, height=2)
+    btn2 = Button(self.canvas_text, text="Cancel", command=self.no_answer, width=10, height=2)
     Tk.update(self)
-    if btn:
+    while btn and self.info_canvas is None:
         btn1.place(x=90, y=120)
         btn2.place(x=190, y=120)
         Tk.update(self)
@@ -103,7 +102,8 @@ class TestProgramWindow(tk.Frame):
         self.PV_data = IntVar()
         self.user_admin = False
         self.probes_passed.set(0)
-        self.info_canvas = True
+        self.info_canvas = None
+        self.test = False
 
         ###############################################################
         # import and set up images for the screen                     #
@@ -194,9 +194,15 @@ class TestProgramWindow(tk.Frame):
             self.session_complete = True
             self.session_on_going = False
             current_batch = DS.get_current_batch()
-            BM.CompleteBatch(current_batch)
+            self.complete_batch(current_batch)
+            complete = BM.CompleteBatch(current_batch)
+
             self.canvas_back.destroy()
-            self.control.show_frame(SE.SessionSelectWindow)
+            try:
+                self.control.show_frame(SE.SessionSelectWindow)
+            except:
+                pass
+            return complete
         ###########################################################
         # Suspend button detected pressed                         #
         ###########################################################
@@ -209,8 +215,10 @@ class TestProgramWindow(tk.Frame):
                                   self.left_to_test.get())
             DS.write_probe_data(probe_data)
             BM.SuspendBatch(self.current_batch.get())
-            self.canvas_back.destroy()
-            self.control.show_frame(SE.SessionSelectWindow)
+            if not self.test:
+                self.canvas_back.destroy()
+                self.control.show_frame(SE.SessionSelectWindow)
+
         else:
             self.refresh_window()
         ###########################################################
@@ -231,6 +239,9 @@ class TestProgramWindow(tk.Frame):
         ############################################################
         # Reset all display and data for next probe to be tested   #
         ############################################################
+
+    def set_test(self):
+        self.test = True
 
     def reset(self):
         self.display_layout()
@@ -299,7 +310,7 @@ class TestProgramWindow(tk.Frame):
     def check_probe_present(self):
         if PM.ProbePresent() and self.session_on_going:
             ttk.Label(self.canvas_back, textvariable=self.action, background='yellow',
-                      width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.75)
+                      width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.83)
             return True
         else:
             return False
@@ -343,7 +354,7 @@ class TestProgramWindow(tk.Frame):
         #                     Main loop                                #
         ################################################################
         while self.session_on_going:
-            self.info_canvas = True
+            # self.info_canvas = True
             if self.left_to_test.get() == 0:
                 self.session_on_going = False
                 self.session_complete = True
@@ -364,9 +375,9 @@ class TestProgramWindow(tk.Frame):
             ##############################
 
         if self.session_complete and not self.check_probe_present():
-            self.probe_canvas(f"{self.warning_text['7']} {self.warning_text['8']}", False)
+            probe_canvas(self,f"{self.warning_text['7']} {self.warning_text['8']}", False)
             time.sleep(2)
-            self.canvas_text.destroy()
+            text_destroy(self)
             self.cmplt_btn_clicked()
 
     def do_program_and_test(self, batch):
@@ -374,14 +385,17 @@ class TestProgramWindow(tk.Frame):
         # Program and test probe       #
         ################################
         self.programmed = False
-        self.action.set(self.warning_text["9"])
-        snum = self.program_probe(DS.get_current_probe_type())
-        if self.programmed:
-            results, marker, odm_data = self.test_probe()
-            if not results:
-                snum = f"{snum}f"
-
-            self.update_results(results, snum, odm_data, batch, marker)
+        results, marker, odm_data = self.test_probe()
+        pcb_serial_number = PM.read_serial_number()
+        # binary_str = codecs.decode(pcb_serial_number, "hex")
+        # print(f"serial number = {str(binary_str)[2:19]}")
+        snum = self.program_probe(DS.get_current_probe_type(),results)
+        pcb_serial_number = PM.read_serial_number()
+        binary_str = codecs.decode(pcb_serial_number, "hex")
+        print(f"serial number = {str(binary_str)[2:18]}")
+        self.update_results(results, snum, odm_data, batch, marker)
+        if not results:
+            return True
         else:
             return False
 
@@ -412,25 +426,27 @@ class TestProgramWindow(tk.Frame):
         # Test the inserted probe                       #
         #################################################
 
-    def program_probe(self, probe_type):
-        result = False
+    def program_probe(self, probe_type, test):
         self.action.set(self.warning_text["9"])
         self.show_amber_image()
-        serialNumber = PM.ProgramProbe(probe_type)
+        serialNumber = PM.ProgramProbe(probe_type, test)
+
         if not serialNumber:
             self.canvas_back.create_image(520, 350, image=self.redlight)
             self.canvas_back.pack()
             ttk.Label(self.canvas_back, textvariable=self.action, background='orange',
                         width=25, relief=GROOVE, font=("Courier", 16)).place(x=270, y=550)
             self.action.set(self.warning_text["13"])
-            self.probe_canvas(f"{self.warning_text['13']} {self.warning_text['12']} {self.warning_text['8']}", True)
-            self.canvas_text.destroy()
+            probe_canvas(self,f"{self.warning_text['13']} {self.warning_text['12']} {self.warning_text['8']}", True)
+            text_destroy(self)
             self.show_gray_light()
             self.programmed = False
+            return False
         else:
-            result = str(codecs.decode(serialNumber, "hex"), 'utf-8')[:16]
             self.programmed = True
-        return result
+            return str(codecs.decode(serialNumber, "hex"), 'utf-8')[:16]
+
+
 
         ##########################################################
         # Over-write a programmed probe detected                 #
@@ -446,10 +462,18 @@ class TestProgramWindow(tk.Frame):
             if self.programmed and tm.askyesno(title=self.warning_text["2"], message=self.warning_text["3"]):
                 self.do_program_and_test(self.current_batch.get())
                 self.set_reprogram_status()
-                self.session_on_going = False
-                self.ff_window()
+                # self.session_on_going = False
+                # self.ff_window()
         else:
-            self.probe_canvas("Do you want to Fault Find.", True)
+            probe_canvas(self,"Do you want to Fault Find.", True)
+            if self.info_canvas:
+                self.session_on_going = False
+                text_destroy(self)
+                self.ff_window()
+            else:
+                self.session_on_going = True
+                text_destroy(self)
+                self.refresh_window()
 
         ################################
         # Show Fault find window       #
@@ -478,7 +502,7 @@ class TestProgramWindow(tk.Frame):
         self.canvas_back.create_image(self.cent_x, self.cent_y, image=self.amberlight)
         self.canvas_back.pack()
         ttk.Label(self.canvas_back, textvariable=self.action, background='#FF7F3F',
-                  width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.75)
+                  width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.83)
         Tk.update(self)
 
     def show_red_light(self):
@@ -486,25 +510,25 @@ class TestProgramWindow(tk.Frame):
         self.canvas_back.pack()
         self.display_message(self.warning_text["13"])
         ttk.Label(self.canvas_back, textvariable=self.action, background='#FF7F3F',
-                  width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.75)
+                  width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.83)
         Tk.update(self)
 
     def show_gray_light(self):
         self.canvas_back.create_image(self.cent_x, self.cent_y, image=self.greylight)
         self.canvas_back.pack()
         ttk.Label(self.canvas_back, textvariable=self.action, background='yellow',
-                  width=25, relief=GROOVE, font=("Courier", 16)).place(relx=0.25, rely=0.83)
+                  width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.83)
         Tk.update(self)
 
     def show_blue_meaasge(self):
         self.action.set('Testing probe...')
         ttk.Label(self.canvas_back, textvariable=self.action, background='#548CFF',
-                  width=25, relief=GROOVE, font=("Courier", 16)).place(relx=0.25, rely=0.75)
+                  width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.83)
         Tk.update(self)
 
     def show_green_text(self):
         ttk.Label(self.canvas_back, textvariable=self.action, background='#1fff1f',
-                  width=25, relief=GROOVE, font=("Courier", 16)).place(relx=0.25, rely=0.75)
+                  width=25, relief=GROOVE, font=("Courier", 18)).place(relx=0.25, rely=0.83)
         Tk.update(self)
 
         #######################
@@ -522,17 +546,24 @@ class TestProgramWindow(tk.Frame):
         ###################################################
         if LOWER_LIMIT < results < UPPER_LIMIT:
             self.show_green_image()
-            self.probe_canvas(f"{self.warning_text['15']} {self.warning_text['16']}", False)
+            probe_canvas(self,f"{self.warning_text['15']} {self.warning_text['16']}", False)
             while self.check_probe_present():
                 pass
-            self.canvas_text.destroy()
+            text_destroy(self)
 
         else:
             ####################################################
             # Probe failed                                     #
             ####################################################
             self.show_red_light()
-            self.probe_canvas(f"{self.warning_text['13']} {self.warning_text['14']}", True)
+            probe_canvas(self,f"{self.warning_text['13']} {self.warning_text['14']}", True)
+            if self.info_canvas:
+                self.session_on_going = False
+                text_destroy(self)
+                self.ff_window()
+            else:
+                self.session_on_going = True
+                text_destroy(self)
 
         ###############################################
         # Reset probe testing                         #
@@ -579,28 +610,23 @@ class TestProgramWindow(tk.Frame):
         data_list_to_file.append(odm_to_file)
         BM.saveProbeInfoToCSVFile(data_list_to_file, batch)  # save to file
 
-    def probe_canvas(self, message, btn):
-        self.session_on_going = False
-        self.canvas_text = Canvas(bg="#eae9e9", width=350, height=180)
-        self.canvas_text.place(x=self.cent_x - 150, y=self.cent_y - 20)
-        Label(self.canvas_text, text=message, font=("Courier", 12)).place(
-            x=50, y=20)
-        btn1 = Button(self.canvas_text, text="Yes", command=self.yes_answer, width=10, height=2)
-        btn2 = Button(self.canvas_text, text="No", command=self.no_answer, width=10, height=2)
-        Tk.update(self)
-        if btn:
-            btn1.place(x=90, y=120)
-            btn2.place(x=190, y=120)
-            Tk.update(self)
+    def complete_batch(self,batch_number):
+        print(f"{batch_number} completed")
+
+        batch_qty = self.probes_passed.get()
+        failures = 0
+        scrapped = 100 - self.probes_passed.get()
+        BM.competed_text(DS.get_username(),DS.get_current_probe_type(),batch_number,batch_qty,failures,scrapped)
+
 
     def yes_answer(self):
-        self.info_canvas = False
-        self.canvas_text.destroy()
-        self.session_on_going = False
-        self.ff_window()
+        self.info_canvas = True
+        # text_destroy(self)
+        # self.session_on_going = False
+        # self.ff_window()
 
     def no_answer(self):
         self.info_canvas = False
-        self.canvas_text.destroy()
-        self.session_on_going = True
-        self.refresh_window()
+        # text_destroy(self)
+        # self.session_on_going = True
+        # self.refresh_window()

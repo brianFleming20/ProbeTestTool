@@ -10,7 +10,6 @@ from bitstring import BitArray
 import Datastore
 import PI
 import serial.tools.list_ports
-import sys
 
 DS = Datastore.Data_Store()
 PD = PI.ProbeData()
@@ -47,8 +46,9 @@ class PRI(object):
         '''
         Returns True if a probe is present, False if not
         '''
+
         self.get_serial_port()
-        if not self.ser.isOpen():
+        if not (self.ser.isOpen()):
             self.ser.open()
 
         bit = self.send_probe_bits()

@@ -10,7 +10,7 @@ DS = Datastore.Data_Store()
 SM = SecurityManager()
 U = Ports
 
-class AdminTests(unittest.TestCase):
+class AdminTestsChangePassword(unittest.TestCase):
 
     def setUp(self):
         self.parent = tk.Tk()
@@ -91,7 +91,30 @@ class AdminTests(unittest.TestCase):
         
         self.assertEqual(result, True)
         
-    
+    def test_admin_status(self):
+        print("Test user admin status")
+        expected1 = False
+        user = U.Users("John",expected1)
+        DS.write_user_data(user)
+
+        self.A.get_admin_status()
+        admin = self.A.is_admin.get()
+        self.assertEqual(admin,expected1)
+
+        get_admin = DS.user_admin_status()
+        self.assertEqual(get_admin,expected1)
+
+        expected2 = True
+        user = U.Users("John",expected2)
+        DS.write_user_data(user)
+
+        self.A.is_admin.set(expected2)
+        admin = self.A.is_admin.get()
+        self.assertEqual(admin,expected2)
+
+        get_admin = DS.user_admin_status()
+        self.assertEqual(get_admin,expected2)
+
     
     # The PTT shall not delete the logged in user.
     def test_not_delete_current_user(self):

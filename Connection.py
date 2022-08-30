@@ -162,10 +162,12 @@ class Connection(tk.Frame):
             port = ODM.check_odm_port()
             if port:
                 self.monitor_working = True
+                self.odm.set(port)
             else:
                 self.monitor_working = False
-                port = "Monitor not in use"
-            self.odm.set(port)
+                # port = "Monitor not in use"
+                port = False
+                self.odm.set("Monitor not is use")
             return port
 
 

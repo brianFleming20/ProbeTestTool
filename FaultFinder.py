@@ -74,6 +74,7 @@ class FaultFindWindow(tk.Frame):
         self.analyser_port = DS.get_devices()['Analyser']
         self.cable_length = 0
         self.device = "Not connected to analyser"
+        self.graph_text = StringVar()
 
     def display(self):
         # Import images
@@ -85,7 +86,7 @@ class FaultFindWindow(tk.Frame):
                   font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
                   font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
-
+        self.graph_text.set("Show Graph")
         self.text_area = tk.Text(self.canvas_back, font=("Courier",14),height=5, width=40)
         self.text_area.place(relx=0.07, rely=0.07)
         self.text_area.delete('1.0', 'end')
@@ -113,16 +114,10 @@ class FaultFindWindow(tk.Frame):
 
         ttk.Label(self.canvas_back, text='Serial Number: ', background='#B1D0E0', font=("Courier",14)).place(
             relx=0.68, rely=0.18, anchor='w')
-        ttk.Label(self.canvas_back, textvariable=self.serialNumber, relief=SUNKEN, width=28).place(relx=0.68, rely=0.25,
+        ttk.Label(self.canvas_back, textvariable=self.read_probe_number, relief=SUNKEN, width=28).place(relx=0.68, rely=0.25,
                                                                                                    anchor='w')
-        ttk.Label(self.canvas_back, text='From Batch: ', background='#B1D0E0', font=("Courier",14)).place(
-            relx=0.58, rely=0.25, anchor='w')
         ttk.Label(self.canvas_back, text='From Probe: ', background='#B1D0E0', font=("Courier",14)).place(
-            relx=0.58, rely=0.3, anchor='w')
-
-        ttk.Label(self.canvas_back, textvariable=self.read_probe_number, relief=SUNKEN, width=28).place(relx=0.68,
-                                                                                                        rely=0.3,
-                                                                                                        anchor='w')
+            relx=0.58, rely=0.25, anchor='w')
 
         ttk.Label(self.canvas_back, text="Probe parameter data", background='#B1D0E0', font=("Courier",14)).place(
             relx=0.7, rely=0.42, anchor="w")
@@ -140,7 +135,7 @@ class FaultFindWindow(tk.Frame):
         ttk.Label(self.canvas_back, textvariable=self.action, background='#99c2ff',
                   width=28, relief=GROOVE, font=("Courier", 16)).place(relx=0.2, rely=0.65, anchor='w')
 
-        ttk.Button(self.canvas_back, text='Show Graph',
+        ttk.Button(self.canvas_back, textvariable=self.graph_text,
                    command=lambda: self.show_plot()).place(relx=0.72, rely=0.58, anchor=CENTER)
         ttk.Label(self.canvas_back, textvariable=self.plot_text, relief=SUNKEN, font="bold",
                   width=5).place(relx=0.8, rely=0.58, anchor='w')
@@ -157,11 +152,13 @@ class FaultFindWindow(tk.Frame):
         admin = DS.user_admin_status()
         name = DS.get_username()
         if not DS.get_plot_status():
+            self.graph_text.set("Remove Graph")
             status = P.Users(name, admin, plot=True)
             DS.write_user_data(status)
             self.plot_text.set("ON")
             self.control.attributes('-topmost', False)
         else:
+            self.graph_text.set("Show Graph")
             status = P.Users(name, admin, plot=False)
             DS.write_user_data(status)
             self.plot_text.set("OFF")
@@ -218,13 +215,17 @@ class FaultFindWindow(tk.Frame):
 
     def update_odm_data(self):
         if DS.get_devices()['odm_active']:
-            serial_results = ODM.ReadSerialODM()
-            if not serial_results:
-                serial_results = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            self.SD_data.set(serial_results[5])
-            self.FTc_data.set(serial_results[6])
-            self.PV_data.set(serial_results[9])
-            Tk.update(self)
+            try:
+                serial_results = ODM.ReadSerialODM()
+            except IOError:
+                pass
+            else:
+                if not serial_results:
+                    serial_results = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                self.SD_data.set(serial_results[5])
+                self.FTc_data.set(serial_results[6])
+                self.PV_data.set(serial_results[9])
+                Tk.update(self)
 
     def fault_find_probe(self):
         if not PM.ProbeIsProgrammed():

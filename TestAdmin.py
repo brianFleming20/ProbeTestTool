@@ -1,7 +1,7 @@
 
 import unittest
 import AdminUser
-import Datastore
+import Ports
 from SecurityManager import *
 import tkinter as tk
 
@@ -9,7 +9,7 @@ import tkinter as tk
 AU = AdminUser
 DS = Datastore.Data_Store()
 SM = SecurityManager()
-U = Users
+U = Ports.Users
 
 class AdminTests(unittest.TestCase):
 
@@ -17,34 +17,34 @@ class AdminTests(unittest.TestCase):
         self.parent = tk.Tk()
         self.controller = tk.Tk()
         self.A = AU.AdminWindow(self.parent, self.controller)
-    
+
     # Make the admin button unresponsive to non admin users
-    def test_admin_button_in_sessions(self):
+    def test_admin_user_status(self):
         print("Test login non user status")
-        
+
         # Login non-admin user
         user = "User1"
         password = "u1"
         non_admin = User(user, password)
-     
+
         signed_in = SM.logIn(non_admin)
-        
+
         self.assertEqual(signed_in, False)
         SM.logOut()
-        
+
         print("Test admin user status")
         # Login Admin user
         admin_user_name = "brian"
         admin_password = "password"
         admin_user = User(admin_user_name, admin_password)
         SM.logIn(admin_user)
-        
+
         admin_status = DS.user_admin_status()
-        
+
         self.assertEqual(admin_status, True)
         SM.logOut()
-    
-    
+
+
     # Create a list of all users in the system
     def test_list_users(self):
         print("Check user in user list")
@@ -53,23 +53,6 @@ class AdminTests(unittest.TestCase):
         user_list = len(SM.GetUserList())
         self.assertGreater(user_list,0)
 
-    
-    
-    # Complete and in progress file location
-    def test_comp_and_prog_file_location(self):
-        print("Test OS file access and file location")
-        self.A.get_browse_file()
-        location = "C:/Users/BrianFleming/Desktop/PTT_Results"
-        result = DS.get_file_location()['File']
-        
-        self.assertGreater(len(location), 0)
-        self.assertEqual(location, result)
-        
-        
-        
-
-    
-    
     # allow serial number over-write
     def test_serial_number_overwrite(self):
         print("Serial number over write")
@@ -89,6 +72,17 @@ class AdminTests(unittest.TestCase):
         result1 = DS.get_user_data()['Over_rite']
         
         self.assertEqual(result1, False)
+
+    def test_monitor_status(self):
+        print("Test monitor use status")
+
+        odm_active = self.A.odm_active.get()
+
+        self.A.set_odm_state()
+        odm_data = DS.get_devices()['odm_active']
+        self.assertEqual(odm_data,odm_active)
+
+
         
         
    

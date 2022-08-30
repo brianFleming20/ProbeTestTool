@@ -9,7 +9,7 @@ import os
 from time import gmtime, strftime
 import Datastore
 import Ports
-
+from tkinter import messagebox as mb
 
 DS = Datastore.Data_Store()
 P = Ports
@@ -46,10 +46,10 @@ class BatchManager(object):
             # Check the new batch number does not already exist
             if batch.batchNumber not in self.CSVM.GetFileNamesComplete():
                 if batch.batchNumber not in self.CSVM.GetFileNamesInProgress():
-                # set the current batch to this batch
+                    # set the current batch to this batch
 
                     # self.current_batch = batch
-                # create the info list for the first row
+                    # create the info list for the first row
                     time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                     Stime_now = str(time_now)
                     info = [batch.batchNumber, self.blank_data, batch.probe_type, batch.batchQty, user, self.blank_data,
@@ -91,8 +91,7 @@ class BatchManager(object):
         if batchnumber == batch_number:
             time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             Stime_now = str(time_now)
-            info = [batchnumber, " Suspended Batch ", probe_type, probes_left, user," "," ", " On ", Stime_now]
-
+            info = [batchnumber, " Suspended Batch ", probe_type, probes_left, user, " ", " ", " On ", Stime_now]
             self.CSVM.WriteListOfListsCSV(info, batchnumber)
             return True
         else:
@@ -134,6 +133,7 @@ class BatchManager(object):
                     self.CSVM.check_directories()
             else:
                 self.availableBatchs = self.CSVM.GetFileNamesInProgress()
+                return True
         else:
             return False
 
@@ -175,18 +175,40 @@ class BatchManager(object):
         '''
         self.CSVM.WriteListOfListsCSV(results, batchNumber)  # create the CSV file
 
-    def testCSVRead(self, batchNumber):
-        fullPathTest = os.path.abspath(self.inProgressPathTest + batchNumber + '.csv')
-        with open(fullPathTest, 'rb') as csvfile:
-            datareader = csv.reader(csvfile)
+    # def testCSVRead(self, batchNumber):
+    #     fullPathTest = os.path.abspath(self.inProgressPathTest + batchNumber + '.csv')
+    #     with open(fullPathTest, 'rb') as csvfile:
+    #         datareader = csv.reader(csvfile)
 
     def get_completed_batches(self):
         return self.CSVM.get_file_names_completed()
 
-    def ReadProbeSerialNumber(self, batchNumber):
-        info = self.GetBatchObject(batchNumber)
+    # def ReadProbeSerialNumber(self, batchNumber):
+    #     info = self.GetBatchObject(batchNumber)
 
-
+    def competed_text(self, user, probe_type, batch_number, batch_qty, failures, scrapped):
+        print(f"{batch_number} - completed")
+        time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        Stime_now = str(time_now)
+        info = [batch_number, " Completed by - ", user, " of ", probe_type, " On ", Stime_now, f" Failed = {failures}",
+                f"Scrapped = {scrapped}"]
+        self.CSVM.WriteListOfListsCSV(info, batch_number)
+        removed = 0
+        makeup = 0
+        if not failures and not scrapped:
+            pass
+        else:
+            if 97 < scrapped < 99:
+                answer = mb.askyesno(title="Batch Quantity",
+                                     message=f"You need to make up \nbatch number {batch_number} to 100.")
+                batch_makeup = ["Quantity", " to ", " make-up", makeup, "acknowledged", answer]
+                self.CSVM.WriteListOfListsCSV(batch_makeup, batch_number)
+            else:
+                remove_qty = 100 - batch_qty
+                answer = mb.askyesno(title="Batch Quantity",
+                                     message=f"Please remove {remove_qty} \nfrom this batch number {batch_number}.")
+                batch_remove = ["Quantity ", "Needing", "Removing", removed, "acknowledged", answer]
+                self.CSVM.WriteListOfListsCSV(batch_remove, batch_number)
 
 
 class CSVManager(object):
@@ -195,7 +217,7 @@ class CSVManager(object):
     '''
 
     def __init__(self):
-        default_loc = "/PTT_Results"
+        # default_loc = "/PTT_Results"
         filepath = DS.get_file_location()
         if not filepath:
             self.path = os.path.join("C:\\Users", os.getenv('username'), "Documents\\PTT_Results", "")
@@ -227,7 +249,6 @@ class CSVManager(object):
                 os.makedirs(self.completePath, 0o777)
             except OSError:
                 pass
-
 
     def GetFileNamesInProgress(self):
         '''
@@ -410,8 +431,7 @@ class CSVManager(object):
 
         with open(fullPath) as f:
             lis = [line.split() for line in f]  # create a list of lists
-            return [lis]
-
+            return lis
 
 
 #             for i,x in enumerate(lis):              #print the list items
@@ -428,5 +448,3 @@ class Batch(object):
         self.probesProgrammed = 0
         self.batchQty = 0
         self.probe_type = ''
-
-

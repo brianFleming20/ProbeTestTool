@@ -19,7 +19,6 @@ class LoginTests(unittest.TestCase):
         self.controller = tk.Tk()
         self.UL = UserLogin.LogInWindow(self.parent, self.controller)
 
-    
     def test_username(self):
         print("Test user login")
         name = "brian"       
@@ -78,14 +77,28 @@ class LoginTests(unittest.TestCase):
         print("Test user login")
 
         name = "brian"       
-        password = "my-password"
+        password = "password"
         self.UL.entry()
         self.UL.set_username(name)
         self.UL.set_password(password)
 
         result = self.UL._login_btn_clicked()
-        print(result)
+
         self.assertEqual(result, True)
+
+
+    def test_incorrect_password(self):
+        print("Incorrect password")
+
+        name = "brian"
+        password = "nothing"
+
+        self.UL.entry()
+        self.UL.set_username(name)
+        self.UL.set_password(password)
+        result = self.UL._login_btn_clicked()
+
+        self.assertEqual(result,False)
         
         
 if __name__ == '__main__':

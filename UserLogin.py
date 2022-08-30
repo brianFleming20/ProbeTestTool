@@ -144,8 +144,6 @@ class LogInWindow(tk.Frame):
         self.btn_1.config(state=NORMAL)
         self.btn_2.config(state=NORMAL)
 
-        # print(f"password is {self.password}")
-
     def _login_btn_clicked(self):
         self.canvas_name.destroy()
         self.canvas_pass.destroy()
@@ -159,13 +157,15 @@ class LogInWindow(tk.Frame):
             # Create user object with admin false #
             #######################################
             user = User(username, password)
-            if SM.logIn(user):
+            event = SM.logIn(user)
+            if event:
                 self.canvas_go()
                 self.sessions()
             else:
                 tm.showerror("Login error", "Incorrect username or password")
                 self.refresh_window()
             self.activate_login_button()
+            return event
         else:
             tm.showerror("Login error", "Please enter a Username and Password")
             self.refresh_window()
@@ -184,7 +184,10 @@ class LogInWindow(tk.Frame):
         self.control.show_frame(SE.SessionSelectWindow)
 
     def activate_login_button(self):
-        self.logbtn.config(command=lambda: self.control.show_frame(SE.SessionSelectWindow))
+        try:
+            self.logbtn.config(command=lambda: self.control.show_frame(SE.SessionSelectWindow))
+        except:
+            pass
 
     def wait_for_response(self, master, pass_block):
         block = pass_block
@@ -226,4 +229,7 @@ class LogInWindow(tk.Frame):
         self.canvas_pass.destroy()
 
     def sessions(self):
-        self.control.show_frame(SE.SessionSelectWindow)
+        try:
+            self.control.show_frame(SE.SessionSelectWindow)
+        except:
+            pass

@@ -60,34 +60,7 @@ class BatchTests(unittest.TestCase):
         result = BM.CreateBatch(batch,user)
         
         self.assertEqual(result, False)
-        
-    
-    
-    def test_suspemd_batch(self):
-        print("Suspend Batch")
-        eachBatch = []
-        batch_number = "9876B"
-        probe_type = "DP12"
-        qty = 50
-        probe_data = P.Probes(probe_type=probe_type, current_batch=batch_number,passed=0,tested=qty)
-        DS.write_probe_data(probe_data)
-        inProgressPath = os.path.join(self.path, "in_progress", "")
-        fullPath = os.path.abspath(inProgressPath + batch_number + '.csv')
-        
-        result = BM.SuspendBatch(batch_number)
-        
-        with open(fullPath, 'r') as csvfile:
-            datareader = csv.reader(csvfile)
-            
-            for line in datareader: 
-                eachBatch.append(line)   
-    
-        file_result = eachBatch[-1][0]
-        
-        self.assertEqual(result, True)
-        self.assertEqual(file_result,batch_number)
-        
-        
+
     def test_save_probe_info(self):
         # add batch number
         print("Save data to file")
