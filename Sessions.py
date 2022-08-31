@@ -32,6 +32,7 @@ import AdminUser
 import Datastore
 import OnScreenKeys
 import codecs
+import ProbeManager
 from time import gmtime, strftime, sleep
 import Ports
 import ProbeTest
@@ -48,6 +49,7 @@ CO = Connection
 AU = AdminUser
 PT = ProbeTest
 PI = ProbeInterface.PRI()
+PM = ProbeManager.ProbeManager()
 
 
 def ignore():
@@ -232,9 +234,32 @@ class SessionSelectWindow(tk.Frame):
 
             if retest:
                 PT.probe_canvas(self, f" ({self.batch_from_file}) \nRe-testing - {self.probe_type} - probe", False)
+                results, marker_data, odm_data = PT.TestProgramWindow.test_probe(self)
+
                 PT.text_destroy(self)
                 sleep(2)
                 PT.probe_canvas(self, f" ({self.batch_from_file}) \n{self.probe_type} - probe passed", False)
+                if results:
+                    SN_seperated = []
+                    limit = 16
+                    start = 0
+                    dec_start = '53A00900'
+                    end = '50'
+                    pcb_serial_number = PM.read_serial_number()
+                    binary_str = codecs.decode(pcb_serial_number, "hex")
+                    print(f"serial number = {str(binary_str)[2:18]}")
+                    SN_bytes = PI.read_all_bytes()
+                    while limit <= len(SN_bytes):
+                        makeup = dec_start + SN_bytes[start:limit] + end
+                        SN_seperated.append(makeup)
+                        limit += 16
+                        start += 16
+                    probe_type = SN_seperated[0][8:16]
+                    probe_sn = SN_seperated[1][8:-2]
+                    new_probe_sn = probe_type + '3232' + probe_sn + '3031'
+                    new_probe_bin = codecs.decode(new_probe_sn, 'hex')
+                    new_probe = new_probe_bin.decode('utf-8')
+                    PM.construct_new_serial_number(new_probe, True)
                 sleep(3)
                 PT.text_destroy(self)
                 self.remove_probe()

@@ -33,6 +33,7 @@ class ProbeData(object):
     def __init__(self):
         '''
         '''
+        self.probeData = None
         self.timeStamp = ''
         # self.typeBytes = ''
 
@@ -44,6 +45,16 @@ class ProbeData(object):
         self.I2STypeBytes = ['36', '30', '36', '44']
         self.KDP72TypeBytes = ['35', '34', '38', '44']
         self.Blank = ['00', '00', '00', '00', '00']
+        self.probeData = ['53A00910303030303030303050', '53A00918303030303030303050', '53A00920303030303030303050',
+                          '53A00928303030303030300050', '53A009303001f00a3030303050', '53A00938303030303030303050',
+                          '53A009402863292044656c7450', '53A009486578204d6564696350', '53A00950616c204c696d697450',
+                          '53A00958656420323032310050', '53A00960303030303030303050', '53A00968303030303030303050',
+                          '53A00970303030303030303050', '53A00978303030303030303050', '53A00980303030303030303050',
+                          '53A00988303030303030303050', '53A00990303030303030303050', '53A00998303030303030303050',
+                          '53A009a0303030303030303050', '53A009a8303030303030303050', '53A009b0303030303030303050',
+                          '53A009b8303030303030303050', '53A009c0303030303030303050', '53A009c8303030303030303050',
+                          '53A009d0303030303030303050', '53A009d8303030303030303050', '53A009e0303030303030303050',
+                          '53A009e8303030303030303050', '53A009f0303030303030303050', '53A009f8303030303030303050']
 
     def GenerateDataString(self, probe_type, test):
         '''
@@ -84,9 +95,9 @@ class ProbeData(object):
                        '53A009d0303030303030303050', '53A009d8303030303030303050', '53A009e0303030303030303050',
                        '53A009e8303030303030303050', '53A009f0303030303030303050', '53A009f8303030303030303050']
 
-        firstStart = '53A00900'
-        secondStart = '53A00908'
-        end = '50'
+        # firstStart = '53A00900'
+        # secondStart = '53A00908'
+        # end = '50'
 
         if probe_type == 'blank':
             return probezeros
@@ -116,20 +127,18 @@ class ProbeData(object):
         # create a 12 byte timestamp of the format
         timeStamp = strftime("%Y%m%d%H%M%S", gmtime())
         timeStampFormatted = timeStamp[2:]
-        timeStampASCII = []
 
         if not test:
             time_list = f"Fail{timeStampFormatted}"
         else:
             time_list = timeStampFormatted
-        for item in time_list:
-            x = (ord(item))
-            timeStampASCII.append(format((x), "x"))
 
         # stick the type bytes and the timestamp together (good)
+        converted = self.convert_to_hex(time_list)
+        serialNumber = typeBytes + converted
+        return self.create_serial_data(serialNumber,test)
 
-        serialNumber = typeBytes + timeStampASCII
-
+    def create_serial_data(self,serialNumber,test):
         # put them in a format that can be sent via the SC18IM
         ##############################################################
         # for using month and day on to probe use in upper [10:-2]   #
@@ -138,20 +147,31 @@ class ProbeData(object):
         lower = serialNumber[0:8]
         upper = serialNumber[8:]
         if not test:
-            upper = serialNumber[8:-4]
+            upper = serialNumber[10:-2]
+
+        firstStart = '53A00900'
+        secondStart = '53A00908'
+        end = '50'
         slower = ''.join(lower)
         supper = ''.join(upper)
         firstByte = firstStart + slower + end
         secondByte = secondStart + supper + end
         # add them to the probe data list
-        probeData.insert(0, secondByte)
-        probeData.insert(0, firstByte)
+        self.probeData.insert(0, secondByte)
+        self.probeData.insert(0, firstByte)
 
         # create a single string of the actual data for error checking
         stripped = ''
-        for item in probeData:
+        for item in self.probeData:
             stripped = stripped + item[8:-2]
-        return probeData, stripped
+        return self.probeData, stripped
+
+    def convert_to_hex(self, time_list):
+        timeStampASCII = []
+        for item in time_list:
+            x = (ord(item))
+            timeStampASCII.append(format((x), "x"))
+        return timeStampASCII
 
 # PI = PI()
 # PD = ProbeData()

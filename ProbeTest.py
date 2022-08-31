@@ -26,6 +26,7 @@ import tkinter.messagebox as tm
 import codecs
 import BatchManager
 from ProbeManager import ProbeManager
+from ProbeInterface import PRI
 import NanoZND
 import ODMPlus
 import Sessions
@@ -44,6 +45,7 @@ DS = Datastore.Data_Store()
 P = Ports
 SE = Sessions
 FF = FaultFinder
+PR = PRI()
 
 # define global variables
 PTT_Version = 'Deltex Medical : XXXX-XXXX Probe Test Tool V1'
@@ -293,6 +295,7 @@ class TestProgramWindow(tk.Frame):
             "16": "\nPlease remove probe..."
         }
 
+
         #############################################################
         # Display to screen the probe over-write status             #
         #############################################################
@@ -386,13 +389,10 @@ class TestProgramWindow(tk.Frame):
         ################################
         self.programmed = False
         results, marker, odm_data = self.test_probe()
-        pcb_serial_number = PM.read_serial_number()
+        # pcb_serial_number = PM.read_serial_number()
         # binary_str = codecs.decode(pcb_serial_number, "hex")
         # print(f"serial number = {str(binary_str)[2:19]}")
         snum = self.program_probe(DS.get_current_probe_type(),results)
-        pcb_serial_number = PM.read_serial_number()
-        binary_str = codecs.decode(pcb_serial_number, "hex")
-        print(f"serial number = {str(binary_str)[2:18]}")
         self.update_results(results, snum, odm_data, batch, marker)
         if not results:
             return True
@@ -453,6 +453,27 @@ class TestProgramWindow(tk.Frame):
         ##########################################################
 
     def over_write_probe(self):
+        # SN_seperated = []
+        # limit = 16
+        # start = 0
+        # dec_start = '53A00900'
+        # end = '50'
+        # pcb_serial_number = PM.read_serial_number()
+        # binary_str = codecs.decode(pcb_serial_number, "hex")
+        # print(f"serial number = {str(binary_str)[2:18]}")
+        # SN_bytes = PR.read_all_bytes()
+        # while limit <= len(SN_bytes):
+        #     makeup = dec_start + SN_bytes[start:limit] + end
+        #     SN_seperated.append(makeup)
+        #     limit += 16
+        #     start += 16
+        # probe_type = SN_seperated[0][8:16]
+        # probe_sn = SN_seperated[1][8:-2]
+        # new_probe_sn = probe_type + '3232' + probe_sn + '3031'
+        # new_probe_bin = codecs.decode(new_probe_sn, 'hex')
+        # new_probe = new_probe_bin.decode('utf-8')
+        # PM.construct_new_serial_number(new_probe,True)
+
         if PM.ProbeIsProgrammed() and PM.ProbePresent():
             self.programmed = True
             self.action.set(self.warning_text["2"])

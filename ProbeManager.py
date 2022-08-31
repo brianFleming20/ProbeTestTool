@@ -7,6 +7,7 @@ import InstrumentManager
 import NanoZND
 import Datastore
 import ProbeInterface
+import codecs
 
 PF = ProbeInterface.PRI()
 DS = Datastore.Data_Store()
@@ -46,6 +47,8 @@ class ProbeManager(object):
         '''
         if self.test_chip():
             probeData = self.PD.GenerateDataString(probe_type, test)
+            print(probeData[0])
+
         ######################################################
         # get first two lots of 8 bights for error checking  #
         # write the data to the probe                        #
@@ -95,3 +98,12 @@ class ProbeManager(object):
 
     def read_serial_number(self):
         return PF.read_serial_number()
+
+    def construct_new_serial_number(self,serial_number, test):
+        converted = self.PD.convert_to_hex(serial_number)
+        data,stripped = self.PD.create_serial_data(converted,test)
+        PF.probe_write(data)
+        pcb_serial_number = PF.read_serial_number()
+        binary_str = codecs.decode(pcb_serial_number, "hex")
+        print(f"serial number now = {str(binary_str)[2:18]}")
+
