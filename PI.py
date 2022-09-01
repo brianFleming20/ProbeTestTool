@@ -98,6 +98,7 @@ class ProbeData(object):
         # firstStart = '53A00900'
         # secondStart = '53A00908'
         # end = '50'
+        fail = ['46,61,69,6C']
 
         if probe_type == 'blank':
             return probezeros
@@ -135,7 +136,10 @@ class ProbeData(object):
 
         # stick the type bytes and the timestamp together (good)
         converted = self.convert_to_hex(time_list)
-        serialNumber = typeBytes + converted
+        if not test:
+            serialNumber = typeBytes + converted
+        else:
+            serialNumber = typeBytes + converted
         return self.create_serial_data(serialNumber,test)
 
     def create_serial_data(self,serialNumber,test):
