@@ -43,6 +43,7 @@ class AdminPorts(tk.Frame):
         self.com_port = "COM3"
         self.monitor = "COM5"
         self.move_probe = "Not Set"
+        self.control = controller
         connection_data = Ports.Ports(odm=self.monitor,probe=self.com_port,analyer=self.analyser_usb,move=self.move_probe)
         DS.write_device_to_file(connection_data)
 
@@ -51,52 +52,54 @@ class AdminPorts(tk.Frame):
         ttk.Label(self, text="medical", background="#FFDAB9", foreground="#A2B5BB",
                   font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
 
-        self.connectBtn = ttk.Button(
-            self, text="Continue", command=lambda:
-            [self.destroy_canvas(), self._connect_btn_clicked(controller)])
+        self.connectBtn = Button(
+            self, text="Continue", command=self.forward, font=('Courier', 16))
         self.connectBtn.place(height=35, width=150, relx=0.85, rely=0.82, anchor=CENTER)
         # self.bind('<Return>', self._connect_btn_clicked)
 
-        self.cancelBtn = ttk.Button(
-            self, text="Cancel", command=lambda:
-            [self.destroy_canvas(), controller.show_frame(AU.AdminWindow)])
+        self.cancelBtn = Button(
+            self, text="Cancel", command=self.cancel, font=('Courier', 14))
         self.cancelBtn.place(relx=0.7, rely=0.82, anchor=CENTER)
 
         self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
         self.text_area.place(x=40, y=70)
 
+    def cancel(self):
+        self.destroy_canvas()
+        self.control.show_frame(AU.AdminWindow)
+
+    def forward(self):
+        self.destroy_canvas()
+        self._connect_btn_clicked(self.control)
+
     def refresh_window(self):
-        self.canvas_1 = Canvas(bg="#eae9e9", width=300, height=45)
+        self.canvas_1 = Canvas(bg="#eae9e9", width=500, height=45)
         self.canvas_1.place(relx=0.35, rely=0.3)
-        self.canvas_2 = Canvas(bg="#eae9e9", width=300, height=45)
+        self.canvas_2 = Canvas(bg="#eae9e9", width=500, height=45)
         self.canvas_2.place(relx=0.35, rely=0.4)
-        self.canvas_3 = Canvas(bg="#eae9e9", width=300, height=45)
+        self.canvas_3 = Canvas(bg="#eae9e9", width=500, height=45)
         self.canvas_3.place(relx=0.35, rely=0.5)
-        self.canvas_4 = Canvas(bg="#eae9e9", width=300, height=45)
+        self.canvas_4 = Canvas(bg="#eae9e9", width=500, height=45)
         self.canvas_4.place(relx=0.35, rely=0.6)
-        self.btn_1 = ttk.Button(self.canvas_1, text="ODM monitor port", command=lambda:
-        [self.get_keys(), self.monitor_entry()])
-        Label(self.canvas_1, text="-->").place(x=170, y=12)
-        self.btn_2 = ttk.Button(self.canvas_2, text="Probe Interface Port", command=lambda:
-        [self.get_keys(), self.probe_entry()])
-        Label(self.canvas_2, text="-->").place(x=170, y=12)
-        self.btn_3 = ttk.Button(self.canvas_3, text="Analyser port", command=lambda:
-        [self.get_keys(), self.znd_entry()])
-        Label(self.canvas_3, text="-->").place(x=170, y=12)
-        self.btn_4 = ttk.Button(self.canvas_4, text="Probe Movement Port", command=lambda:
-        [self.get_keys(), self.move_entry()])
-        Label(self.canvas_4, text="-->").place(x=170, y=12)
-        self.btn_1.place(relx=0.20, rely=0.3, anchor=N)
-        self.btn_2.place(relx=0.20, rely=0.3, anchor=N)
-        self.btn_3.place(relx=0.15, rely=0.3, anchor=N)
-        self.btn_4.place(relx=0.23, rely=0.3, anchor=N)
-        self.znd_text = self.canvas_1.create_text(230, 20, text=" ", fill="black",
+        self.btn_1 = Button(self.canvas_1, text="ODM monitor port", command=self.monitor_entry, font=('Courier', 12))
+        Label(self.canvas_1, text="-->").place(x=240, y=12)
+        self.btn_2 = Button(self.canvas_2, text="Probe Interface Port", command=self.probe_entry, font=('Courier', 12))
+        Label(self.canvas_2, text="-->").place(x=240, y=12)
+        self.btn_3 = Button(self.canvas_3, text="Analyser port", command=self.znd_entry, font=('Courier', 12))
+        Label(self.canvas_3, text="-->").place(x=240, y=12)
+        self.btn_4 = Button(self.canvas_4, text="Probe Movement Port", command=self.move_entry, font=('Courier', 12))
+        Label(self.canvas_4, text="-->").place(x=240, y=12)
+        self.btn_1.place(x=15, y=15)
+        self.btn_2.place(x=15, y=15)
+        self.btn_3.place(x=15, y=15)
+        self.btn_4.place(x=15, y=15)
+        self.znd_text = self.canvas_1.create_text(330, 20, text=" ", fill="black",
                                                   font=(OnScreenKeys.FONT_NAME, 14, "bold"))
-        self.probe_text = self.canvas_2.create_text(230, 20, text=" ", fill="black",
+        self.probe_text = self.canvas_2.create_text(330, 20, text=" ", fill="black",
                                                     font=(OnScreenKeys.FONT_NAME, 14, "bold"))
-        self.monitor_text = self.canvas_3.create_text(230, 20, text=" ", fill="black",
+        self.monitor_text = self.canvas_3.create_text(330, 20, text=" ", fill="black",
                                                       font=(OnScreenKeys.FONT_NAME, 14, "bold"))
-        self.move_text = self.canvas_4.create_text(230, 20, text=" ", fill="black",
+        self.move_text = self.canvas_4.create_text(330, 20, text=" ", fill="black",
                                                    font=(OnScreenKeys.FONT_NAME, 14, "bold"))
 
         self.text_area.config(state=NORMAL)
@@ -130,24 +133,28 @@ class AdminPorts(tk.Frame):
         self.btn_4.config(state=NORMAL)
 
     def znd_entry(self):
+        self.get_keys()
         self.current_user = ""
         data = self.wait_for_response(self.canvas_1, self.znd_text)
         self.analyser_usb = data
         self.set_buttons_norm()
 
     def probe_entry(self):
+        self.get_keys()
         self.current_user = ""
         data = self.wait_for_response(self.canvas_2, self.probe_text)
         self.com_port = data
         self.set_buttons_norm()
 
     def monitor_entry(self):
+        self.get_keys()
         self.current_user = ""
         data = self.wait_for_response(self.canvas_3, self.monitor_text)
         self.monitor = data
         self.set_buttons_norm()
 
     def move_entry(self):
+        self.get_keys()
         self.current_user = ""
         data = self.wait_for_response(self.canvas_4, self.move_text)
         self.move_probe = data

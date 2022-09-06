@@ -1,5 +1,6 @@
 import unittest
 from tkinter import messagebox as mb
+from tkinter import *
 import ProbeInterface
 import Datastore
 import ProbeTest
@@ -7,6 +8,8 @@ import PI
 import tkinter as tk
 import Ports
 import SecurityManager
+import BatchManager
+import Connection
 
 PRI = ProbeInterface.PRI()
 DS = Datastore.Data_Store()
@@ -15,6 +18,8 @@ P = PI
 SER = Ports
 SM = SecurityManager.SecurityManager()
 U = SecurityManager
+BM = BatchManager.BatchManager()
+CO = Connection
 
 class ProbeTests(unittest.TestCase):
 
@@ -22,7 +27,8 @@ class ProbeTests(unittest.TestCase):
         self.parent = tk.Tk()
         self.controller = tk.Tk()
         self.PT = PT.TestProgramWindow(self.parent, self.controller)
-        self.batch = "12568A"
+        self.CO = CO.Connection(self.parent,self.controller)
+        self.batch = "12568B"
         self.type = "DP12"
         self.qty = 10
 
@@ -34,7 +40,7 @@ class ProbeTests(unittest.TestCase):
         self.PT.display_layout()
         expected_result_probe_in = True
         expected_result_probe_out = False
-
+        mb.showinfo(title="test", message="Remove any probes.")
         # Test the bits for a probe has been inserted #
         result_probe_out = self.PT.check_probe_present()
         self.assertEqual(result_probe_out, expected_result_probe_out)
@@ -53,8 +59,9 @@ class ProbeTests(unittest.TestCase):
         mb.showinfo(title="Probe test", message="Insert a probe")
 
         probe_present = PRI.probe_present()
-
+        mb.showinfo(title="test",message="Remove any probes.")
         self.assertEqual(probe_present, expected_result_probe_in)
+
 
     # Detect a probe that has a programmed with a serial number.
     def test_probe_programmed(self):
@@ -74,30 +81,8 @@ class ProbeTests(unittest.TestCase):
         result_probe_in = PRI.read_first_bytes()
         self.assertEqual(result_probe_in, probe_is_programmed)
 
-
-
-        # probe_data = P.GenerateDataString(probe_type)
-        #
-        # data_result = len(probe_data)
-        #
-        # self.assertGreater(data_result, 0)
-        #
-        # PRI.probe_write(probe_data[0])
-        #
-        # check = PRI.read_all_bytes()
-        #
-        # serial_number = PRI.read_serial_number()
-        #
-        # self.assertEqual(check, serial_number)
-        #
-        # # Check probe program from the 'TestProbe' metho#
-        #
-        # snum = self.PT.program_probe(self)
-        #
-        # self.assertEqual(snum, serial_number)
-
     # Detect a completed batch.
-    def test_completed_batch(self):
+    def test_z_completed_batch(self):
         print("Detect a completed batch")
         batch = SER.Probes(self.type,self.batch,1,self.qty)
         DS.write_probe_data(batch)
@@ -113,10 +98,51 @@ class ProbeTests(unittest.TestCase):
     # Detect a passed probe.
     def test_detect_passed_probe(self):
         print("Detect a passed probe")
+        expected = 'Pass'
+        odm = SER.Ports(analyer='COM3',active=False)
+        DS.write_device_to_file(odm)
+        self.PT.reset()
+        mb.showinfo(title="test",message="Insert a passed probe.")
+        result,marker_data, odm_data = self.PT.test_probe()
+        print(f"{result} , {marker_data} , {odm_data}")
+
+        self.assertEqual(result, expected)
+
 
     # Detect a failed probe.
     def test_detect_failed_probe(self):
         print("Detect a failed probe")
+        expected = 'Fail'
+        odm = SER.Ports(analyer='COM3',active=False)
+        DS.write_device_to_file(odm)
+        self.PT.reset()
+        mb.showinfo(title="test",message="Insert a failed probe.")
+        result, marker_data, odm_data = self.PT.test_probe()
+        print(f"{result} , {marker_data} , {odm_data}")
+
+        self.assertEqual(result, expected)
+
+    def test_programme_good_probe(self):
+        print("Test do program and test a passed probe")
+        expected = True
+        odm = SER.Ports(probe='COM4',analyer='COM3', active=False)
+        DS.write_device_to_file(odm)
+        self.PT.reset()
+        mb.showinfo(title="test", message="Insert a passed probe.")
+        result = self.PT.do_program_and_test(self.batch)
+
+        self.assertEqual(result,expected)
+
+    def test_program_fail_probe(self):
+        print("Test do program and test a fail probe")
+        expected = False
+        odm = SER.Ports(probe='COM4',analyer='COM3', active=False)
+        DS.write_device_to_file(odm)
+        self.PT.reset()
+        mb.showinfo(title="test", message="Insert a failed probe.")
+        result = self.PT.do_program_and_test(self.batch)
+
+        self.assertEqual(result, expected)
 
     def test_logged_in_user(self):
         print("Test logged in user")
@@ -133,6 +159,23 @@ class ProbeTests(unittest.TestCase):
 
     def test_suspend_batch(self):
         print("Test suspend batch")
+        self.PT.probe_type.set(self.type)
+        self.PT.current_batch.set(self.batch)
+        self.PT.probes_passed.set(40)
+        self.PT.left_to_test.set(self.qty)
+        self.PT.suspnd_btn_clicked()
+
+        last_line = BM.CSVM.ReadLastLine(self.batch)[0]
+
+        print(last_line)
+
+        result_batch = last_line[0]
+        result_type = last_line[2]
+        result_qty = int(last_line[3])
+
+        self.assertEqual(result_batch, self.batch)
+        self.assertEqual(result_type,self.type)
+        self.assertEqual(result_qty,self.qty)
 
     def test_repair_probe(self):
         print("Test repair probe")
@@ -151,6 +194,7 @@ class ProbeTests(unittest.TestCase):
 
     def test_probe_length(self):
         print("Test probe length")
+
 
     def test_reflection_test(self):
         pass

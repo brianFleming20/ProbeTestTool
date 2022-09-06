@@ -112,12 +112,12 @@ class FaultFindWindow(tk.Frame):
         ttk.Label(self.canvas_back, textvariable=self.cable_len, relief=SUNKEN,
                   width=14, font=("Courier", 14)).place(relx=0.2, rely=0.53, anchor='w')
 
-        ttk.Label(self.canvas_back, text='Serial Number: ', background='#B1D0E0', font=("Courier",14)).place(
+        ttk.Label(self.canvas_back, text='Serial Number: ', background='#B1D0E0', font=("Courier",16)).place(
             relx=0.68, rely=0.18, anchor='w')
-        ttk.Label(self.canvas_back, textvariable=self.read_probe_number, relief=SUNKEN, width=28).place(relx=0.68, rely=0.25,
-                                                                                                   anchor='w')
-        ttk.Label(self.canvas_back, text='From Probe: ', background='#B1D0E0', font=("Courier",14)).place(
-            relx=0.58, rely=0.25, anchor='w')
+        ttk.Label(self.canvas_back, textvariable=self.read_probe_number,
+                  relief=SUNKEN, width=28, font=("Courier",20)).place(relx=0.68, rely=0.25,anchor='w')
+        ttk.Label(self.canvas_back, text='From Probe:', background='#B1D0E0', font=("Courier",16)).place(
+            relx=0.56, rely=0.25, anchor='w')
 
         ttk.Label(self.canvas_back, text="Probe parameter data", background='#B1D0E0', font=("Courier",14)).place(
             relx=0.7, rely=0.42, anchor="w")

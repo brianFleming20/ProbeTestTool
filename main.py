@@ -28,6 +28,7 @@ import AdminUser
 import FaultFinder
 import Connection
 import AdminPortControl
+import RetestProbe
 
 UL = UserLogin
 SE = Sessions
@@ -37,6 +38,7 @@ AU = AdminUser
 FF = FaultFinder
 CO = Connection
 AP = AdminPortControl
+RT = RetestProbe
 
 # define global variables
 PTT_Version = 'Deltex Medical : P0035 Probe Test Tool V2.2'
@@ -100,6 +102,7 @@ class WindowController(tk.Tk):
                   AU.ChangePasswordWindow,
                   AU.EditUserWindow,
                   PT.TestProgramWindow,
+                  RT.RetestProbe,
                   FF.FaultFindWindow):
             frame = F(container, self)
 

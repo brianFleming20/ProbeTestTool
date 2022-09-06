@@ -93,8 +93,9 @@ class AdminWindow(tk.Frame):
         ###################
         # Show user list  #
         ###################
-        self.userListBox = Listbox(self.canvas_back, height=15, width=28)
+        self.userListBox = Listbox(self.canvas_back, height=11, width=18)
         self.userListBox.place(relx=0.38, rely=0.35)
+        self.userListBox.config(font=("Courier", 16))
 
         ttk.Label(self.canvas_back, text="Deltex", background="#FFDAB9", foreground="#003865",
                   font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
@@ -122,14 +123,14 @@ class AdminWindow(tk.Frame):
         self.userListBox.delete(0, END)
         # fill the listbox with the list of users
         for item in userList:
-            self.userListBox.insert(END, item)
+            self.userListBox.insert(END, ' ' + item)
         # Getting the selected user
 
         # Read admin state of the check box
         if self.admin_state.get():
-            self.text_area.insert('4.0', '\nProbe re-programming is enabled.')
+            self.text_area.insert('4.0', '\nProbe serial number re-issue enabled.')
         else:
-            self.text_area.insert('4.0', '\nProbe re-programming is disabled.')
+            self.text_area.insert('4.0', '\nProbe serial number re-issue disabled.')
         self.userListBox.config(state=DISABLED)
         self.text_area.config(state=DISABLED)
 
@@ -156,25 +157,24 @@ class AdminWindow(tk.Frame):
         ####################
         # Show user input  #
         ####################
-        self.canvas = Canvas(bg="#eae9e9", width=250, height=200)
-        self.canvas.place(relx=0.12, rely=0.38)
-        ttk.Button(self.canvas, text='Add a new user',
-                   command=lambda: [self.canvas_gone(), self.control.show_frame(AddUserWindow)]).place(relx=0.1,
-                                                                                                       rely=0.14,
-                                                                                                       anchor=W)
-        ttk.Button(self.canvas, text='Edit a current user',
-                   command=lambda: [self.canvas_gone(),
-                                    self.control.show_frame(EditUserWindow)]).place(relx=0.1, rely=0.48, anchor=W)
-        ttk.Button(self.canvas, text='Edit a device port number', command=lambda:
-        [self.canvas_gone(), self.control.show_frame(AP.AdminPorts)]).place(relx=0.1, rely=0.8, anchor=W)
+        self.canvas = Canvas(bg="#eae9e9", width=320, height=260)
+        self.canvas.place(relx=0.11, rely=0.38)
+        self.btn1 = Button(self.canvas, text='Add a new user', command=self.to_new_user, font=("Courier", 12))
+        self.btn1.place(relx=0.1,rely=0.14,height=50,anchor=W)
+
+        Button(self.canvas, text='Edit a current user',command=self.to_edit_user,
+               font=("Courier", 12)).place(relx=0.1, rely=0.48, height=50, anchor=W)
+        Button(self.canvas, text='Edit a device port number',
+               command=self.to_devices, font=("Courier", 12)).place(relx=0.1, rely=0.8, height=50, anchor=W)
         Button(self.canvas_back, text='Exit', width=40, command=self.canvas_gone).place(height=40,
                                                                                         width=180, relx=0.88, rely=0.82,
                                                                                         anchor=E)
-        ttk.Button(self.canvas_back, text="Browse", command=lambda: self.get_browse_file()).place(relx=0.48, rely=0.75)
+        ttk.Button(self.canvas_back, text="Browse", command=lambda: self.get_browse_file()).place(relx=0.5, rely=0.74,
+                                                                                                  height=50, width=120)
         self.location.set(DS.get_file_location()['File'])
         title = ttk.Label(self.canvas_back, text="File storage location", font=("Courier", 14), background='#FFDAB9')
         title.place(relx=0.1, rely=0.7)
-        ttk.Label(self.canvas_back, textvariable=self.location, font=("Courier", 14)).place(relx=0.1, rely=0.75, width=500)
+        ttk.Label(self.canvas_back, textvariable=self.location, font=("Courier", 14)).place(relx=0.1, rely=0.75, width=520)
 
     def get_browse_file(self):
         default_loc = "/PTT_Results"
@@ -197,6 +197,18 @@ class AdminWindow(tk.Frame):
     def set_odm_state(self):
         odm_state = LO.Ports(active=self.odm_active.get())
         DS.write_device_to_file(odm_state)
+
+    def to_new_user(self):
+        self.canvas_gone()
+        self.control.show_frame(AddUserWindow)
+
+    def to_edit_user(self):
+        self.canvas_gone()
+        self.control.show_frame(EditUserWindow)
+
+    def to_devices(self):
+        self.canvas_gone()
+        self.control.show_frame(AP.AdminPorts)
 
 
 class ChangePasswordWindow(tk.Frame):
@@ -225,45 +237,51 @@ class ChangePasswordWindow(tk.Frame):
         self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
         self.text_area.place(x=40, y=70)
 
-        self.confm_btn = ttk.Button(
-            self, text='Confirm', command=lambda:
-            [self.canvas_1.destroy(), self.canvas_2.destroy(), self.password_change()])
+        self.confm_btn = Button(
+            self, text='Confirm', command=self.confirm, font=('Courier', 16))
         self.confm_btn.place(height=40, width=180, relx=0.88, rely=0.83, anchor=E)
 
-        self.confm_btn = ttk.Button(
-            self, text='Back', command=lambda:
-            [self.canvas_1.destroy(), self.canvas_2.destroy(), self.btn.destroy(),
-             controller.show_frame(EditUserWindow)])
-        self.confm_btn.place(height=35, width=80, relx=0.625, rely=0.83, anchor=E)
+        self.back_btn = Button(
+            self, text='Back', command=self.back, font=('Courier', 14))
+        self.back_btn.place(height=35, width=80, relx=0.625, rely=0.83, anchor=E)
+
+    def confirm(self):
+        self.canvas_1.destroy()
+        self.canvas_2.destroy()
+        self.password_change()
+
+    def back(self):
+        self.canvas_1.destroy()
+        self.canvas_2.destroy()
+        self.btn.destroy()
+        self.control.show_frame(EditUserWindow)
 
     def refresh_window(self):
         ##############################
         # Set up user entry options  #
         ##############################
-        self.canvas_1 = Canvas(bg="#eae9e9", width=400, height=45)
-        self.canvas_1.place(relx=0.35, rely=0.4)
-        self.canvas_2 = Canvas(bg="#eae9e9", width=400, height=45)
-        self.canvas_2.place(relx=0.35, rely=0.5)
-        self.pass1_text = self.canvas_1.create_text(240, 20, text=" ", fill="black",
+        self.canvas_1 = Canvas(bg="#eae9e9", width=550, height=48)
+        self.canvas_1.place(relx=0.3, rely=0.4)
+        self.canvas_2 = Canvas(bg="#eae9e9", width=550, height=48)
+        self.canvas_2.place(relx=0.3, rely=0.54)
+        self.pass1_text = self.canvas_1.create_text(350, 20, text=" ", fill="black",
                                                     font=(OnScreenKeys.FONT_NAME, 16, "bold"))
-        self.pass2_text = self.canvas_2.create_text(240, 20, text=" ", fill="black",
-                                                    font=(OnScreenKeys.FONT_NAME, 14, "bold"))
+        self.pass2_text = self.canvas_2.create_text(350, 20, text=" ", fill="black",
+                                                    font=(OnScreenKeys.FONT_NAME, 16, "bold"))
 
-        self.CPWb1 = ttk.Button(self.canvas_1, text='Enter a new password', command=lambda:
-        [self.get_keys(), self.password_entry()])
+        self.CPWb1 = Button(self.canvas_1, text='Enter new password', font=('Courier', 12), command=self.password_entry)
         # Set keyboard icon to show button is used to show the keyboard
-        Label(self.canvas_1, text="-->").place(x=170, y=12)
-        self.CPWb1.place(relx=0.2, rely=0.3, anchor=N)
+        Label(self.canvas_1, text="-->").place(x=230, y=12)
+        self.CPWb1.place(x=15, y=15)
 
-        self.CPWb2 = ttk.Button(self.canvas_2, text='Confirm new password', command=lambda:
-        [self.get_keys(), self.conform_pwd()])
-        Label(self.canvas_2, text="-->").place(x=170, y=12)
-        self.CPWb2.place(relx=0.2, rely=0.3, anchor=N)
+        self.CPWb2 = Button(self.canvas_2, text='Confirm new password', font=('Courier', 12), command=self.conform_pwd)
+        Label(self.canvas_2, text="-->").place(x=230, y=12)
+        self.CPWb2.place(x=15, y=15)
         self.is_admin = DS.user_admin_status()
         self.btn = Checkbutton(text=" Admin status ",
-                               variable=self.is_admin, command=self.set_admin_state,
-                               font=("Courier", 10))
-        self.btn.place(relx=0.35, rely=0.6)
+                               variable=self.is_admin,command=self.set_admin_state,
+                               font=("Courier", 14))
+        self.btn.place(relx=0.35, rely=0.68)
 
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
@@ -272,12 +290,14 @@ class ChangePasswordWindow(tk.Frame):
         self.text_area.config(state=DISABLED)
 
     def password_entry(self):
+        self.get_keys()
         pw_data = self.wait_for_response(self.canvas_1, self.pass1_text)
         self.CPWb1.config(state=NORMAL)
         self.CPWb2.config(state=NORMAL)
         self.newPassword = pw_data
 
     def conform_pwd(self):
+        self.get_keys()
         DS.write_to_from_keys(" ")
         pw_data = self.wait_for_response(self.canvas_2, self.pass2_text)
         self.CPWb1.config(state=NORMAL)
@@ -566,18 +586,12 @@ class AddUserWindow(tk.Frame):
         self.canvas_1.destroy(), self.canvas_2.destroy(), self.canvas_3.destroy()
 
     def refresh_window(self):
-        ttk.Radiobutton(
-            self, text='Admin', variable=self.is_admin, value=True).place(relx=0.7, rely=0.35, anchor=CENTER)
-        ttk.Radiobutton(
-            self, text='Non-Admin', variable=self.is_admin, value=False).place(relx=0.7, rely=0.45, anchor=CENTER)
-        self.get_admin_status()
-        self.is_admin.set(0)
         # create a list of the current users using the dictionary of users
-        self.canvas_1 = Canvas(bg="#eae9e9", width=400, height=45)
+        self.canvas_1 = Canvas(bg="#eae9e9", width=520, height=45)
         self.canvas_1.place(relx=0.15, rely=0.3)
-        self.canvas_2 = Canvas(bg="#eae9e9", width=400, height=45)
+        self.canvas_2 = Canvas(bg="#eae9e9", width=520, height=45)
         self.canvas_2.place(relx=0.15, rely=0.4)
-        self.canvas_3 = Canvas(bg="#eae9e9", width=400, height=45)
+        self.canvas_3 = Canvas(bg="#eae9e9", width=520, height=45)
         self.canvas_3.place(relx=0.15, rely=0.5)
         self.name_text = self.canvas_1.create_text(240, 20, text=" ", fill="black",
                                                    font=(OnScreenKeys.FONT_NAME, 16, "bold"))
@@ -585,15 +599,23 @@ class AddUserWindow(tk.Frame):
                                                     font=(OnScreenKeys.FONT_NAME, 14, "bold"))
         self.pass2_text = self.canvas_3.create_text(240, 20, text=" ", fill="black",
                                                     font=(OnScreenKeys.FONT_NAME, 14, "bold"))
-        self.AUWl1 = ttk.Button(self.canvas_1, text='New user name: ', command=self.name_entry)
-        Label(self.canvas_1, text="-->").place(x=170, y=12)
-        self.AUWl2 = ttk.Button(self.canvas_2, text='Enter Password: ', command=self.password_entry)
-        Label(self.canvas_2, text="-->").place(x=170, y=12)
-        self.AUWl3 = ttk.Button(self.canvas_3, text='Confirm Password: ', command=self.conform_pwd)
-        Label(self.canvas_3, text="-->").place(x=170, y=12)
-        self.AUWl1.place(x=20, y=12)
-        self.AUWl2.place(x=20, y=12)
-        self.AUWl3.place(x=20, y=12)
+        self.AUWl1 = Button(self.canvas_1, text='New user name: ', font=('Courier', 12), command=self.name_entry)
+        Label(self.canvas_1, text="-->",font=('Courier', 12)).place(x=185, y=12)
+        self.AUWl2 = Button(self.canvas_2, text='Enter Password: ', font=('Courier', 12),command=self.password_entry)
+        Label(self.canvas_2, text="-->",font=('Courier', 12)).place(x=185, y=12)
+        self.AUWl3 = Button(self.canvas_3, text='Confirm Password: ', font=('Courier', 12),command=self.conform_pwd)
+        Label(self.canvas_3, text="-->",font=('Courier', 12)).place(x=185, y=12)
+        self.AUWl1.place(x=15, y=12)
+        self.AUWl2.place(x=15, y=12)
+        self.AUWl3.place(x=15, y=12)
+
+        Radiobutton(
+            self, text='Admin', variable=self.is_admin, font=('Courier', 14), value=True).place(relx=0.7, rely=0.35, anchor=CENTER)
+        Radiobutton(
+            self, text='Non-Admin', variable=self.is_admin, font=('Courier', 14), value=False).place(relx=0.7, rely=0.45, anchor=CENTER)
+        self.get_admin_status()
+        self.is_admin.set(0)
+
         self.text_area.delete('1.0', 'end')
         self.text_area.insert('1.0', DS.get_username())
         self.text_area.insert('2.0', '\nPlease complete the form.')
@@ -671,11 +693,11 @@ class AddUserWindow(tk.Frame):
                 break
             if block:
                 master.itemconfig(label, text=password_blank[:pw_len])
-                ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.7, rely=0.3, width=150,
+                ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.62, rely=0.3, width=250,
                                                                                          anchor=N)
             else:
                 master.itemconfig(label, text=pw_data)
-                ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.7, rely=0.3, width=150, anchor=N)
+                ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.62, rely=0.3, width=250, anchor=N)
             Tk.update(master)
         return pw_data
 

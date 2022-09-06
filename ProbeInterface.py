@@ -118,7 +118,6 @@ class PRI(object):
         '''
         pass in a list of bytes, writes a byte at a time to the probe
         '''
-        print(data)
         self.get_serial_port()
         for item in data:
             self.send_data(item)

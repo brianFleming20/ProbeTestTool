@@ -123,7 +123,7 @@ class Connection(tk.Frame):
         else:
             odm_active = True
 
-        ports = Ports.Ports(odm=odm_port, probe=probe_port, analyer=analyser_port,active=odm_active)
+        ports = Ports.Ports(odm=odm_port, probe=probe_port, analyer=analyser_port, active=odm_active)
         DS.write_device_to_file(ports)
 
         Tk.update(self)

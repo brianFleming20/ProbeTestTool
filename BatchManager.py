@@ -92,8 +92,8 @@ class BatchManager(object):
             time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             Stime_now = str(time_now)
             info = [batchnumber, " Suspended Batch ", probe_type, probes_left, user, " ", " ", " On ", Stime_now]
-            self.CSVM.WriteListOfListsCSV(info, batchnumber)
-            return True
+            return self.CSVM.WriteListOfListsCSV(info, batchnumber)
+
         else:
             self.current_batch = False
             return False
@@ -107,7 +107,7 @@ class BatchManager(object):
         data_list.extend(data)
         time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         data_list.append(time_now)
-        return self.CSVM.WriteProbeDataToFile(data_list, batch)
+        return self.CSVM.WriteListOfListsCSV(data_list, batch)
 
     def CompleteBatch(self, batch):
         '''
@@ -186,13 +186,13 @@ class BatchManager(object):
     # def ReadProbeSerialNumber(self, batchNumber):
     #     info = self.GetBatchObject(batchNumber)
 
-    def competed_text(self, user, probe_type, batch_number, batch_qty, failures, scrapped):
-        print(f"{batch_number} - completed")
+    def competed_text(self, user, probe_type, batch_number, batch_qty, failures, passed):
         time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         Stime_now = str(time_now)
         info = [batch_number, " Completed by - ", user, " of ", probe_type, " On ", Stime_now, f" Failed = {failures}",
-                f"Scrapped = {scrapped}"]
+                f"Passed = {passed}"]
         self.CSVM.WriteListOfListsCSV(info, batch_number)
+        scrapped = 0
         removed = 0
         makeup = 0
         if not failures and not scrapped:
@@ -268,7 +268,6 @@ class CSVManager(object):
                 batches.append(newItem)
 
         return batches
-        # return self.get_file_names(self, inprogress)
 
     def get_file_names_completed(self):
         '''
@@ -288,8 +287,6 @@ class CSVManager(object):
                 batches.append(str(newItem))
 
         return batches
-        # complete = "complete"
-        # return self.get_file_names(self, complete)
 
     def get_file_names(self, file_type):
         '''
@@ -338,27 +335,24 @@ class CSVManager(object):
         # create the full path
         fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
 
-        # write the list to the CSV file
-        with open(fullPath, 'a', newline='') as file:
-            # Create a writer object from csv module
-            datawriter = csv.writer(file)
-            # Add contents of list as last row in the csv file
-            datawriter.writerow(inputList)
-        # file.close()
-
-    def WriteProbeDataToFile(self, data_list, batch):
-        filename = DS.get_current_batch()
-
-        fullPath = os.path.abspath(self.inProgressPath + batch + '.csv')
-        # inputList = [serialNumber,fileName,analyserData,user,pv_data,time]
         try:
             with open(fullPath, 'a', newline='') as file:
-
                 datawriter = csv.writer(file)
-                datawriter.writerow(data_list)
+                datawriter.writerow(inputList)
                 return True
         except FileNotFoundError:
             return False
+
+
+    # def WriteProbeDataToFile(self, data_list, batch):
+    #     fullPath = os.path.abspath(self.inProgressPath + batch + '.csv')
+    #     try:
+    #         with open(fullPath, 'a', newline='') as file:
+    #             datawriter = csv.writer(file)
+    #             datawriter.writerow(data_list)
+    #             return True
+    #     except FileNotFoundError:
+    #         return False
 
     def WriteCSVTitles(self, fileName):
         '''
@@ -366,14 +360,15 @@ class CSVManager(object):
         pass in a list, save each item in the list as a new row in the csv file. Can also handle a list of lists
         '''
         # create the full path
-        fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
+        # fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
         header = ['Batch No', 'Serial Number', 'Batch Type', 'Batch Qty', 'Username', 'Probe length (tdr)',
                   'NanoVNA marker3', ' ODM PV', 'Date and Time Tested']
         # write the list to the CSV file
-        with open(fullPath, 'a+', newline='') as csvfile:
-            data_writer = csv.writer(csvfile)
-            data_writer.writerow(header)
-        csvfile.close()
+        self.WriteListOfListsCSV(header,fileName)
+        # with open(fullPath, 'a+', newline='') as csvfile:
+        #     data_writer = csv.writer(csvfile)
+        #     data_writer.writerow(header)
+
 
     def MoveToCompleted(self, fileName):
         '''

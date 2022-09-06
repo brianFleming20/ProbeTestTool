@@ -38,6 +38,7 @@ import Ports
 import ProbeTest
 import ProbeInterface
 import os
+import RetestProbe
 
 BM = BatchManager.BatchManager()
 SM = SecurityManager.SecurityManager()
@@ -50,6 +51,7 @@ AU = AdminUser
 PT = ProbeTest
 PI = ProbeInterface.PRI()
 PM = ProbeManager.ProbeManager()
+RP = RetestProbe
 
 
 def ignore():
@@ -156,10 +158,10 @@ class SessionSelectWindow(tk.Frame):
         self.text_area.config(state=DISABLED)
 
     def completed_btn_clicked(self):
-        self.complete_canvas = Canvas(bg="#eae9e9", width=200, height=300)
+        self.complete_canvas = Canvas(bg="#eae9e9", width=220, height=350)
         self.complete_canvas.place(relx=0.73, rely=0.25)
         self.complete_canvas.create_text(100, 20, text="Probes Completed", fill="black",
-                                         font=(OnScreenKeys.FONT_NAME, 12, "bold"))
+                                         font=(OnScreenKeys.FONT_NAME, 14, "bold"))
         ttk.Button(self.complete_canvas, text="Close",
                    command=self.complete_canvas.destroy).place(x=120, y=270)
         item = 0
@@ -167,9 +169,13 @@ class SessionSelectWindow(tk.Frame):
             position = (item * 20) + 50
             item += 1
             self.complete_canvas.create_text(80, position, text=f"{probes}", fill="black",
-                                             font=(OnScreenKeys.FONT_NAME, 10))
+                                             font=(OnScreenKeys.FONT_NAME, 14))
 
     def logout(self):
+        try:
+            self.complete_canvas.destroy()
+        except:
+            pass
         SM.logOut()
         self.control.show_frame(UL.LogInWindow)
 
@@ -177,124 +183,7 @@ class SessionSelectWindow(tk.Frame):
         probe_port = CO.sort_probe_interface(self)
         port = P.Ports(probe=probe_port)
         DS.write_device_to_file(port)
-        PT.probe_canvas(self, " Insert a failed probe. \n or press Cancel", True)
-        self.info_canvas = None
-
-    def remove_probe(self):
-        self.info_canvas = False
-        PT.probe_canvas(self, "Please remove probe", False)
-        while PI.probe_present():
-            pass
-        PT.text_destroy(self)
-
-    def yes_answer(self):
-        while not PI.probe_present():
-            pass
-        PT.text_destroy(self)
-
-        binary_str = codecs.decode(PI.read_serial_number(), "hex")
-        serial_number = str(binary_str)[2:18]
-        probe_type = serial_number[:4]
-        self.probe_date = serial_number[8:]
-        filepath = DS.get_file_location()
-        path = filepath['File']
-        inProgressPath = os.path.join(path, "in_progress", "")
-        completePath = os.path.join(path, "complete", "")
-        print("start")
-        if self.probe_date:
-            PT.probe_canvas(self, "Checking in-progress folder", False)
-            self.check_folder(inProgressPath,self.probe_date, probe_type)
-            PT.text_destroy(self)
-        elif self.probe_date:
-            PT.probe_canvas(self, "Checking Complete folder", False)
-            self.check_folder(completePath,self.probe_date, probe_type)
-            PT.text_destroy(self)
-        else:
-            self.passed_probe()
-
-    def check_folder(self, folder, probe_date, probe_data):
-        for file_loc in os.listdir(folder):
-            lines = BM.CSVM.ReadAllLines(file_loc[:-4])
-            for batch in lines:
-                self.batch_from_file = file_loc[:-4]
-                SN = batch[0][1:-1]
-                if len(SN) > 5:
-                    if 'Fail' in SN:
-                        print("found")
-                        self.probe_type = self.get_probe_type(probe_data[:-1])
-                        print(f"{probe_date} - {SN[8:]}")
-                        if SN[8:] == probe_date:
-                            self.test = True
-                    # else:
-                    #     PT.text_destroy(self)
-        if self.test:
-            print("Testing found probe")
-            retest = tm.askyesno(title="Inserted probe",
-                                 message=f"({self.batch_from_file})\n Is this Batch number correct")
-
-            if retest:
-                PT.probe_canvas(self, f" ({self.batch_from_file}) \nRe-testing - {self.probe_type} - probe", False)
-                results, marker_data, odm_data = PT.TestProgramWindow.test_probe(self)
-
-                PT.text_destroy(self)
-                sleep(2)
-                PT.probe_canvas(self, f" ({self.batch_from_file}) \n{self.probe_type} - probe passed", False)
-                if results:
-                    SN_seperated = []
-                    limit = 16
-                    start = 0
-                    dec_start = '53A00900'
-                    end = '50'
-                    pcb_serial_number = PM.read_serial_number()
-                    binary_str = codecs.decode(pcb_serial_number, "hex")
-                    print(f"serial number = {str(binary_str)[2:18]}")
-                    SN_bytes = PI.read_all_bytes()
-                    while limit <= len(SN_bytes):
-                        makeup = dec_start + SN_bytes[start:limit] + end
-                        SN_seperated.append(makeup)
-                        limit += 16
-                        start += 16
-                    probe_type = SN_seperated[0][8:16]
-                    probe_sn = SN_seperated[1][8:-2]
-                    new_probe_sn = probe_type + '3232' + probe_sn + '3031'
-                    new_probe_bin = codecs.decode(new_probe_sn, 'hex')
-                    new_probe = new_probe_bin.decode('utf-8')
-                    PM.construct_new_serial_number(new_probe, True)
-                sleep(3)
-                PT.text_destroy(self)
-                self.remove_probe()
-        else:
-            return False
-
-    def no_answer(self):
-        self.info_canvas = False
-        PT.text_destroy(self)
-
-    def passed_probe(self):
-        self.info_canvas = False
-        PT.probe_canvas(self, "Please remove the probe.\n\nInsert a failed probe.", False)
-        while PI.probe_present():
-            pass
-        PT.text_destroy(self)
-
-    def get_probe_type(self,probe_data):
-        probe_type = "---"
-        if probe_data == "2F0":
-            probe_type = "DP240"
-        elif probe_data == "20C":
-            probe_type = "DP12"
-        elif probe_data == "206":
-            probe_type = "DP6"
-        elif probe_data == "648":
-            probe_type = "I2C"
-        elif probe_data == "618":
-            probe_type = "I2P"
-        elif probe_data == "606":
-            probe_type = "I2S"
-        elif probe_data == "548":
-            probe_type = "KDP72"
-
-        return probe_type
+        self.control.show_frame(RP.RetestProbe)
 
 
 class NewSessionWindow(tk.Frame):
@@ -358,10 +247,10 @@ class NewSessionWindow(tk.Frame):
                               value=value)
             rbn.pack(side=TOP, ipady=5)
 
-        tk.Button(self.canvas_back, text='Continue', font=("Courier", 14), width=20, height=2,
+        tk.Button(self.canvas_back, text='Continue', font=("Courier", 16), width=20, height=2,
                   command=self.to_devices).place(relx=0.82, rely=0.8, anchor=CENTER)
 
-        tk.Button(self.canvas_back, text='Cancel', font=("Courier", 11),
+        tk.Button(self.canvas_back, text='Cancel', font=("Courier", 14),
                   command=self.back).place(relx=0.56, rely=0.8, anchor=CENTER)
 
         self.bind('<Return>', self.confm_btn_clicked)
@@ -369,15 +258,18 @@ class NewSessionWindow(tk.Frame):
                                                       font=(OnScreenKeys.FONT_NAME, 8, "bold"))
         self.qty_text = self.canvas_qty.create_text(220, 20, text=" ", fill="black",
                                                     font=(OnScreenKeys.FONT_NAME, 8, "bold"))
+        # font=('Courier',12),
 
-        self.btn_1 = ttk.Button(self.canvas_type, text='Batch number: ',
-                                command=lambda: [self.get_keys(), self.batch_entry()])
+        self.btn_1 = Button(self.canvas_type, text='Batch number: ', command=self.batch_entry)
         self.btn_1.place(relx=0.21, rely=0.3, anchor=N)
         Label(self.canvas_type, text="-->").place(x=180, y=18)
-        self.btn_2 = ttk.Button(self.canvas_qty, text='Batch Qty: ',
-                                command=lambda: [self.get_keys(), self.qty_entry()])
+
+        self.btn_2 = Button(self.canvas_qty, text='Batch Qty: ', command=self.qty_entry)
         self.btn_2.place(relx=0.18, rely=0.3, anchor=N)
         Label(self.canvas_qty, text="-->").place(x=180, y=18)
+        style = Style(probe_type_frame)
+        style.configure("TButton", font=("arial", 14))
+
         ttk.Label(self.canvas_qty, text=self.batchQty, font=("bold", 14)).place(relx=0.75, rely=0.3, width=140,
                                                                                 anchor=N)
         self.text_area.config(state=NORMAL)
@@ -391,12 +283,14 @@ class NewSessionWindow(tk.Frame):
         self.btn_2.config(state=DISABLED)
 
     def batch_entry(self):
+        self.get_keys()
         data = self.wait_for_response(self.canvas_type, self.type_text)
         self.batchNumber = data
         self.btn_1.config(state=NORMAL)
         self.btn_2.config(state=NORMAL)
 
     def qty_entry(self):
+        self.get_keys()
         data = 0
         data = self.wait_for_response(self.canvas_qty, self.qty_text)
         self.batchQty = int(data)

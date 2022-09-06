@@ -33,11 +33,8 @@ class ProbeManager(object):
         self.show = False
 
     def TestProbe(self):
-        try:
-            r = self.NanoZND.tdr()
-        except:
-            r = False
-        return r
+
+        return True
 
     def ProgramProbe(self, probe_type, test):
         '''
@@ -45,16 +42,16 @@ class ProbeManager(object):
         program the probe as that type
         returns the probes serial number if programming was succesful, False if not
         '''
+        result = False
         if self.test_chip():
             probeData = self.PD.GenerateDataString(probe_type, test)
-            print(probeData[0])
 
         ######################################################
         # get first two lots of 8 bights for error checking  #
         # write the data to the probe                        #
         ######################################################
             if not probeData:
-                return False
+                result = False
             else:
                 PF.probe_write(probeData[0])
         ##############################################
@@ -63,10 +60,9 @@ class ProbeManager(object):
             pd = ''.join(probeData[1])
             check = PF.read_all_bytes()
             if check == pd:
-                sn = PF.read_serial_number()
-                return sn
-            else:
-                return False
+                result = PF.read_serial_number()
+
+            return result
 
     def test_chip(self):
         check = 0
@@ -103,7 +99,7 @@ class ProbeManager(object):
         converted = self.PD.convert_to_hex(serial_number)
         data,stripped = self.PD.create_serial_data(converted,test)
         PF.probe_write(data)
-        pcb_serial_number = PF.read_serial_number()
-        binary_str = codecs.decode(pcb_serial_number, "hex")
-        print(f"serial number now = {str(binary_str)[2:18]}")
+        # pcb_serial_number = PF.read_serial_number()
+        # binary_str = codecs.decode(pcb_serial_number, "hex")
+        # print(f"serial number now = {str(binary_str)[2:18]}")
 

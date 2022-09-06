@@ -103,7 +103,7 @@ class NanoZND(object):
 
 
     def fetch_frequencies(self):
-        self.get_serial_port()
+        # self.get_serial_port()
         if not self.ser_ana.isOpen():
             self.ser_ana.open()
         self.send_data(f"frequencies\r")
@@ -140,6 +140,7 @@ class NanoZND(object):
         self.ser_ana.close()  # close
 
     def tdr(self):
+        self.get_serial_port()
         if not self.ser_ana.isOpen():
             self.ser_ana.open()
         c = 3 * 10**8

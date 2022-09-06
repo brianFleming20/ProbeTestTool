@@ -72,9 +72,9 @@ class LogInWindow(tk.Frame):
         self.password = ""
 
     def entry(self):
-        self.canvas_name = Canvas(bg="#eae9e9", width=500, height=55)
+        self.canvas_name = Canvas(bg="#eae9e9", width=520, height=55)
         self.canvas_name.place(relx=0.35, rely=0.32)
-        self.canvas_pass = Canvas(bg="#eae9e9", width=500, height=55)
+        self.canvas_pass = Canvas(bg="#eae9e9", width=520, height=55)
         self.canvas_pass.place(relx=0.35, rely=0.40)
 
     def refresh_window(self):
@@ -111,10 +111,10 @@ class LogInWindow(tk.Frame):
         DS.write_probe_data(probe_data)
         self.entry()
 
-        self.btn_1 = Button(self.canvas_name, text='Username ',font=("Courier", 12), command=self.name_entry, width=20)
-        Label(self.canvas_name, text="-->").place(x=245, y=14)
-        self.btn_2 = Button(self.canvas_pass, text='Password',font=("Courier", 12), command=self.password_entry, width=20)
-        Label(self.canvas_pass, text="-->").place(x=245, y=14)
+        self.btn_1 = Button(self.canvas_name, text='Username ',font=("Courier", 14), command=self.name_entry, width=20)
+        Label(self.canvas_name, text="-->",font=("Courier", 14)).place(x=248, y=14)
+        self.btn_2 = Button(self.canvas_pass, text='Password',font=("Courier", 14), command=self.password_entry, width=20)
+        Label(self.canvas_pass, text="-->",font=("Courier", 14)).place(x=248, y=14)
         self.name_text = self.canvas_name.create_text(350, 20, text=" ", fill="black",
                                                       font=(OnScreenKeys.FONT_NAME, 16, "bold"))
         self.pass_text = self.canvas_pass.create_text(350, 20, text=" ", fill="black",
