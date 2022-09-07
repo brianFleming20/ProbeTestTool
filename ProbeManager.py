@@ -65,16 +65,14 @@ class ProbeManager(object):
             return result
 
     def test_chip(self):
-        check = 0
+        check = True
         data = self.PD.GenerateDataString("blank",True)
         PF.probe_write(data)
-        result = PF.read_serial_number()
+        result = PF.read_all_bytes()
         for num in result:
-            check += 1
-        if check == len(result):
-            return True
-        else:
-            return False
+            if not num == '0':
+                check = False
+        return check
 
     def ProbePresent(self):
         '''

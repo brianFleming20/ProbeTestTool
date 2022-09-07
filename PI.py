@@ -62,7 +62,6 @@ class ProbeData(object):
 
         The first 8 and last 2 values of each list item are for SC18IM configuration, the bytes inbetween are that actual data that is written
         '''
-
         probezeros = ['53A00900000000000000000050', '53A00908000000000000000050', '53A00910000000000000000050',
                       '53A00918000000000000000050', '53A00920000000000000000050', '53A00928000000000000000050',
                       '53A00930000000000000000050', '53A00938000000000000000050', '53A00940000000000000000050',

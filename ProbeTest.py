@@ -405,6 +405,7 @@ class TestProgramWindow(tk.Frame):
             self.cmplt_btn_clicked()
 
     def do_program_and_test(self, batch):
+        print("Do program and test")
         ################################
         # Program and test probe       #
         ################################
@@ -412,7 +413,9 @@ class TestProgramWindow(tk.Frame):
         self.programmed = False
         self.info_canvas = None
         results, marker, odm_data = self.test_probe()  # Return reflection test, analyser results and monitor data
+        print(f"results {results} : marker {marker} : odm {odm_data}")
         if results == "Pass":
+            print("Pass")
             snum = self.program_probe(DS.get_current_probe_type(), True)
             self.update_results(results, snum, odm_data, batch, marker)
             if not snum:
@@ -420,6 +423,7 @@ class TestProgramWindow(tk.Frame):
             test_result = True
             self.remove_probe()
         elif results == "Fail":
+            print("Fail")
             snum = self.program_probe(DS.get_current_probe_type(), False)
             self.update_results(results, snum, odm_data, batch, marker)
             self.show_red_light()
@@ -468,6 +472,7 @@ class TestProgramWindow(tk.Frame):
         #################################################
 
     def program_probe(self, probe_type, test):
+        print("Program probe")
         self.action.set(self.warning_text["9"])
         serialNumber = PM.ProgramProbe(probe_type, test)
         self.programmed = True
@@ -583,9 +588,10 @@ class TestProgramWindow(tk.Frame):
         self.action.set(self.warning_text["10"])
         self.show_amber_image()
         results = "Fail"
-        odm_data = self.update_odm_data()
+        # odm_data = self.update_odm_data()
         reflection = PM.TestProbe()  # Returns a value from the analyser, later this will be from the reflection test
         marker_data = ZND.tdr()  # Returns a value from the analyser
+        odm_data = self.update_odm_data()
         ###################################################
         # Probe passed                                    #
         ###################################################
@@ -593,6 +599,7 @@ class TestProgramWindow(tk.Frame):
             if LOWER_LIMIT < marker_data < UPPER_LIMIT:
                 # Also check marker data from analyser too
                 results = "Pass"
+
             else:
                 self.action.set(self.warning_text["13"])
         else:
@@ -611,10 +618,14 @@ class TestProgramWindow(tk.Frame):
     ################################
 
     def update_odm_data(self):
+        passing = 0
+        fail = 0
+        print("Update ODM")
         if DS.get_devices()['odm_active']:
             serial_results = ODM.ReadSerialODM()
             if not serial_results:
                 serial_results = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
             self.SD_data.set(serial_results[5])
             self.FTc_data.set(serial_results[6])
             self.PV_data.set(serial_results[9])

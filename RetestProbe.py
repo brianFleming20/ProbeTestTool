@@ -13,7 +13,7 @@ import Connection
 import Sessions
 import codecs
 import os
-
+import time
 
 P = Ports
 BM = BatchManager.BatchManager()
@@ -43,6 +43,8 @@ class RetestProbe(tk.Frame):
         self.failures_found = StringVar()
         self.date_finished = StringVar()
         self.testers = StringVar()
+        self.test_finished = True
+        self.finish = 0
 
     def screen_layout(self):
         #################################################################
@@ -59,19 +61,19 @@ class RetestProbe(tk.Frame):
         self.results_canvas = Canvas(bg="#9FC9F3", width=180, height=40)
         self.results_canvas.place(x=300, y=580)
         Label(self.canvas_back, text="Deltex", background=self.back_colour, foreground="#003865",
-                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.79, rely=0.1)
+              font=('Helvetica', 28, 'bold'), width=12).place(relx=0.79, rely=0.1)
         Label(self.canvas_back, text="medical", background=self.back_colour, foreground="#A2B5BB",
-                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
+              font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
         Label(self.canvas_back, text="Probe Re-test", background=self.back_colour,
               font=("Courier", 24, "bold")).place(relx=0.4, rely=0.05)
         Label(self.canvas_back, text='Serial Number: ', background=self.back_colour, font=("Courier", 14)).place(
             relx=0.1, rely=0.3, anchor='w')
         Label(self.canvas_back, textvariable=self.serial_number, relief=SUNKEN, font=("Courier", 14, "bold"),
-            width=22).place(relx=0.25, rely=0.3, anchor='w')
-        Label(self.canvas_back, text="Found Batch Number: ",background=self.back_colour,font=("Courier", 14)).place(
-            relx=0.58,rely=0.28)
+              width=22).place(relx=0.25, rely=0.3, anchor='w')
+        Label(self.canvas_back, text="Found Batch Number: ", background=self.back_colour, font=("Courier", 14)).place(
+            relx=0.58, rely=0.28)
         Label(self.canvas_back, textvariable=self.found_batch_number, relief=SUNKEN, font=("Courier", 14, "bold"),
-              width=15).place(relx=0.75,rely=0.3, anchor='w')
+              width=15).place(relx=0.75, rely=0.3, anchor='w')
         Label(self.canvas_back, text="Batch found Qty.", background=self.back_colour,
               font=("Courier", 14)).place(relx=0.58, rely=0.34)
         Label(self.canvas_back, textvariable=self.found_qty, relief=SUNKEN,
@@ -85,28 +87,30 @@ class RetestProbe(tk.Frame):
         Label(self.canvas_back, textvariable=self.date_finished, relief=SUNKEN, font=("Courier", 14, "bold"),
               width=15).place(relx=0.75, rely=0.45)
         Label(self.canvas_back, text="Testers: ", background=self.back_colour,
-              font=("Courier", 14)).place(relx=0.58,rely=0.5)
+              font=("Courier", 14)).place(relx=0.58, rely=0.5)
         Label(self.canvas_back, textvariable=self.testers, relief=SUNKEN, font=("Courier", 14, "bold"),
               width=18).place(relx=0.75, rely=0.5)
         Label(self.canvas_back, text="Test Result ", background=self.back_colour,
               font=("Courier", 14, "bold")).place(relx=0.1, rely=0.65)
-        self.results = self.results_canvas.create_text(80,20, text=" ", fill="black", font=("Courier", 18, "bold"))
+        self.results = self.results_canvas.create_text(80, 20, text=" ", fill="black", font=("Courier", 18, "bold"))
         self.results_canvas.itemconfig(self.results, text="Pass")
         self.results_canvas.config(bg="#7FB77E")
         Label(self.canvas_back, text="ZND Analyser", background=self.back_colour).place(relx=0.15, rely=0.45)
         Label(self.canvas_back, text="Probe Interface", background=self.back_colour).place(relx=0.25, rely=0.45)
         Label(self.canvas_back, text="Monitor     ", background=self.back_colour).place(relx=0.35, rely=0.45)
-        self.znd = Label(self.canvas_back,text="      ", background="#F7A76C")
+        self.znd = Label(self.canvas_back, text="      ", background="#F7A76C")
         self.znd.place(relx=0.16, rely=0.5)
         self.probe = Label(self.canvas_back, text="      ", background="#F7A76C")
         self.probe.place(relx=0.26, rely=0.5)
         self.odm = Label(self.canvas_back, text="      ", background="#F7A76C")
         self.odm.place(relx=0.36, rely=0.5)
         self.retest_btn = Button(self.canvas_back, text="Re-test",
-                                 background="#42855B",font=("Courier", 16), command=self.retest_probe)
-        self.retest_btn.place(relx=0.78,rely=0.75)
-        Button(self.canvas_back, text="Return to Sessions", font=("Courier", 14), command=self.back_to_session).place(relx=0.12,rely=0.77)
-        Button(self.canvas_back, text="Return to Probe Test", font=("Courier", 14), command=self.back_to_test).place(relx=0.35, rely=0.77)
+                                 background="#42855B", font=("Courier", 16), command=self.retest_probe)
+        self.retest_btn.place(relx=0.78, rely=0.75)
+        Button(self.canvas_back, text="Return to Sessions", font=("Courier", 14), command=self.back_to_session).place(
+            relx=0.12, rely=0.77)
+        # Button(self.canvas_back, text="Return to Probe Test", font=("Courier", 14), command=self.back_to_test).place(
+        #     relx=0.35, rely=0.77)
         self.znd.config(background="#7FB77E")
         self.probe.config(background="#7FB77E")
         self.odm.config(background="#7FB77E")
@@ -116,12 +120,10 @@ class RetestProbe(tk.Frame):
         self.failures_found.set("0")
         self.date_finished.set("--/--/----")
         self.testers.set(DS.get_username())
-        self.check_for_probe()
-
-        PT.probe_canvas(self,"Are these details correct? ",True)
 
     def refresh_window(self):
         self.screen_layout()
+        self.check_for_probe()
 
     def retest_probe(self):
         probe_port = CO.sort_probe_interface(self)
@@ -150,69 +152,91 @@ class RetestProbe(tk.Frame):
         self.remove_probe()
 
     def remove_probe(self):
-        PT.probe_canvas(self, "Please remove the probe.",False)
+        PT.probe_canvas(self, "\n\nPlease remove the probe.", False)
         while PI.probe_present():
             pass
-
-        print("Thanks")
         PT.text_destroy(self)
+
+    def check_probe_present(self):
+        if not PM.ProbePresent():
+            return False
+        else:
+            return True
 
     def check_for_probe(self):
-        PT.probe_canvas(self, "Please insert a failed probe.",False)
-        while not PI.probe_present():
-            pass
-        PT.text_destroy(self)
 
-        binary_str = codecs.decode(PI.read_serial_number(), "hex")
-        serial_number = str(binary_str)[2:18]
-        self.serial_number.set(serial_number)
-        probe_type = serial_number[:4]
-        self.probe_date = serial_number[8:]
-        filepath = DS.get_file_location()
-        path = filepath['File']
-        inProgressPath = os.path.join(path, "in_progress", "")
-        completePath = os.path.join(path, "complete", "")
-        if self.probe_date:
-            PT.probe_canvas(self, "Checking in-progress folder", False)
-            self.check_folder(inProgressPath, self.probe_date, probe_type)
-            PT.text_destroy(self)
-        elif self.probe_date:
-            PT.probe_canvas(self, "Checking Complete folder", False)
-            self.check_folder(completePath, self.probe_date, probe_type)
-            PT.text_destroy(self)
+        self.finish += 1
+        PT.probe_canvas(self, "Please insert a failed probe.", False)
+
+        if self.check_probe_present():
+            self.test_finished = False
         else:
-            self.passed_probe()
+            self.test_finished = True
+
+        if not self.test_finished:
+            PT.text_destroy(self)
+            binary_str = codecs.decode(PI.read_serial_number(), "hex")
+            serial_number = str(binary_str)[2:18]
+            self.serial_number.set(serial_number)
+            probe_type = serial_number[:4]
+            self.probe_date = serial_number[8:]
+            filepath = DS.get_file_location()
+            path = filepath['File']
+            inProgressPath = os.path.join(path, "in_progress", "")
+            completePath = os.path.join(path, "complete", "")
+            if self.probe_date:
+                PT.probe_canvas(self, "Checking in-progress folder", False)
+                self.check_folder(inProgressPath, self.probe_date, probe_type)
+                PT.text_destroy(self)
+            elif self.probe_date:
+                PT.probe_canvas(self, "Checking Complete folder", False)
+                self.check_folder(completePath, self.probe_date, probe_type)
+                PT.text_destroy(self)
+            else:
+                self.passed_probe()
+        else:
+            if self.finish > 20:
+                PT.text_destroy(self)
+                self.back_to_session()
+            else:
+                PT.text_destroy(self)
+                self.check_for_probe()
+
 
     def check_folder(self, folder, probe_date, probe_type):
-        print(f"from folder {folder}")
+        last_line = []
         for file_loc in os.listdir(folder):
             print(f"file location {file_loc[:-4]}")
             lines = BM.CSVM.ReadAllLines(file_loc[:-4])
             for batch in lines:
-                self.batch_from_file = file_loc[:-4]
-                SN = batch[0][1:-1]
+                SN = batch[0][1:]
                 if len(SN) > 5:
+                    print(SN)
+                    if probe_date in SN:
+                        self.batch_from_file = file_loc[:-4]
+                        probe_limit = self.get_probe_type(probe_type[:-1])
+                        batch_info = f"{self.batch_from_file}  {probe_limit}"
+                        self.found_batch_number.set(batch_info)
+                        last_line = BM.CSVM.ReadLastLine(self.batch_from_file)[0]
                     if 'Fail' in SN:
                         print(f"Fail {SN} probe sn is {probe_date}")
-                        self.probe_type = self.get_probe_type(probe_type[:-1])
-                        print(f"Probe type {self.probe_type}")
-                        if probe_date in SN:
-                            last_line = BM.CSVM.ReadLastLine(self.batch_from_file)[0]
-                            batch_info = f"{self.batch_from_file}  {self.probe_type}"
-                            self.found_batch_number.set(batch_info)
-                            print(last_line)
-                            qty_failed = last_line[7]
-                            qty_passed = last_line[3]
-                            date_complete = last_line[8][:-9]
-                            self.found_qty.set(qty_passed)
-                            self.failures_found.set(qty_failed)
-                            self.date_finished.set(date_complete)
-                    # else:
+
+                        qty_failed = last_line[7]
+                        qty_passed = last_line[3]
+                        date_complete = last_line[8][:-9]
+                        self.found_qty.set(qty_passed)
+                        self.failures_found.set(qty_failed)
+                        self.date_finished.set(date_complete)
+                    else:
+                        PT.probe_canvas(self, "This probe has not failed.", False)
+                        time.sleep(2)
+                        PT.text_destroy(self)
+                        self.remove_probe()
+                        self.refresh_window()
                     #     PT.text_destroy(self)
         # if self.found:
         #     batch_info = f"{self.batch_from_file}  {self.probe_type}"
         #     self.found_batch_number.set(batch_info)
-
 
         #     if retest:
         #         PT.probe_canvas(self, f" ({self.batch_from_file}) \nRe-testing - {self.probe_type} - probe", False)
