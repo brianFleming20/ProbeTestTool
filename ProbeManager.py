@@ -43,6 +43,7 @@ class ProbeManager(object):
         returns the probes serial number if programming was succesful, False if not
         '''
         result = False
+
         if self.test_chip():
             probeData = self.PD.GenerateDataString(probe_type, test)
 
@@ -100,4 +101,9 @@ class ProbeManager(object):
         # pcb_serial_number = PF.read_serial_number()
         # binary_str = codecs.decode(pcb_serial_number, "hex")
         # print(f"serial number now = {str(binary_str)[2:18]}")
+
+    def blank_probe(self):
+        data = self.PD.GenerateDataString("blank", True)
+        PF.probe_write(data)
+
 

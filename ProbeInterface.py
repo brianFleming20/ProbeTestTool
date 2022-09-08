@@ -87,7 +87,6 @@ class PRI(object):
 
         first_byte = self.read_data()
         self.ser.close()
-
         ###############################
         # Probe type codes in decimal #
         ###############################

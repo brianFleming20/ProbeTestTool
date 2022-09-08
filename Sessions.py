@@ -31,13 +31,11 @@ import Connection
 import AdminUser
 import Datastore
 import OnScreenKeys
-import codecs
 import ProbeManager
-from time import gmtime, strftime, sleep
+from time import gmtime, strftime
 import Ports
 import ProbeTest
 import ProbeInterface
-import os
 import RetestProbe
 
 BM = BatchManager.BatchManager()
@@ -132,6 +130,10 @@ class SessionSelectWindow(tk.Frame):
         self.SSW_b4 = tk.Button(self, text='Admin area', background="#FFDAB9",
                              command=lambda: self.control.show_frame(AU.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(height=50, width=250, relx=0.5, rely=0.65)
+        self.SSW_b5 = tk.Button(self, text='...', background="#FFDAB9",
+                                command=self.blank, width=10)
+        self.SSW_b5.place( relx=0.5, rely=0.8)
+
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
         if "AM" in time_now:
@@ -178,6 +180,15 @@ class SessionSelectWindow(tk.Frame):
             pass
         SM.logOut()
         self.control.show_frame(UL.LogInWindow)
+
+    def blank(self):
+        probe = P.Ports(probe="COM4")
+        DS.write_device_to_file(probe)
+        tm.showinfo("test","Insert a probe to blank")
+        PM.blank_probe()
+
+        self.SSW_b5.config(state=DISABLED)
+
 
     def failed_probe(self):
         probe_port = CO.sort_probe_interface(self)
@@ -311,16 +322,18 @@ class NewSessionWindow(tk.Frame):
         return data
 
     def confm_btn_clicked(self):
-        # create new batch
+        ######################
+        # create new batch   #
+        ######################
         batch = self.batchNumber
         qty = self.batchQty
-        name = DS.get_username()
+        user = DS.get_username()
         batch_type = self.probe_type.get()
         check_qty = self.check_batch_qty(qty)
         check_batch = self.convert_batch_number(batch)
         if not check_qty and not check_batch:
             self.refresh_window()
-        if not self.create_new_batch(check_batch, batch_type, qty, name):
+        if not self.create_new_batch(check_batch, batch_type, qty, user):
             self.canvas_back.destroy()
             self.refresh_window()
         else:
@@ -338,7 +351,7 @@ class NewSessionWindow(tk.Frame):
 
         return check
 
-    def create_new_batch(self, batch, batch_type, qty, name):
+    def create_new_batch(self, batch, batch_type, qty, user):
         newBatch = Batch(batch)
         newBatch.probe_type = batch_type
         newBatch.batchQty = qty
@@ -347,7 +360,7 @@ class NewSessionWindow(tk.Frame):
                               message=f'Are batch details correct?\n\n Batch number {batch} \n Batch Qty{self.batchQty}')
         if DAnswer:
             # create the batch file
-            if not BM.CreateBatch(newBatch, name):
+            if not BM.CreateBatch(newBatch, user):
                 tm.showerror('Error', 'Batch number not unique')
                 check = False
             return check

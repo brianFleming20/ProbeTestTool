@@ -140,7 +140,6 @@ class NanoZND(object):
         self.ser_ana.close()  # close
 
     def tdr(self):
-        print("Test analyser")
         self.get_serial_port()
         if not self.ser_ana.isOpen():
             self.ser_ana.open()

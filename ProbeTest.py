@@ -229,19 +229,19 @@ class TestProgramWindow(tk.Frame):
         ###########################################################
 
     def suspnd_btn_clicked(self):
+        self.session_on_going = False
         if tm.askyesno(title="Batch Info", message="    Suspend Batch ?         "):
-            self.session_complete = False
-            self.session_on_going = False
             probe_data = P.Probes(self.probe_type.get(), self.current_batch.get(), self.probes_passed.get(),
                                   self.left_to_test.get())
             DS.write_probe_data(probe_data)
             BM.SuspendBatch(self.current_batch.get())
-            if not self.test:
-                self.canvas_back.destroy()
+
+            self.canvas_back.destroy()
             self.control.show_frame(SE.SessionSelectWindow)
 
         else:
-            self.refresh_window()
+            self.session_on_going = True
+            self.wait_for_probe()
         ###########################################################
         # Retrieve amount of probes left to test                  #
         ###########################################################
@@ -375,9 +375,13 @@ class TestProgramWindow(tk.Frame):
         self.info_canvas = None
         self.set_reprogram_status()
         self.show_gray_light()
+        self.wait_for_probe()
         ################################################################
         #                     Main loop                                #
         ################################################################
+
+    def wait_for_probe(self):
+        self.test = False
         while self.session_on_going:
             if self.left_to_test.get() == 0:
                 self.session_on_going = False
@@ -405,39 +409,46 @@ class TestProgramWindow(tk.Frame):
             self.cmplt_btn_clicked()
 
     def do_program_and_test(self, batch):
-        print("Do program and test")
         ################################
         # Program and test probe       #
         ################################
-        test_result = False
+        test_done = False
         self.programmed = False
         self.info_canvas = None
-        results, marker, odm_data = self.test_probe()  # Return reflection test, analyser results and monitor data
-        print(f"results {results} : marker {marker} : odm {odm_data}")
-        if results == "Pass":
-            print("Pass")
-            snum = self.program_probe(DS.get_current_probe_type(), True)
-            self.update_results(results, snum, odm_data, batch, marker)
-            if not snum:
+        if not self.test:
+            results, marker, odm_data = self.test_probe()
+            if results == "Pass":
+                snum = self.program_probe(DS.get_current_probe_type(), True)
+                self.update_results(results, snum, odm_data, batch, marker)
+                if not snum:
+                    self.remove_probe()
+                test_done = True
+                probe_data = P.Probes(self.probe_type.get(),
+                                      batch, int(self.probes_passed.get()), int(self.left_to_test.get()))
+                DS.write_probe_data(probe_data)
                 self.remove_probe()
-            test_result = True
-            self.remove_probe()
-        elif results == "Fail":
-            print("Fail")
-            snum = self.program_probe(DS.get_current_probe_type(), False)
-            self.update_results(results, snum, odm_data, batch, marker)
-            self.show_red_light()
-            probe_canvas(self, f"{self.warning_text['13']} {self.warning_text['14']}", True)
-            if self.info_canvas:  # User answer to fault find
-                self.session_on_going = False
-                text_destroy(self)
-                self.ff_window()
-            else:
-                self.session_on_going = True
-                text_destroy(self)  # remove user question window
-            self.show_gray_light()
-            self.remove_probe()
-        return test_result
+            elif results == "Fail":
+                snum = self.program_probe(DS.get_current_probe_type(), False)
+                self.update_results(results, snum, odm_data, batch, marker)
+                self.show_red_light()
+                failed = DS.get_probe_data()['Failures']
+                failed += 1
+                probe_data = P.Probes(self.probe_type.get(),
+                                      batch, int(self.probes_passed.get()), int(self.left_to_test.get()), failed=failed)
+                DS.write_probe_data(probe_data)
+                test_done = True
+                probe_canvas(self, f"{self.warning_text['13']} {self.warning_text['14']}", True)
+                if self.info_canvas:  # User answer to fault find
+                    self.session_on_going = False
+                    text_destroy(self)
+                    self.ff_window()
+                if not self.info_canvas:
+                    self.session_on_going = True
+                    text_destroy(self)  # remove user question window
+                self.show_gray_light()
+                self.remove_probe()
+
+        return test_done
 
     def remove_probe(self):
         probe_canvas(self, "Please remove probe.", False)
@@ -449,7 +460,7 @@ class TestProgramWindow(tk.Frame):
         ###############################################################
         # Program a blank probe inserted into probe interface         #
         ###############################################################
-        if PM.ProbePresent() and not PM.ProbeIsProgrammed():
+        if not PM.ProbeIsProgrammed():
             self.set_reprogram_status()
             self.action.set(self.warning_text["1"])
             return self.do_program_and_test(self.current_batch.get())
@@ -472,7 +483,7 @@ class TestProgramWindow(tk.Frame):
         #################################################
 
     def program_probe(self, probe_type, test):
-        print("Program probe")
+        fail_message = "Chip fault"
         self.action.set(self.warning_text["9"])
         serialNumber = PM.ProgramProbe(probe_type, test)
         self.programmed = True
@@ -483,15 +494,14 @@ class TestProgramWindow(tk.Frame):
             probe_canvas(self, f"{self.warning_text['13']} {self.warning_text['12']} {self.warning_text['8']}", False)
             time.sleep(2)
             text_destroy(self)
-            test = False
             self.programmed = False
 
-        if test:
+        if self.programmed:
             self.show_green_image()
             return str(codecs.decode(serialNumber, "hex"), 'utf-8')[:16]
         else:
             self.show_red_light()
-            return False
+            return fail_message
 
         ##########################################################
         # Over-write a programmed probe detected                 #
@@ -510,7 +520,7 @@ class TestProgramWindow(tk.Frame):
                 reset_rewrite = P.Users(self.current_user.get(),self.user_admin,over_right=False)
                 DS.write_user_data(reset_rewrite)
         else:
-            probe_canvas(self, "Do you want to Fault Find.", True)
+            probe_canvas(self, "Probe has serial number\n\nDo you want to Fault Find.", True)
             if self.info_canvas:
                 self.session_on_going = False
                 text_destroy(self)
@@ -522,7 +532,7 @@ class TestProgramWindow(tk.Frame):
                 while PM.ProbePresent():
                     pass
                 text_destroy(self)
-                self.refresh_window()
+                self.wait_for_probe()
 
         ################################
         # Show Fault find window       #
@@ -602,6 +612,7 @@ class TestProgramWindow(tk.Frame):
 
             else:
                 self.action.set(self.warning_text["13"])
+                self.show_red_light()
         else:
             ####################################################
             # Probe failed                                     #
@@ -611,6 +622,7 @@ class TestProgramWindow(tk.Frame):
         ###############################################
         # Reset probe testing                         #
         ###############################################
+        self.test = True
         return results, marker_data, odm_data
 
     ################################
@@ -620,7 +632,6 @@ class TestProgramWindow(tk.Frame):
     def update_odm_data(self):
         passing = 0
         fail = 0
-        print("Update ODM")
         if DS.get_devices()['odm_active']:
             serial_results = ODM.ReadSerialODM()
             if not serial_results:
@@ -651,7 +662,7 @@ class TestProgramWindow(tk.Frame):
         data_list_to_file.append(" ")  # by pass the batch number column
         data_list_to_file.append(snum)  # insert serial number
         data_list_to_file.append(" ")
-        data_list_to_file.append(probes_left)
+        data_list_to_file.append(self.left_to_test.get())
         data_list_to_file.append(self.current_user.get())  # insert the logged in user
         data_list_to_file.append(results)  # results of reflection test
         data_list_to_file.append(marker)  # results of analyser data
@@ -661,10 +672,9 @@ class TestProgramWindow(tk.Frame):
     def complete_batch(self, batch_number):
         print(f"{batch_number} completed")
 
-        batch_qty = self.probes_passed.get()
         failures = 0
         BM.competed_text(DS.get_username(), DS.get_current_probe_type(),
-                         batch_number, batch_qty, failures, self.probes_passed.get())
+                         batch_number,  failures, self.probes_passed.get())
 
     def yes_answer(self):
         self.info_canvas = True

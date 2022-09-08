@@ -173,6 +173,8 @@ class Data_Store():
             "Batch": probe_data.Current_Batch,
             "Passed": probe_data.Passed,
             "Left_to_test": probe_data.Left,
+            "Failures": probe_data.failed,
+            "Scrapped": probe_data.scrap,
         }
         return probe_dict
 

@@ -15,11 +15,13 @@ class Location:
 
 
 class Probes:
-    def __init__(self, probe_type, current_batch, passed, tested):
+    def __init__(self, probe_type, current_batch, passed, tested, failed=0, scrap=0):
         self.Probe_Type = probe_type
         self.Current_Batch = current_batch
         self.Passed = passed
         self.Left = tested
+        self.failed = failed
+        self.scrap = scrap
 
 
 class Users:
