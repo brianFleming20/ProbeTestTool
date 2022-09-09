@@ -129,23 +129,10 @@ class Connection(tk.Frame):
         Tk.update(self)
         self.control.show_frame(PT.TestProgramWindow)
 
-    def sort_probe_interface(self):
-        # Tests the probe interface connection
-
-        probe = PF.check_probe_connection()
-        if probe:
-            self.probe_working = True
-        else:
-            probe = "Not connected"
-            self.probe_working = False
-        self.probe.set(probe)
-
-        return probe
-
     def sort_znd_interface(self):
         # Tests the analyser interface connection
 
-        read1 = ZND.get_vna_check()
+        read1 = self.check_analyser()
         if not read1:
             tm.showerror(title="Connection Error",message="Check connected devices are switched on.")
             self.control.show_frame(SE.SessionSelectWindow)
@@ -154,6 +141,9 @@ class Connection(tk.Frame):
         self.znd_working = True
 
         return read1
+
+    def check_analyser(self):
+        return ZND.get_vna_check()
 
     def sort_odm_interface(self):
         # Tests the ODM monitor interface connection

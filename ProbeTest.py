@@ -267,6 +267,7 @@ class TestProgramWindow(tk.Frame):
     def reset(self):
         self.display_layout()
         self.set_display()
+        self.warnings()
         self.session_on_going = True
         current_user = DS.get_username()
         self.user_admin = DS.get_user_data()['Over_rite']
@@ -293,6 +294,8 @@ class TestProgramWindow(tk.Frame):
         ##############################
         ZND.flush_analyser_port()
         ZND.set_vna_controls()
+
+    def warnings(self):
         self.warning_text = {
             "overrite on": "Probe serial number re-issue enabled.",
             "overrite off": "Probe serial number re-issue disabled.",
@@ -596,12 +599,15 @@ class TestProgramWindow(tk.Frame):
 
     def test_probe(self):
         self.action.set(self.warning_text["10"])
-        self.show_amber_image()
+        try:
+            self.show_amber_image()
+        except:
+            pass
         results = "Fail"
         # odm_data = self.update_odm_data()
         reflection = PM.TestProbe()  # Returns a value from the analyser, later this will be from the reflection test
         marker_data = ZND.tdr()  # Returns a value from the analyser
-        odm_data = self.update_odm_data()
+        odm_data = TestProgramWindow.update_odm_data(self)
         ###################################################
         # Probe passed                                    #
         ###################################################
@@ -612,7 +618,10 @@ class TestProgramWindow(tk.Frame):
 
             else:
                 self.action.set(self.warning_text["13"])
-                self.show_red_light()
+                try:
+                    self.show_red_light()
+                except:
+                    pass
         else:
             ####################################################
             # Probe failed                                     #

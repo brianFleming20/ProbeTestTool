@@ -1,13 +1,14 @@
 import unittest
 import Ports
-import Sessions
+import RetestProbe
 import tkinter as tk
+from tkinter import messagebox as mb
 import ProbeTest
 import Datastore
 import Connection
 import os
 
-SE = Sessions
+RT = RetestProbe
 P = Ports.Probes
 U = Ports.Users
 DS = Datastore.Data_Store()
@@ -21,15 +22,18 @@ class SearchProbeTests(unittest.TestCase):
         self.tk = tk.Tk()
         self.parent = tk.Tk()
         self.controller = tk.Tk()
-        self.C = SE.SessionSelectWindow(self.parent, self.controller)
-        self.cent_x = 0
-        self.cent_y = 0
+        self.C = RT.RetestProbe(self.parent, self.controller)
+        self.cent_x = 10
+        self.cent_y = 10
 
     def yes_answer(self):
         pass
 
     def no_answer(self):
         pass
+
+    def back_to_session(self):
+        self.result = True
 
     def test_search_known_probe(self):
         print("Test search known probe serial number")
@@ -50,68 +54,36 @@ class SearchProbeTests(unittest.TestCase):
         error = self.C.get_probe_type("2F5")
         self.assertEqual(error,non_type)
 
-
     def test_search_serial_number(self):
-        print("Test search serial number")
-        SN = "2F0DFail22083010"
-        probe = "DP240"
-        probe_data = "2F0"
-        filepath = DS.get_file_location()
-        path = filepath['File']
-        inProgressPath = os.path.join(path, "in_progress", "")
-        completePath = os.path.join(path, "complete", "")
-        canvas = PT.probe_canvas(self,"test",False)
+        print("Test check for failed probe")
 
-        self.C.check_folder(inProgressPath,SN[8:],probe_data)
+        mb.showinfo(title="Probe",message="Insert failed probe")
+        probe = self.C.check_for_failed_probe()
+        test1 = self.C.check
+        self.assertEqual(test1, True)
 
-        test = self.C.test
-        self.assertEqual(test,True)
+        mb.showinfo(title="Probe", message="Insert passed probe")
+        probe = self.C.check_for_failed_probe()
+        test2 = self.C.check
+        self.assertEqual(test2, False)
 
-        self.C.test = False
-
-        self.C.check_folder(completePath,SN[8:],probe_data)
-        test = self.C.test
-        self.assertEqual(test,False)
-
-
-    def test_search_unknown_probe(self):
+    def test_check_probe_dates(self):
         print("Test search un known probe serial number")
-        SN = "2F0DFail22073020"
-        probe_data = "20C"
+        SN = "2F0DFail09010729"
         filepath = DS.get_file_location()
         path = filepath['File']
         inProgressPath = os.path.join(path, "in_progress", "")
         completePath = os.path.join(path, "complete", "")
+        probe_date = SN[8:]
+        probe_type = SN[:3]
+        self.C.check = True
 
-        self.C.check_folder(inProgressPath, SN[8:], probe_data)
+        result = self.C.check_folder(inProgressPath, probe_date, probe_type)
+        self.assertEqual(result, True)
 
-        test = self.C.test
-        self.assertEqual(test, False)
-
-        self.C.test = False
-
-        self.C.check_folder(completePath, SN[8:], probe_data)
-        test = self.C.test
-        self.assertEqual(test, False)
-
-
-    def test_search_passed_probe(self):
-        print("Test search passed probe")
-        SN = "20CD20220207141516"
-        probe = "DP240"
-        probe_data = "2F0"
-        filepath = DS.get_file_location()
-        path = filepath['File']
-        inProgressPath = os.path.join(path, "in_progress", "")
-        completePath = os.path.join(path, "complete", "")
-        canvas = PT.probe_canvas(self, "test", False)
-
-        result = self.C.check_folder(inProgressPath, SN[8:], probe_data)
-
-        self.assertEqual(result, False)
-
-
-
+    def test_found_failed_probe(self):
+        print("Test found failed probe")
+        self.C.found = True
 
 
 if __name__ == '__main__':
