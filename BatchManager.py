@@ -62,7 +62,7 @@ class BatchManager(object):
 
                     self.CSVM.WriteListOfListsCSV(info, batch.batchNumber)  # create the CSV file
                     # self.availableBatchs = self.CSVM.GetFileNamesInProgress()  # update the list of available batchs
-                    batch_data = P.Probes(batch.probe_type, batch.batchNumber, 0, batch.batchQty)
+                    batch_data = P.Probes(batch.probe_type, batch.batchNumber, 0, int(batch.batchQty))
                     DS.write_probe_data(batch_data)
                     return True
                 else:
@@ -399,7 +399,7 @@ class CSVManager(object):
 
     def read_all_lines(self, folder,batch):
         lines = []
-        fullPath = os.path.abspath(folder + batch )
+        fullPath = os.path.abspath(folder + batch)
         with open(fullPath) as file:
             data_reader = csv.reader(file)
             for line in data_reader:

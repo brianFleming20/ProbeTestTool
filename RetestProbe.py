@@ -57,11 +57,11 @@ class RetestProbe(tk.Frame):
         #################################################################
         # Display main screen layout                                    #
         #################################################################
-        blank = "---"
+        # blank = "---"
 
         self.canvas_back = Canvas(bg=self.back_colour, width=self.ws - 10, height=self.hs - 10)
         self.canvas_back.place(x=5, y=5)
-        self.results_canvas = Canvas(bg="#9FC9F3", width=180, height=40)
+        self.results_canvas = Canvas(bg="#9FC9F3", width=200, height=40)
         self.results_canvas.place(x=300, y=580)
         Label(self.canvas_back, text="Deltex", background=self.back_colour, foreground="#003865",
               font=('Helvetica', 28, 'bold'), width=12).place(relx=0.79, rely=0.1)
@@ -96,8 +96,7 @@ class RetestProbe(tk.Frame):
         Label(self.canvas_back, text="Test Result ", background=self.back_colour,
               font=("Courier", 14, "bold")).place(relx=0.1, rely=0.65)
         self.results = self.results_canvas.create_text(80, 20, text=" ", fill="black", font=("Courier", 18, "bold"))
-        self.results_canvas.itemconfig(self.results, text="Pass")
-        self.results_canvas.config(bg="#7FB77E")
+        self.results_canvas.config(bg=self.back_colour)
         Label(self.canvas_back, text="ZND Analyser", background=self.back_colour).place(relx=0.15, rely=0.45)
         Label(self.canvas_back, text="Probe Interface", background=self.back_colour).place(relx=0.25, rely=0.45)
         Label(self.canvas_back, text="Monitor     ", background=self.back_colour).place(relx=0.35, rely=0.45)
@@ -107,26 +106,31 @@ class RetestProbe(tk.Frame):
         self.probe.place(relx=0.26, rely=0.5)
         self.odm = Label(self.canvas_back, text="      ", background="#F7A76C")
         self.odm.place(relx=0.36, rely=0.5)
-        self.retest_btn = Button(self.canvas_back, text="Re-test",
-                                 background="#42855B", font=("Courier", 16), command=self.retest_probe)
-        self.retest_btn.place(relx=0.78, rely=0.75)
+
         Button(self.canvas_back, text="Return to Sessions", font=("Courier", 14), command=self.back_to_session).place(
             relx=0.12, rely=0.77)
-        # Button(self.canvas_back, text="Return to Probe Test", font=("Courier", 14), command=self.back_to_test).place(
-        #     relx=0.35, rely=0.77)
-        self.znd.config(background="#7FB77E")
-        self.probe.config(background="#7FB77E")
-        self.odm.config(background="#7FB77E")
+        # ports = DS.get_devices()
+        # if ports['']
+        # self.znd.config(background="#7FB77E")
+        # self.probe.config(background="#7FB77E")
+        # self.odm.config(background="#7FB77E")
+        self.reset_display()
+
+    def reset_display(self):
+        blank = "---"
         self.serial_number.set(blank)
         self.found_batch_number.set(blank)
         self.found_qty.set("0")
         self.failures_found.set("0")
         self.date_finished.set("--/--/----")
         self.testers.set(DS.get_username())
+        self.results_canvas.itemconfig(self.results, text=blank)
 
     def refresh_window(self):
         self.screen_layout()
         self.retest_probe()
+        self.finish = 0
+        PT.probe_canvas(self, "Please insert a failed probe.", False)
         self.check_for_probe()
 
     def retest_probe(self):
@@ -134,7 +138,20 @@ class RetestProbe(tk.Frame):
         analyser = CO.Connection.check_analyser(self)
         port = P.Ports(probe=probe_port, analyer=analyser, active=False)
         DS.write_device_to_file(port)
-        print("Re testing probe")
+        ports = DS.get_devices()
+        if len(ports['Analyser']) == 4:
+            self.znd.config(background="#7FB77E")
+        else:
+            self.znd.config(background="#EB1D36")
+        if len(ports['ODM']) == 4:
+            self.odm.config(background="#7FB77E")
+        else:
+            self.odm.config(background="#EB1D36")
+        if len(ports['Probe']) == 4:
+            self.probe.config(background="#7FB77E")
+        else:
+            self.probe.config(background="#EB1D36")
+
 
     def back_to_test(self):
         self.canvas_back.destroy()
@@ -160,6 +177,7 @@ class RetestProbe(tk.Frame):
         while PI.probe_present():
             pass
         PT.text_destroy(self)
+        self.results_canvas.config(bg=self.back_colour)
 
     def check_probe_present(self):
         if not PM.ProbePresent():
@@ -168,8 +186,10 @@ class RetestProbe(tk.Frame):
             return True
 
     def check_for_probe(self):
+        # PT.probe_canvas(self, "Please insert a failed probe.", False)
         probe_type = self.check_for_failed_probe()
         if self.check:
+            PT.text_destroy(self)
             filepath = DS.get_file_location()
             path = filepath['File']
             inProgressPath = os.path.join(path, "in_progress", "")
@@ -189,13 +209,15 @@ class RetestProbe(tk.Frame):
                 PT.text_destroy(self)
                 self.back_to_session()
             else:
-                PT.text_destroy(self)
+                Tk.update(self)
+                # PT.text_destroy(self)
                 self.check_for_probe()
         self.finish += 1
 
     def check_folder(self, folder, probe_date, probe_type):
         hrs = 0
         probe_hrs = 0
+        result = False
         for file_loc in os.listdir(folder):
             lines = BM.CSVM.read_all_lines(folder, file_loc)
             for batch in lines:
@@ -212,14 +234,16 @@ class RetestProbe(tk.Frame):
                         pass
                     if mon == probe_mon and day == probe_day:
                         if self.minutes_in_range(hrs,probe_hrs):
+
                             last_line = BM.CSVM.ReadLastLine(file_loc[:-4])[0]
                             self.display_probe_data(last_line)
-                            probe_limit = self.get_probe_type(probe_type)
+                            self.probe_type = self.get_probe_type(probe_type)
                             self.found = True
                             self.batch_from_file = file_loc[:-4]
-                            batch_info = f"{self.batch_from_file} : {probe_limit}"
+                            batch_info = f"{self.batch_from_file} : {self.probe_type}"
                             self.found_batch_number.set(batch_info)
-                            return True
+                            result = True
+        return result
 
     def display_probe_data(self, last_line):
         if self.check:
@@ -239,20 +263,22 @@ class RetestProbe(tk.Frame):
     def found_failed_probe(self):
         if self.found:
             left_to_test = 0
-            batch_info = f"{self.batch_from_file}  {self.probe_type}"
-            self.found_batch_number.set(batch_info)
-            PT.probe_canvas(self,"Are these probe details correct?",True)
+            PT.text_destroy(self)
+            PT.probe_canvas(self,"Are these details correct?",True)
+            if not self.info_canvas:
+                self.check = False
+                self.reset_display()
             if self.info_canvas:
                 PT.text_destroy(self)
                 PT.probe_canvas(self, f" ({self.batch_from_file}) \nRe-testing - {self.probe_type} - probe", False)
-                self.results_canvas.itemconfig(self.results, text="Testing probe")
+                self.results_canvas.itemconfig(self.results, text="  Testing probe")
                 PT.TestProgramWindow.warnings(self)
                 results, marker_data, odm_data = PT.TestProgramWindow.test_probe(self)
-
                 PT.text_destroy(self)
 
-                if results:
+                if results == "Pass":
                     PT.probe_canvas(self, f" ({self.batch_from_file}) \n{self.probe_type} - Probe Passed", False)
+                    self.results_canvas.config(background='#7FB77E')
                     SN_seperated = []
                     limit = 16
                     start = 0
@@ -275,9 +301,10 @@ class RetestProbe(tk.Frame):
                     PM.construct_new_serial_number(new_probe, True)
                     PT.text_destroy(self)
                     self.remove_probe()
-                if not results:
+                if results == "Fail":
                     PT.probe_canvas(self, f" ({self.batch_from_file}) \n{self.probe_type} - Probe Failed", False)
-                    self.results_canvas.itemconfig(self.results, text="Probe Failed")
+                    self.results_canvas.itemconfig(self.results, text="  Probe Failed")
+                    self.results_canvas.config(background='#EB1D36')
                     time.sleep(2)
                     PT.text_destroy(self)
                     PT.probe_canvas(self, f" ({self.batch_from_file}) \n{self.probe_type} \n Probe Scrapped", False)
@@ -286,17 +313,20 @@ class RetestProbe(tk.Frame):
                     scraped = DS.get_probe_data()['Scrapped']
                     if DS.get_probe_data()['Batch'] == self.batch_from_file:
                         left_to_test = DS.get_probe_data()['Left_to_test']
-
-                    failed -= 1
-                    scraped += 1
+                    if failed > 0:
+                        failed -= 1
+                        scraped += 1
                     probe_data = P.Probes(self.probe_type, self.batch_from_file,
                                           self.qty_passed, left_to_test, failed=failed, scrap=scraped)
                     DS.write_probe_data(probe_data)
-                    if 4 < scraped < 1:
+                    PT.text_destroy(self)
+                    if scraped > 0:
                         answer = mb.askyesno(title="Batch Quantity",
                                              message=f"You need to adjust at end.\nBatch number {self.batch_from_file} to 100.")
-                        batch_makeup = ["Scrapped","probes","adjust","batch","acknowledged", answer]
+                        batch_makeup = ["Scrapped","acknowledged",answer,DS.get_probe_data()['Passed'],"Passed, Scrapped = ",scraped,"Failed", failed]
                         BM.CSVM.WriteListOfListsCSV(batch_makeup, self.batch_from_file)
+            self.reset_display()
+            self.remove_probe()
 
     def get_probe_type(self, probe_data):
         probe_type = "---"
@@ -333,13 +363,11 @@ class RetestProbe(tk.Frame):
         self.check = False
         probe_type = None
         self.finish += 1
-        PT.probe_canvas(self, "Please insert a failed probe.", False)
         if self.check_probe_present():
             self.test_finished = False
         else:
             self.test_finished = True
         if not self.test_finished:
-            PT.text_destroy(self)
             binary_str = codecs.decode(PI.read_serial_number(), "hex")
             serial_number = str(binary_str)[2:18]
             self.serial_number.set(serial_number)

@@ -668,6 +668,7 @@ class TestProgramWindow(tk.Frame):
         probes_passed = self.probes_passed.get()
         self.left_to_test.set(probes_left - 1)
         self.probes_passed.set(probes_passed + 1)
+        print(snum)
         data_list_to_file.append(" ")  # by pass the batch number column
         data_list_to_file.append(snum)  # insert serial number
         data_list_to_file.append(" ")

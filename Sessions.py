@@ -462,7 +462,7 @@ class ContinueSessionWindow(tk.Frame):
         if len(lstid) != 0:
             lstBatch = self.sessionListBox.get(lstid[0])
             batch = BM.GetBatchObject(lstBatch)
-            probe_data = P.Probes(batch.probe_type, batch.batchNumber, 0, batch.batchQty)
+            probe_data = P.Probes(batch.probe_type, batch.batchNumber, 0, int(batch.batchQty))
             DS.write_probe_data(probe_data)
 
             self.control.show_frame(CO.Connection)
