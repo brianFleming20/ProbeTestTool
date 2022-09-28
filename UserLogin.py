@@ -42,8 +42,10 @@ import Sessions
 import Datastore
 import OnScreenKeys
 import Ports
+import ProbeTest
+import AdminUser
 
-from time import gmtime, strftime
+from time import gmtime, strftime, sleep
 
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
@@ -51,6 +53,8 @@ DS = Datastore.Data_Store()
 KY = OnScreenKeys.Keyboard()
 P = Ports
 SE = Sessions
+PT = ProbeTest
+AU = AdminUser
 
 
 def ignore():
@@ -66,6 +70,11 @@ class LogInWindow(tk.Frame):
         DS.write_to_from_keys("  ")
         self.current_user = None
         self.password = None
+        self.user = ""
+        self.ws = self.winfo_screenwidth()
+        self.hs = self.winfo_screenheight()
+        self.cent_x = self.ws / 2
+        self.cent_y = self.hs / 2
 
     def setup(self):
         self.current_user = ""
@@ -83,6 +92,7 @@ class LogInWindow(tk.Frame):
         ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
                   font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
         time_now = strftime("%H:%M:%p", gmtime())
+        self.setup()
         self.label_4 = ttk.Label(self, text="           Probe Test Tool", background="#3AB4F2", width=25,
                                  font=('Helvetica', 24))
         self.label_4.place(relx=0.5, rely=0.1, anchor=CENTER)
@@ -92,6 +102,7 @@ class LogInWindow(tk.Frame):
         self.logbtn = Button(self, text="Log In", font=("Courier", 18), width=18, background="#3AB4F2",
                              highlightthickness=0, command=self._login_btn_clicked)
         self.logbtn.place(relx=0.65, rely=0.64)
+        Button(self, text="Forgot Password.", font=("Courier", 12), command=self.forgot_login).place(relx=0.35, rely=0.5)
         ttk.Button(self, text="Exit", width=20, command=self.quit).place(relx=0.88, rely=0.8, anchor=CENTER)
         self.bind('<Return>', lambda event: self._login_btn_clicked)
         if "AM" in time_now:
@@ -103,12 +114,13 @@ class LogInWindow(tk.Frame):
         # Testing data only               #
         # comment out when PTT is in use  #
         ###################################
-        self.set_username("brian")
-        self.set_password("password")
+        # self.set_username("brian")
+        # self.set_password("password")
         reset_user = P.Users("","")
         DS.write_user_data(reset_user)
         probe_data = P.Probes("","",0,0)
         DS.write_probe_data(probe_data)
+        # self.timer()
         self.entry()
 
         self.btn_1 = Button(self.canvas_name, text='Username ',font=("Courier", 14), command=self.name_entry, width=20)
@@ -127,8 +139,8 @@ class LogInWindow(tk.Frame):
         self.set_username("")
         self.get_keys()
         pass_block = False
-        data = self.wait_for_response(self.canvas_name, pass_block)
-        self.current_user = data
+        data = self.wait_for_response(self.canvas_name, pass_block, self.name_text)
+        # self.current_user = data
         self.set_username(data)
         self.btn_1.config(state=NORMAL)
         self.btn_2.config(state=NORMAL)
@@ -138,7 +150,7 @@ class LogInWindow(tk.Frame):
         self.set_password("")
         self.get_keys()
         pass_block = True
-        data = self.wait_for_response(self.canvas_pass, pass_block)
+        data = self.wait_for_response(self.canvas_pass, pass_block, self.pass_text)
         self.password = data
         self.set_password(data)
         self.btn_1.config(state=NORMAL)
@@ -176,6 +188,7 @@ class LogInWindow(tk.Frame):
         # Clear screen and distroy app  #
         #################################
         if shut:
+            self.timer()
             self.canvas_name.destroy()
             self.canvas_pass.destroy()
             self.control.destroy()
@@ -183,13 +196,28 @@ class LogInWindow(tk.Frame):
     def direct_session_window(self):
         self.control.show_frame(SE.SessionSelectWindow)
 
+    def timer(self):
+        timer_canvas = Canvas(bg="#eae9e9", width=180, height=50)
+        timer_canvas.place(x=600, y=500)
+        timer_canvas.create_text(90,20, text="Wait for close")
+        timer_label = timer_canvas.create_text(80, 35, text=" ", font=("bold", 20), anchor=W)
+        bip = "."
+        show_bip = ""
+        for a in range(0,6):
+            timer_canvas.itemconfig(timer_label, text=show_bip)
+            sleep(0.75)
+            show_bip += bip
+            Tk.update(self)
+        timer_canvas.destroy()
+
+
     def activate_login_button(self):
         try:
             self.logbtn.config(command=lambda: self.control.show_frame(SE.SessionSelectWindow))
         except:
             pass
 
-    def wait_for_response(self, master, pass_block):
+    def wait_for_response(self, master, pass_block, location):
         block = pass_block
         DS.write_to_from_keys("_")
         password_blank = "*********************"
@@ -201,9 +229,9 @@ class LogInWindow(tk.Frame):
                 break
 
             if block:
-                self.canvas_pass.itemconfig(self.pass_text, text=password_blank[:pw_len])
+                master.itemconfig(location, text=password_blank[:pw_len])
             else:
-                self.canvas_name.itemconfig(self.name_text, text=pw_data)
+                master.itemconfig(location, text=pw_data)
             Tk.update(master)
         return pw_data
 
@@ -233,3 +261,33 @@ class LogInWindow(tk.Frame):
             self.control.show_frame(SE.SessionSelectWindow)
         except:
             pass
+
+    def forgot_login(self):
+        user_list = SM.GetUserList()
+        found = False
+        if not self.current_user:
+            PT.probe_canvas(self, "Enter your name to \nreset your password", False)
+            sleep(3)
+            PT.text_destroy(self)
+            self.name_entry()
+        for name in user_list:
+            if name.name == self.current_user:
+                login_user = P.Users(name=name.name, admin=False, reset_password=True)
+                DS.write_user_data(login_user)
+                found = True
+
+        if found:
+            self.canvas_go()
+            self.control.show_frame(AU.ChangePasswordWindow)
+        else:
+            PT.probe_canvas(self, "Your name is not registered.", False)
+            sleep(3)
+            PT.text_destroy(self)
+
+
+    def yes_answer(self):
+        pass
+
+    def no_answer(self):
+        pass
+

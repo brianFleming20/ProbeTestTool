@@ -176,23 +176,6 @@ class BatchManager(object):
         batch_info = [batch_number, " Completed by - ", user, " of ", probe_type, " On ", Stime_now,
                       f" Failed = {failures}", f"Passed = {passed}"]
         self.CSVM.WriteListOfListsCSV(batch_info, batch_number)
-        # scrapped = 0
-        # removed = 0
-        # makeup = 0
-        # if not failures and not scrapped:
-        #     pass
-        # else:
-            # if 97 < scrapped < 99:
-            #     answer = mb.askyesno(title="Batch Quantity",
-            #                          message=f"You need to make up \nbatch number {batch_number} to 100.")
-            #     batch_makeup = ["Quantity", " to ", " make-up", makeup, "acknowledged", answer]
-            #     self.CSVM.WriteListOfListsCSV(batch_makeup, batch_number)
-            # else:
-            #     remove_qty = 100 - batch_qty
-            #     answer = mb.askyesno(title="Batch Quantity",
-            #                          message=f"Please remove {remove_qty} \nfrom this batch number {batch_number}.")
-            #     batch_remove = ["Quantity ", "Needing", "Removing", removed, "acknowledged", answer]
-            #     self.CSVM.WriteListOfListsCSV(batch_remove, batch_number)
 
 
 class CSVManager(object):

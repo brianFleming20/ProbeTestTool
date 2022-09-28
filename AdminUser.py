@@ -35,6 +35,7 @@ import ProbeManager
 import PI
 import ProbeInterface
 import Ports
+import UserLogin
 
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
@@ -46,6 +47,7 @@ PR = ProbeInterface.PRI()
 SE = Sessions
 AP = AdminPortControl
 LO = Ports
+UL = UserLogin
 
 
 def ignore():
@@ -213,6 +215,8 @@ class AdminWindow(tk.Frame):
 
 class ChangePasswordWindow(tk.Frame):
     def __init__(self, parent, controller):
+        self.not_to_login = True
+        self.reset_pass = False
         self.CPWb1 = None
         self.CPWb2 = None
         self.pass2_text = None
@@ -226,35 +230,30 @@ class ChangePasswordWindow(tk.Frame):
         self.newPassword = ""
         self.confirmPassword = ""
         self.control = controller
-
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
-
         ttk.Label(self, text="Deltex", background="#FFDAB9", foreground="#003865",
                   font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#FFDAB9", foreground="#A2B5BB",
                   font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
-
         self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
         self.text_area.place(x=40, y=70)
-
-        self.confm_btn = Button(
-            self, text='Confirm', command=self.confirm, font=('Courier', 16))
-        self.confm_btn.place(height=40, width=180, relx=0.88, rely=0.83, anchor=E)
-
-        self.back_btn = Button(
-            self, text='Back', command=self.back, font=('Courier', 14))
-        self.back_btn.place(height=35, width=80, relx=0.625, rely=0.83, anchor=E)
 
     def confirm(self):
         self.canvas_1.destroy()
         self.canvas_2.destroy()
         self.password_change()
 
+    def confirm_change(self):
+        self.canvas_1.destroy()
+        self.canvas_2.destroy()
+        result = self.check_entries()
+        if not result:
+            self.refresh_window()
+
     def back(self):
         self.canvas_1.destroy()
         self.canvas_2.destroy()
-        self.btn.destroy()
-        self.control.show_frame(EditUserWindow)
+        self.return_to_edit_user()
 
     def refresh_window(self):
         ##############################
@@ -264,11 +263,12 @@ class ChangePasswordWindow(tk.Frame):
         self.canvas_1.place(relx=0.3, rely=0.4)
         self.canvas_2 = Canvas(bg="#eae9e9", width=550, height=48)
         self.canvas_2.place(relx=0.3, rely=0.54)
+
         self.pass1_text = self.canvas_1.create_text(350, 20, text=" ", fill="black",
                                                     font=(OnScreenKeys.FONT_NAME, 16, "bold"))
         self.pass2_text = self.canvas_2.create_text(350, 20, text=" ", fill="black",
                                                     font=(OnScreenKeys.FONT_NAME, 16, "bold"))
-
+        self.reset_pass = DS.get_reset_password()
         self.CPWb1 = Button(self.canvas_1, text='Enter new password', font=('Courier', 12), command=self.password_entry)
         # Set keyboard icon to show button is used to show the keyboard
         Label(self.canvas_1, text="-->").place(x=230, y=12)
@@ -278,10 +278,19 @@ class ChangePasswordWindow(tk.Frame):
         Label(self.canvas_2, text="-->").place(x=230, y=12)
         self.CPWb2.place(x=15, y=15)
         self.is_admin = DS.user_admin_status()
-        self.btn = Checkbutton(text=" Admin status ",
-                               variable=self.is_admin,command=self.set_admin_state,
-                               font=("Courier", 14))
-        self.btn.place(relx=0.35, rely=0.68)
+        if not self.reset_pass:
+            self.btn = Checkbutton(text=" Admin status ",
+                                   variable=self.is_admin,command=self.set_admin_state,
+                                   font=("Courier", 14))
+            self.btn.place(relx=0.35, rely=0.68)
+
+        self.confm_btn = Button(
+            self, text='Confirm', command=self.confirm, font=('Courier', 16))
+        self.confm_btn.place(height=40, width=180, relx=0.88, rely=0.83, anchor=E)
+
+        self.back_btn = Button(
+            self, text='Back', command=self.back, font=('Courier', 14))
+        self.back_btn.place(height=35, width=80, relx=0.625, rely=0.83, anchor=E)
 
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
@@ -324,7 +333,6 @@ class ChangePasswordWindow(tk.Frame):
     def wait_for_response(self, master, label):
         DS.write_to_from_keys("_")
         password_blank = "*********************"
-        pw_data = DS.get_keyboard_data()
         while 1:
             pw_data = DS.get_keyboard_data()
             pw_len = len(pw_data)
@@ -368,8 +376,11 @@ class ChangePasswordWindow(tk.Frame):
             return False
 
     def return_to_edit_user(self):
-        self.btn.destroy()
-        self.control.show_frame(EditUserWindow)
+        if self.reset_pass:
+            self.control.show_frame(UL.LogInWindow)
+        else:
+            self.btn.destroy()
+            self.control.show_frame(EditUserWindow)
 
 
 class EditUserWindow(tk.Frame):
@@ -684,7 +695,6 @@ class AddUserWindow(tk.Frame):
     def wait_for_response(self, master, block, label):
         DS.write_to_from_keys("_")
         password_blank = "*********************"
-        pw_data = DS.get_keyboard_data()
         while 1:
             pw_data = DS.get_keyboard_data()
             pw_len = len(pw_data)

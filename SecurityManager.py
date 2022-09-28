@@ -112,13 +112,10 @@ class SecurityManager(object):
 
     def GetUserObject(self, userName):
         self.SMDB = SecManDB()
-        user = self.SMDB.getUser(userName)
-        return user
+        return self.SMDB.getUser(userName)
 
     def GetUserList(self):
-        userList = []
-        userlist = self.SMDB.getUserList()
-        return userlist
+        return self.SMDB.getUserList()
 
     def remind_password(self, user):
         user_obj = self.GetUserObject(user)

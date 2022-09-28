@@ -139,7 +139,7 @@ class Keyboard():
         L = ttk.Button(self.canvas, text='L', width=9, command=lambda: self.press('l'))
         L.place(relx=0.71, rely=0.42, anchor=CENTER)
 
-        semi_co = ttk.Button(self.canvas, text=';', width=9, command=lambda: self.press(';'))
+        semi_co = ttk.Button(self.canvas, text='@', width=9, command=lambda: self.press('@'))
         semi_co.place(relx=0.78, rely=0.42, anchor=CENTER)
 
         enter = ttk.Button(self.canvas, text='Enter', width=18,

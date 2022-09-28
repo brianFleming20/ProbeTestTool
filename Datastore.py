@@ -93,6 +93,11 @@ class Data_Store():
 
     ############################################
 
+    def get_reset_password(self):
+        return self.get_user_data()['reset_password']
+
+    ############################################
+
     def device_locations(self, data):
         devices = {
             "ODM": data.ODM,
@@ -137,6 +142,7 @@ class Data_Store():
             "Plot": user_data.Plot,
             "Over_rite": user_data.Over_rite,
             "Change_password": user_data.Change_password,
+            "reset_password": user_data.reset_password,
         }
         return user_dict
 
