@@ -42,149 +42,149 @@ class Keyboard():
     def get_keyboard(self):
         # self.keystrokes = StringVar()
         self.shift_lock = False
-        self.canvas = Canvas(width=1010, height=240)
+        self.canvas = Canvas(width=1100, height=240)
 
         # Numbers section
-        self.name_text = self.canvas.create_text(150, 20, text="lower case", fill="black", font=(FONT_NAME, 12, "bold"))
-        one = ttk.Button(self.canvas, text='1', width=9, command=lambda: self.press('1'))
-        one.place(relx=0.15, rely=0.18, anchor=CENTER)
+        self.name_text = self.canvas.create_text(70, 20, text="lower case", fill="black", font=(FONT_NAME, 12, "bold"))
+        one = Button(self.canvas, text='1', width=7, font=("Arial", 12), command=lambda: self.press('1'))
+        one.place(relx=0.08, rely=0.17, anchor=CENTER)
 
-        two = ttk.Button(self.canvas, text='2', width=9, command=lambda: self.press('2'))
-        two.place(relx=0.22, rely=0.18, anchor=CENTER)
+        two = Button(self.canvas, text='2', width=7, font=('Arial', 12), command=lambda: self.press('2'))
+        two.place(relx=0.16, rely=0.17, anchor=CENTER)
 
-        three = ttk.Button(self.canvas, text='3', width=9, command=lambda: self.press('3'))
-        three.place(relx=0.29, rely=0.18, anchor=CENTER)
+        three = Button(self.canvas, text='3', width=7, font=('Arial', 12), command=lambda: self.press('3'))
+        three.place(relx=0.25, rely=0.17, anchor=CENTER)
 
-        four = ttk.Button(self.canvas, text='4', width=9, command=lambda: self.press('4'))
-        four.place(relx=0.36, rely=0.18, anchor=CENTER)
+        four = Button(self.canvas, text='4', width=7, font=('Arial', 12), command=lambda: self.press('4'))
+        four.place(relx=0.34, rely=0.17, anchor=CENTER)
 
-        five = ttk.Button(self.canvas, text='5', width=9, command=lambda: self.press('5'))
-        five.place(relx=0.43, rely=0.18, anchor=CENTER)
+        five = Button(self.canvas, text='5', width=7, font=('Arial', 12), command=lambda: self.press('5'))
+        five.place(relx=0.43, rely=0.17, anchor=CENTER)
 
-        six = ttk.Button(self.canvas, text='6', width=9, command=lambda: self.press('6'))
-        six.place(relx=0.5, rely=0.18, anchor=CENTER)
+        six = Button(self.canvas, text='6', width=7, font=('Arial', 12), command=lambda: self.press('6'))
+        six.place(relx=0.52, rely=0.17, anchor=CENTER)
 
-        seven = ttk.Button(self.canvas, text='7', width=9, command=lambda: self.press('7'))
-        seven.place(relx=0.57, rely=0.18, anchor=CENTER)
+        seven = Button(self.canvas, text='7', width=7, font=('Arial', 12), command=lambda: self.press('7'))
+        seven.place(relx=0.61, rely=0.17, anchor=CENTER)
 
-        eight = ttk.Button(self.canvas, text='8', width=9, command=lambda: self.press('8'))
-        eight.place(relx=0.64, rely=0.18, anchor=CENTER)
+        eight = Button(self.canvas, text='8', width=7, font=('Arial', 12), command=lambda: self.press('8'))
+        eight.place(relx=0.7, rely=0.17, anchor=CENTER)
 
-        nine = ttk.Button(self.canvas, text='9', width=9, command=lambda: self.press('9'))
-        nine.place(relx=0.71, rely=0.18, anchor=CENTER)
+        nine = Button(self.canvas, text='9', width=7, font=('Arial', 12), command=lambda: self.press('9'))
+        nine.place(relx=0.78, rely=0.17, anchor=CENTER)
 
-        zero = ttk.Button(self.canvas, text='0', width=9, command=lambda: self.press('0'))
-        zero.place(relx=0.78, rely=0.18, anchor=CENTER)
+        zero = Button(self.canvas, text='0', width=7, font=('Arial', 12), command=lambda: self.press('0'))
+        zero.place(relx=0.86, rely=0.17, anchor=CENTER)
 
-        clear = ttk.Button(self.canvas, text='Clear', width=12, command=self.clear)
-        clear.place(relx=0.88, rely=0.18, anchor=CENTER)
+        clear = Button(self.canvas, text='Clear', width=12, command=self.clear)
+        clear.place(relx=0.95, rely=0.17, anchor=CENTER)
 
         # Frist letter row
-        q = ttk.Button(self.canvas, text='Q', width=9, command=lambda: self.press('q'))
-        q.place(relx=0.13, rely=0.3, anchor=CENTER)
+        q = Button(self.canvas, text='Q', width=7, font=('Arial', 12), command=lambda: self.press('q'))
+        q.place(relx=0.1, rely=0.34, anchor=CENTER)
 
-        w = ttk.Button(self.canvas, text='W', width=9, command=lambda: self.press('w'))
-        w.place(relx=0.20, rely=0.3, anchor=CENTER)
+        w = Button(self.canvas, text='W', width=7, font=('Arial', 12), command=lambda: self.press('w'))
+        w.place(relx=0.18, rely=0.34, anchor=CENTER)
 
-        e = ttk.Button(self.canvas, text='E', width=9, command=lambda: self.press('e'))
-        e.place(relx=0.27, rely=0.3, anchor=CENTER)
+        e = Button(self.canvas, text='E', width=7, font=('Arial', 12), command=lambda: self.press('e'))
+        e.place(relx=0.26, rely=0.34, anchor=CENTER)
 
-        R = ttk.Button(self.canvas, text='R', width=9, command=lambda: self.press('r'))
-        R.place(relx=0.34, rely=0.3, anchor=CENTER)
+        R = Button(self.canvas, text='R', width=7, font=('Arial', 12), command=lambda: self.press('r'))
+        R.place(relx=0.34, rely=0.34, anchor=CENTER)
 
-        T = ttk.Button(self.canvas, text='T', width=9, command=lambda: self.press('t'))
-        T.place(relx=0.41, rely=0.3, anchor=CENTER)
+        T = Button(self.canvas, text='T', width=7, font=('Arial', 12), command=lambda: self.press('t'))
+        T.place(relx=0.42, rely=0.34, anchor=CENTER)
 
-        Y = ttk.Button(self.canvas, text='Y', width=9, command=lambda: self.press('y'))
-        Y.place(relx=0.48, rely=0.3, anchor=CENTER)
+        Y = Button(self.canvas, text='Y', width=7, font=('Arial', 12), command=lambda: self.press('y'))
+        Y.place(relx=0.5, rely=0.34, anchor=CENTER)
 
-        U = ttk.Button(self.canvas, text='U', width=9, command=lambda: self.press('u'))
-        U.place(relx=0.55, rely=0.3, anchor=CENTER)
+        U = Button(self.canvas, text='U', width=7, font=('Arial', 12), command=lambda: self.press('u'))
+        U.place(relx=0.58, rely=0.34, anchor=CENTER)
 
-        I = ttk.Button(self.canvas, text='I', width=9, command=lambda: self.press('i'))
-        I.place(relx=0.62, rely=0.3, anchor=CENTER)
+        I = Button(self.canvas, text='I', width=7, font=('Arial', 12), command=lambda: self.press('i'))
+        I.place(relx=0.66, rely=0.34, anchor=CENTER)
 
-        O = ttk.Button(self.canvas, text='O', width=9, command=lambda: self.press('o'))
-        O.place(relx=0.69, rely=0.3, anchor=CENTER)
+        O = Button(self.canvas, text='O', width=7, font=('Arial', 12), command=lambda: self.press('o'))
+        O.place(relx=0.74, rely=0.34, anchor=CENTER)
 
-        P = ttk.Button(self.canvas, text='P', width=9, command=lambda: self.press('p'))
-        P.place(relx=0.76, rely=0.3, anchor=CENTER)
+        P = Button(self.canvas, text='P', width=7, font=('Arial', 12), command=lambda: self.press('p'))
+        P.place(relx=0.82, rely=0.34, anchor=CENTER)
 
         # Second Letter Line
 
-        A = ttk.Button(self.canvas, text='A', width=9, command=lambda: self.press('a'))
-        A.place(relx=0.15, rely=0.42, anchor=CENTER)
+        A = Button(self.canvas, text='A', width=7, font=("Courier", 14), command=lambda: self.press('a'))
+        A.place(relx=0.12, rely=0.5, anchor=CENTER)
 
-        S = ttk.Button(self.canvas, text='S', width=9, command=lambda: self.press('s'))
-        S.place(relx=0.22, rely=0.42, anchor=CENTER)
+        S = Button(self.canvas, text='S', width=7, font=('Arial', 12), command=lambda: self.press('s'))
+        S.place(relx=0.2, rely=0.5, anchor=CENTER)
 
-        D = ttk.Button(self.canvas, text='D', width=9, command=lambda: self.press('d'))
-        D.place(relx=0.29, rely=0.42, anchor=CENTER)
+        D = Button(self.canvas, text='D', width=7, font=('Arial', 12), command=lambda: self.press('d'))
+        D.place(relx=0.28, rely=0.5, anchor=CENTER)
 
-        F = ttk.Button(self.canvas, text='F', width=9, command=lambda: self.press('f'))
-        F.place(relx=0.36, rely=0.42, anchor=CENTER)
+        F = Button(self.canvas, text='F', width=7, font=('Arial', 12), command=lambda: self.press('f'))
+        F.place(relx=0.36, rely=0.5, anchor=CENTER)
 
-        G = ttk.Button(self.canvas, text='G', width=9, command=lambda: self.press('g'))
-        G.place(relx=0.43, rely=0.42, anchor=CENTER)
+        G = Button(self.canvas, text='G', width=7, font=('Arial', 12), command=lambda: self.press('g'))
+        G.place(relx=0.42, rely=0.5, anchor=CENTER)
 
-        H = ttk.Button(self.canvas, text='H', width=9, command=lambda: self.press('h'))
-        H.place(relx=0.5, rely=0.42, anchor=CENTER)
+        H = Button(self.canvas, text='H', width=7, font=('Arial', 12), command=lambda: self.press('h'))
+        H.place(relx=0.5, rely=0.5, anchor=CENTER)
 
-        J = ttk.Button(self.canvas, text='J', width=9, command=lambda: self.press('J'))
-        J.place(relx=0.57, rely=0.42, anchor=CENTER)
+        J = Button(self.canvas, text='J', width=7, font=('Arial', 12), command=lambda: self.press('J'))
+        J.place(relx=0.58, rely=0.5, anchor=CENTER)
 
-        K = ttk.Button(self.canvas, text='K', width=9, command=lambda: self.press('k'))
-        K.place(relx=0.64, rely=0.42, anchor=CENTER)
+        K = Button(self.canvas, text='K', width=7, font=('Arial', 12), command=lambda: self.press('k'))
+        K.place(relx=0.64, rely=0.5, anchor=CENTER)
 
-        L = ttk.Button(self.canvas, text='L', width=9, command=lambda: self.press('l'))
-        L.place(relx=0.71, rely=0.42, anchor=CENTER)
+        L = Button(self.canvas, text='L', width=7, font=('Arial', 12), command=lambda: self.press('l'))
+        L.place(relx=0.72, rely=0.5, anchor=CENTER)
 
-        semi_co = ttk.Button(self.canvas, text='@', width=9, command=lambda: self.press('@'))
-        semi_co.place(relx=0.78, rely=0.42, anchor=CENTER)
+        semi_co = Button(self.canvas, text='@', width=7, font=('Arial', 12), command=lambda: self.press('@'))
+        semi_co.place(relx=0.8, rely=0.5, anchor=CENTER)
 
-        enter = ttk.Button(self.canvas, text='Enter', width=18,
+        enter = Button(self.canvas, text='Enter', width=16, font=("Courier", 12),
                            command=lambda check='+': [self.end_keyboard(check), self.canvas.destroy()])
-        enter.place(relx=0.89, rely=0.42, anchor=CENTER)
+        enter.place(relx=0.92, rely=0.5, anchor=CENTER)
 
         # third line Button
 
-        shift = ttk.Button(self.canvas, text='Shift Lock', width=9, command=lambda: self.shift())
-        shift.place(relx=0.11, rely=0.54, anchor=CENTER)
+        shift = Button(self.canvas, text='Shift Lock', width=10, font=('Arial', 12), command=lambda: self.shift())
+        shift.place(relx=0.14, rely=0.65, anchor=CENTER)
 
-        Z = ttk.Button(self.canvas, text='Z', width=9, command=lambda: self.press('z'))
-        Z.place(relx=0.18, rely=0.54, anchor=CENTER)
+        Z = Button(self.canvas, text='Z',width=7, font=('Arial', 12), command=lambda: self.press('z'))
+        Z.place(relx=0.22, rely=0.65, anchor=CENTER)
 
-        X = ttk.Button(self.canvas, text='X', width=9, command=lambda: self.press('x'))
-        X.place(relx=0.25, rely=0.54, anchor=CENTER)
+        X = Button(self.canvas, text='X', width=7, font=('Arial', 12), command=lambda: self.press('x'))
+        X.place(relx=0.3, rely=0.65, anchor=CENTER)
 
-        C = ttk.Button(self.canvas, text='C', width=9, command=lambda: self.press('c'))
-        C.place(relx=0.32, rely=0.54, anchor=CENTER)
+        C = Button(self.canvas, text='C', width=7, font=('Arial', 12), command=lambda: self.press('c'))
+        C.place(relx=0.38, rely=0.65, anchor=CENTER)
 
-        V = ttk.Button(self.canvas, text='V', width=9, command=lambda: self.press('v'))
-        V.place(relx=0.39, rely=0.54, anchor=CENTER)
+        V = Button(self.canvas, text='V', width=7, font=('Arial', 12), command=lambda: self.press('v'))
+        V.place(relx=0.46, rely=0.65, anchor=CENTER)
 
-        B = ttk.Button(self.canvas, text='B', width=9, command=lambda: self.press('b'))
-        B.place(relx=0.46, rely=0.54, anchor=CENTER)
+        B = Button(self.canvas, text='B', width=7, font=('Arial', 12), command=lambda: self.press('b'))
+        B.place(relx=0.52, rely=0.65, anchor=CENTER)
 
-        N = ttk.Button(self.canvas, text='N', width=9, command=lambda: self.press('n'))
-        N.place(relx=0.53, rely=0.54, anchor=CENTER)
+        N = Button(self.canvas, text='N', width=7, font=('Arial', 12), command=lambda: self.press('n'))
+        N.place(relx=0.6, rely=0.65, anchor=CENTER)
 
-        M = ttk.Button(self.canvas, text='M', width=9, command=lambda: self.press('m'))
-        M.place(relx=0.6, rely=0.54, anchor=CENTER)
+        M = Button(self.canvas, text='M', width=7, font=('Arial', 12), command=lambda: self.press('m'))
+        M.place(relx=0.68, rely=0.65, anchor=CENTER)
 
-        slas = ttk.Button(self.canvas, text='/', width=9, command=lambda: self.press('/'))
-        slas.place(relx=0.67, rely=0.54, anchor=CENTER)
+        slas = Button(self.canvas, text='/', width=7, font=('Arial', 12), command=lambda: self.press('/'))
+        slas.place(relx=0.76, rely=0.65, anchor=CENTER)
 
-        q_mark = ttk.Button(self.canvas, text='?', width=9, command=lambda: self.press('?'))
-        q_mark.place(relx=0.74, rely=0.54, anchor=CENTER)
+        q_mark = Button(self.canvas, text='?', width=7, font=('Arial', 12), command=lambda: self.press('?'))
+        q_mark.place(relx=0.84, rely=0.65, anchor=CENTER)
 
-        coma = ttk.Button(self.canvas, text='.', width=9, command=lambda: self.press('.'))
-        coma.place(relx=0.81, rely=0.54, anchor=CENTER)
+        coma = Button(self.canvas, text='.', width=7, font=('Arial', 12), command=lambda: self.press('.'))
+        coma.place(relx=0.92, rely=0.65, anchor=CENTER)
 
         # Fourth Line Button
 
-        space = ttk.Button(self.canvas, text='Space', width=40, command=lambda: self.press(' '))
-        space.place(relx=0.5, rely=0.68, anchor=CENTER)
+        space = Button(self.canvas, text='Space', width=40, command=lambda: self.press(' '))
+        space.place(relx=0.5, rely=0.88, anchor=CENTER)
 
         self.canvas.pack()
 
@@ -208,12 +208,10 @@ class Keyboard():
     def shift(self):
         if not self.shift_lock:
             self.shift_lock = True
-            # Comment out for testing
-            # self.canvas.itemconfig(self.name_text, text="UPPER CASE")
+            self.canvas.itemconfig(self.name_text, text="UPPER CASE")
         else:
             self.shift_lock = False
-            # Comment out for testing
-            # self.canvas.itemconfig(self.name_text, text="lower case")
+            self.canvas.itemconfig(self.name_text, text="lower case")
 
     def press(self, num):
         if not self.shift_lock:

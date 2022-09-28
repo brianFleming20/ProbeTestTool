@@ -1,13 +1,19 @@
 import unittest
 import Datastore
 import OnScreenKeys
+import tkinter as ttk
 
 
 DS = Datastore.Data_Store()
 KEY = OnScreenKeys
 
+
 class KeysTests(unittest.TestCase):
-    
+
+    def setUp(self):
+        self.canvas = ttk.Canvas(width=20, height=20)
+        self.name_text = self.canvas.create_text(10,10,text="none")
+
     # Test for keystrokes is acknowledged by the system.
     def test_keystrokes_seen(self):
         print("Keystrokes seen")

@@ -295,7 +295,7 @@ class ChangePasswordWindow(tk.Frame):
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
         self.text_area.insert('1.0', DS.get_username())
-        self.text_area.insert('2.0', '\nChange ' + DS.get_user_data()['Change_password'] + "'s password.")
+        self.text_area.insert('2.0', '\nChange password.')
         self.text_area.config(state=DISABLED)
 
     def password_entry(self):

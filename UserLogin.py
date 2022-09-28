@@ -57,10 +57,6 @@ PT = ProbeTest
 AU = AdminUser
 
 
-def ignore():
-    return 'break'
-
-
 class LogInWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#B1D0E0')
@@ -116,11 +112,10 @@ class LogInWindow(tk.Frame):
         ###################################
         # self.set_username("brian")
         # self.set_password("password")
-        reset_user = P.Users("","")
+        reset_user = P.Users("", "")
         DS.write_user_data(reset_user)
-        probe_data = P.Probes("","",0,0)
+        probe_data = P.Probes("", "", 0, 0)
         DS.write_probe_data(probe_data)
-        # self.timer()
         self.entry()
 
         self.btn_1 = Button(self.canvas_name, text='Username ',font=("Courier", 14), command=self.name_entry, width=20)
@@ -136,17 +131,19 @@ class LogInWindow(tk.Frame):
         self.control.attributes('-topmost', True)
 
     def name_entry(self):
+        self.logbtn.config(state=DISABLED)
         self.set_username("")
         self.get_keys()
         pass_block = False
         data = self.wait_for_response(self.canvas_name, pass_block, self.name_text)
-        # self.current_user = data
+        self.current_user = data
         self.set_username(data)
         self.btn_1.config(state=NORMAL)
         self.btn_2.config(state=NORMAL)
-        DS.write_to_from_keys(data)
+        self.logbtn.config(state=NORMAL)
 
     def password_entry(self):
+        self.logbtn.config(state=DISABLED)
         self.set_password("")
         self.get_keys()
         pass_block = True
@@ -155,6 +152,7 @@ class LogInWindow(tk.Frame):
         self.set_password(data)
         self.btn_1.config(state=NORMAL)
         self.btn_2.config(state=NORMAL)
+        self.logbtn.config(state=NORMAL)
 
     def _login_btn_clicked(self):
         self.canvas_name.destroy()
