@@ -109,8 +109,8 @@ class LogInWindow(tk.Frame):
         # Testing data only               #
         # comment out when PTT is in use  #
         ###################################
-        # self.set_username("brian")
-        # self.set_password("password")
+        self.set_username("brian")
+        self.set_password("password")
         reset_user = P.Users("", "")
         DS.write_user_data(reset_user)
         probe_data = P.Probes("", "", 0, 0)

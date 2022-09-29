@@ -32,10 +32,10 @@ import ODMPlus
 import Sessions
 import FaultFinder
 import Datastore
-import sys
 import Ports
 import time
 import RetestProbe
+import os
 
 # create instances
 BM = BatchManager.BatchManager()
@@ -107,15 +107,15 @@ class TestProgramWindow(tk.Frame):
         self.probes_passed.set(0)
         self.info_canvas = None
         self.test = False
+        self.file_data = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
 
         ###############################################################
         # import and set up images for the screen                     #
         ###############################################################
-        sys.path.append('./PTT_Icons')
-        self.greenlight = (PhotoImage(file="./PTT_Icons/GREEN.png"))
-        self.amberlight = (PhotoImage(file="./PTT_Icons/AMBER.png"))
-        self.redlight = (PhotoImage(file="./PTT_Icons/RED.png"))
-        self.greylight = (PhotoImage(file="./PTT_Icons/GREY.png"))
+        self.greenlight = (PhotoImage(file=os.path.join(self.file_data, "PTT_Icons/GREEN.png")))
+        self.amberlight = (PhotoImage(file=os.path.join(self.file_data, "PTT_Icons/AMBER.png")))
+        self.redlight = (PhotoImage(file=os.path.join(self.file_data, "PTT_Icons/RED.png")))
+        self.greylight = (PhotoImage(file=os.path.join(self.file_data, "PTT_Icons/GREY.png")))
         self.back_colour = "#A6D1E6"
 
     def display_layout(self):

@@ -60,7 +60,7 @@ class RetestProbe(tk.Frame):
         self.canvas_back = Canvas(bg=self.back_colour, width=self.ws - 10, height=self.hs - 10)
         self.canvas_back.place(x=5, y=5)
         self.results_canvas = Canvas(bg="#9FC9F3", width=200, height=40)
-        self.results_canvas.place(x=300, y=580)
+        self.results_canvas.place(relx=0.22, rely=0.69)
         Label(self.canvas_back, text="Deltex", background=self.back_colour, foreground="#003865",
               font=('Helvetica', 28, 'bold'), width=12).place(relx=0.79, rely=0.1)
         Label(self.canvas_back, text="medical", background=self.back_colour, foreground="#A2B5BB",
@@ -366,7 +366,6 @@ class RetestProbe(tk.Frame):
         self.failed_probe = False
         probe_type = None
         self.finish += 1
-        print(self.finish)
         if self.check_probe_present():
             self.test_finished = False
         else:
