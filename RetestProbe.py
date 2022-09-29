@@ -143,6 +143,8 @@ class RetestProbe(tk.Frame):
         ports = DS.get_devices()
         if not ports['Analyser']:
             mb.showerror(title="Connection Error", message="Please connect all devices.")
+            self.canvas_back.destroy()
+            self.results_canvas.destroy()
             return False
         else:
             if len(ports['Analyser']) == 4:
@@ -165,7 +167,7 @@ class RetestProbe(tk.Frame):
         self.control.show_frame(PT.TestProgramWindow)
 
     def back_to_session(self):
-        # PT.text_destroy(self)
+        PT.text_destroy(self)
         self.canvas_back.destroy()
         self.results_canvas.destroy()
         self.control.show_frame(SE.SessionSelectWindow)
