@@ -15,7 +15,6 @@ to avoid pickle file errors
 DS.write_to_user_file(user_data)
 '''
 import Datastore
-import pickle
 import Ports
 
 DS = Datastore.Data_Store()
@@ -31,32 +30,19 @@ class SecurityManager(object):
 
     def __init__(self):
         self.editingUser = False
-        self.SMDB = SecManDB()
         self.is_admin_status = False
 
     def logIn(self, user):
-        self.SMDB = SecManDB()
-        '''
-        tick
-        call getUSer on secmanDB, check password with the user object returned by getUser
-        if login sucessful store user object as SecurityManagers logedinuser attribute
 
-                try:
-            print(nuser.name, nuser.password, nuser.admin)
-        except:
-            print('user not found in dict')
-        '''
         nuser = False
 
         if len(user.name) > 0 or len(user.password) > 0:
-            nuser = self.SMDB.getUser(user)
+            nuser = DS.getUser(user)
 
         if not nuser:  # is the username a valid username?
             return False
 
         if nuser.password == user.password:  # is the password correct?
-
-            # DS.write_to_user_file([nuser.name, nuser.admin])
             login_user = P.Users(name=nuser.name, admin=nuser.admin)
             DS.write_user_data(login_user)
 
@@ -76,8 +62,8 @@ class SecurityManager(object):
         tick
         checks if the user's name is already in the dict, if not it stores the user object to the users file
         '''
-        if not self.SMDB.getUser(user.name):
-            self.SMDB.putUser(user)
+        if not DS.getUser(user.name):
+            DS.putUser(user)
             return True
         else:
             return False
@@ -88,8 +74,8 @@ class SecurityManager(object):
         pass in a user object
         Checks to see if the user exists in the user dict, if so deletes it
         '''
-        if self.SMDB.getUser(user.name):
-            self.SMDB.removeUser(user)
+        if DS.getUser(user.name):
+            DS.removeUser(user)
             return True
         else:
             return False
@@ -106,134 +92,133 @@ class SecurityManager(object):
         user_details = user.password
         user.password = password
 
-        self.SMDB.putUser(user)
+        DS.putUser(user)
 
         return True
 
     def GetUserObject(self, userName):
-        self.SMDB = SecManDB()
-        return self.SMDB.getUser(userName)
+        return DS.getUser(userName)
 
     def GetUserList(self):
-        return self.SMDB.getUserList()
+        return DS.getUserList()
 
     def remind_password(self, user):
         user_obj = self.GetUserObject(user)
         return user_obj.password
 
 
-class SecManDB(object):
-    ##############################################################
-    # This class handles all the opening and closing of the CSV  #
-    ##############################################################
+# class SecManDB(object):
+#     ##############################################################
+#     # This class handles all the opening and closing of the CSV  #
+#     ##############################################################
+#
+#     def __init__(self):
+#         """Return a Customer object whose name is *name* and starting
+#         balance is *balance*."""
+        # self.empty = None
 
-    def __init__(self):
-        """Return a Customer object whose name is *name* and starting
-        balance is *balance*."""
-        self.empty = None
+    # def getUser(self, user):
+    #     '''
+    #     tick
+    #     pass in a username looks for given user in file
+    #     if found, create a user object, fill it with the users data and return the object
+    #     if not found, return False
+    #     '''
+    #     thisUser = False
+    #
+    #     if type(user) == str:
+    #         name = user
+    #         user = User(name, "*")
+    #     try:
+    #         with open('./userfile.pickle', 'rb') as handle:
+    #             userDict = pickle.load(handle)
+    #
+    #     except FileExistsError as e:
+    #         with open('./userfile.pickle', 'w') as handle:
+    #             pickle.dump(handle, self.empty)
+    #             thisUser = False
+    #     else:
+    #         for u in userDict:
+    #             if u == user.name:
+    #                 item = userDict[u]
+    #                 password = item[0]
+    #                 admin = item[1]
+    #                 thisUser = User(u, password, admin)
+    #     return thisUser
 
-    def getUser(self, user):
-        '''
-        tick
-        pass in a username looks for given user in file
-        if found, create a user object, fill it with the users data and return the object
-        if not found, return False
-        '''
-        thisUser = False
+    # def getUserList(self, ):
+    #     '''
+    #     tick
+    #     returns a list of all the user objects
+    #     '''
+    #     userList = []
+    #     try:
+    #         with open('./userfile.pickle', 'rb') as handle:
+    #             userDict = pickle.load(handle)
+    #     except FileNotFoundError:
+    #         with open('./userfile.pickle', 'wb') as handle:
+    #             pickle.dump(handle, self.empty)
+    #             return False
+    #     else:
+    #         for user in userDict:
+    #             password = userDict[user][0]
+    #             admin = userDict[user][1]
+    #             thisUser = User(user, password, admin)
+    #             userList.append(thisUser)
+    #
+    #     return userList
 
-        if type(user) == str:
-            name = user
-            user = User(name, "*")
-        try:
-            with open('./userfile.pickle', 'rb') as handle:
-                userDict = pickle.load(handle)
-
-        except FileExistsError as e:
-            with open('./userfile.pickle', 'w') as handle:
-                pickle.dump(handle, self.empty)
-                thisUser = False
-        else:
-            for u in userDict:
-                if u == user.name:
-                    item = userDict[u]
-                    password = item[0]
-                    admin = item[1]
-                    thisUser = User(u, password, admin)
-        return thisUser
-
-    def getUserList(self, ):
-        '''
-        tick
-        returns a list of all the user objects
-        '''
-        userList = []
-        try:
-            with open('./userfile.pickle', 'rb') as handle:
-                userDict = pickle.load(handle)
-        except FileNotFoundError:
-            with open('./userfile.pickle', 'wb') as handle:
-                pickle.dump(handle, self.empty)
-                return False
-        else:
-            for user in userDict:
-                password = userDict[user][0]
-                admin = userDict[user][1]
-                thisUser = User(user, password, admin)
-                userList.append(thisUser)
-
-        return userList
-
-    def putUser(self, user):
-        '''
-        tick
-        Pass in a user object and update the CSV file with it
-        '''
-
-        # create details array
-        details = ['', False]
-        details[0] = user.password
-        details[1] = user.admin
-
-        try:
-            with open('./userfile.pickle', 'rb') as handle:
-                userDict = pickle.load(handle)
-
-        except FileNotFoundError:
-            with open('./userfile.pickle', 'wb') as handle:
-                userDict = {user.name: details}
-                pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        else:
-            userDict[user.name] = details
-            with open('./userfile.pickle', 'wb') as handle:
-                pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-            return True
-
-    def removeUser(self, user):
-        '''
-        pass in a user object
-        removes a given user from the user list
-        '''
-
-        with open('./userfile.pickle', 'rb') as handle:
-            userDict = pickle.load(handle)
-
-        if user in userDict:
-            userDict.pop(user)
-
-        with open('./userfile.pickle', 'wb') as handle:
-            pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        return True
+    # def putUser(self, user):
+    #     '''
+    #     tick
+    #     Pass in a user object and update the CSV file with it
+    #     '''
+    #
+    #     # create details array
+    #     details = ['', False]
+    #     details[0] = user.password
+    #     details[1] = user.admin
+    #
+    #     try:
+    #         with open('./userfile.pickle', 'rb') as handle:
+    #             userDict = pickle.load(handle)
+    #
+    #     except FileNotFoundError:
+    #         with open('./userfile.pickle', 'wb') as handle:
+    #             userDict = {user.name: details}
+    #             pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    #     else:
+    #         userDict[user.name] = details
+    #         with open('./userfile.pickle', 'wb') as handle:
+    #             pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    #         return True
+    #
+    # def removeUser(self, user):
+    #     '''
+    #     pass in a user object
+    #     removes a given user from the user list
+    #     '''
+    #
+    #     with open('./userfile.pickle', 'rb') as handle:
+    #         userDict = pickle.load(handle)
+    #
+    #     if user in userDict:
+    #         userDict.pop(user)
+    #
+    #     with open('./userfile.pickle', 'wb') as handle:
+    #         pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    #     return True
 
 
-class User(object):
-    '''
-    Used to create a user object, containing all the user`s info (username, password, admin status).
-    '''
-
-    def __init__(self, name, password, admin=False):
-        self.name = name
-        self.password = password
-        self.admin = admin
+# class User(object):
+#     '''
+#     Used to create a user object, containing all the user`s info (username, password, admin status).
+#     '''
+#
+#     def __init__(self, name, password, admin=False):
+#         self.name = name
+#         self.password = password
+#         self.admin = admin
 
 
 # SM = SecurityManager()

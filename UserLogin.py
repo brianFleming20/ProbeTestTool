@@ -36,7 +36,6 @@ from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox as tm
 import SecurityManager
-from SecurityManager import User
 import BatchManager
 import Sessions
 import Datastore
@@ -166,7 +165,7 @@ class LogInWindow(tk.Frame):
             #######################################
             # Create user object with admin false #
             #######################################
-            user = User(username, password)
+            user = P.User(username, password)
             event = SM.logIn(user)
             if event:
                 self.canvas_go()

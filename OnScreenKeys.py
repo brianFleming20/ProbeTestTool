@@ -122,19 +122,19 @@ class Keyboard():
         D.place(relx=0.28, rely=0.5, anchor=CENTER)
 
         F = Button(self.canvas, text='F', width=7, font=('Arial', 12), command=lambda: self.press('f'))
-        F.place(relx=0.36, rely=0.5, anchor=CENTER)
+        F.place(relx=0.355, rely=0.5, anchor=CENTER)
 
         G = Button(self.canvas, text='G', width=7, font=('Arial', 12), command=lambda: self.press('g'))
-        G.place(relx=0.42, rely=0.5, anchor=CENTER)
+        G.place(relx=0.425, rely=0.5, anchor=CENTER)
 
         H = Button(self.canvas, text='H', width=7, font=('Arial', 12), command=lambda: self.press('h'))
         H.place(relx=0.5, rely=0.5, anchor=CENTER)
 
         J = Button(self.canvas, text='J', width=7, font=('Arial', 12), command=lambda: self.press('J'))
-        J.place(relx=0.58, rely=0.5, anchor=CENTER)
+        J.place(relx=0.575, rely=0.5, anchor=CENTER)
 
         K = Button(self.canvas, text='K', width=7, font=('Arial', 12), command=lambda: self.press('k'))
-        K.place(relx=0.64, rely=0.5, anchor=CENTER)
+        K.place(relx=0.65, rely=0.5, anchor=CENTER)
 
         L = Button(self.canvas, text='L', width=7, font=('Arial', 12), command=lambda: self.press('l'))
         L.place(relx=0.72, rely=0.5, anchor=CENTER)
@@ -148,7 +148,7 @@ class Keyboard():
 
         # third line Button
 
-        shift = Button(self.canvas, text='Shift Lock', width=10, font=('Arial', 12), command=lambda: self.shift())
+        shift = Button(self.canvas, text='Shift Lock', width=10, command=lambda: self.shift())
         shift.place(relx=0.14, rely=0.65, anchor=CENTER)
 
         Z = Button(self.canvas, text='Z',width=7, font=('Arial', 12), command=lambda: self.press('z'))
@@ -158,13 +158,13 @@ class Keyboard():
         X.place(relx=0.3, rely=0.65, anchor=CENTER)
 
         C = Button(self.canvas, text='C', width=7, font=('Arial', 12), command=lambda: self.press('c'))
-        C.place(relx=0.38, rely=0.65, anchor=CENTER)
+        C.place(relx=0.375, rely=0.65, anchor=CENTER)
 
         V = Button(self.canvas, text='V', width=7, font=('Arial', 12), command=lambda: self.press('v'))
-        V.place(relx=0.46, rely=0.65, anchor=CENTER)
+        V.place(relx=0.45, rely=0.65, anchor=CENTER)
 
         B = Button(self.canvas, text='B', width=7, font=('Arial', 12), command=lambda: self.press('b'))
-        B.place(relx=0.52, rely=0.65, anchor=CENTER)
+        B.place(relx=0.525, rely=0.65, anchor=CENTER)
 
         N = Button(self.canvas, text='N', width=7, font=('Arial', 12), command=lambda: self.press('n'))
         N.place(relx=0.6, rely=0.65, anchor=CENTER)
@@ -183,7 +183,7 @@ class Keyboard():
 
         # Fourth Line Button
 
-        space = Button(self.canvas, text='Space', width=40, command=lambda: self.press(' '))
+        space = Button(self.canvas, text='Space', width=40, font=('Arial', 12), command=lambda: self.press(' '))
         space.place(relx=0.5, rely=0.88, anchor=CENTER)
 
         self.canvas.pack()

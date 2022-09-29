@@ -32,3 +32,14 @@ class Users:
         self.Over_rite = over_right
         self.Change_password = pw_user
         self.reset_password = reset_password
+
+
+class User(object):
+    ####################################################################################################
+    # Used to create a user object, containing all the user`s info (username, password, admin status). #
+    ####################################################################################################
+
+    def __init__(self, name, password, admin=False):
+        self.name = name
+        self.password = password
+        self.admin = admin

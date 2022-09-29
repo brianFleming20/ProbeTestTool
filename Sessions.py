@@ -130,9 +130,9 @@ class SessionSelectWindow(tk.Frame):
         self.SSW_b4 = tk.Button(self, text='Admin area', background="#FFDAB9",
                              command=lambda: self.control.show_frame(AU.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(height=50, width=250, relx=0.5, rely=0.65)
-        self.SSW_b5 = tk.Button(self, text='...', background="#FFDAB9",
-                                command=self.blank, width=10)
-        self.SSW_b5.place( relx=0.5, rely=0.8)
+        # self.SSW_b5 = tk.Button(self, text='...', background="#FFDAB9",
+        #                         command=self.blank, width=10)
+        # self.SSW_b5.place( relx=0.5, rely=0.8)
 
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
@@ -155,7 +155,7 @@ class SessionSelectWindow(tk.Frame):
             self.SSW_b2.config(state=NORMAL)
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
-        self.text_area.insert('2.0', DS.get_username())
+        self.text_area.insert('2.0', DS.get_username().title())
         self.text_area.insert('3.3', '\n\nPlease choose an option.')
         self.text_area.config(state=DISABLED)
 
@@ -165,7 +165,7 @@ class SessionSelectWindow(tk.Frame):
         self.complete_canvas.create_text(100, 20, text="Probes Completed", fill="black",
                                          font=(OnScreenKeys.FONT_NAME, 14, "bold"))
         ttk.Button(self.complete_canvas, text="Close",
-                   command=self.complete_canvas.destroy).place(x=120, y=270)
+                   command=self.complete_canvas.destroy).place(x=100, y=300)
         item = 0
         for probes in BM.get_completed_batches():
             position = (item * 20) + 50
@@ -187,7 +187,7 @@ class SessionSelectWindow(tk.Frame):
         tm.showinfo("test","Insert a probe to blank")
         PM.blank_probe()
 
-        self.SSW_b5.config(state=DISABLED)
+        # self.SSW_b5.config(state=DISABLED)
 
 
     def failed_probe(self):
@@ -284,7 +284,7 @@ class NewSessionWindow(tk.Frame):
         ttk.Label(self.canvas_qty, text=self.batchQty, font=("bold", 14)).place(relx=0.75, rely=0.3, width=140,
                                                                                 anchor=N)
         self.text_area.config(state=NORMAL)
-        self.text_area.insert('1.0', DS.get_username())
+        self.text_area.insert('1.0', DS.get_username().title())
         self.text_area.insert('3.3', '\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
         self.text_area.config(state=DISABLED)
 
@@ -469,7 +469,7 @@ class ContinueSessionWindow(tk.Frame):
 
     def set_display(self):
         self.text_area.config(state=NORMAL)
-        self.text_area.insert('1.0', DS.get_username())
+        self.text_area.insert('1.0', DS.get_username().title())
         self.text_area.insert('3.3', '\n\nPlease select a batch number\nto continue testing.')
         self.text_area.config(state=DISABLED)
 

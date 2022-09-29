@@ -24,20 +24,22 @@ import tkinter.messagebox as tm
 import json
 import Ports
 
+P = Ports
 
 
 class Data_Store():
     def __init__(self):
         self.file_data = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
+        self.empty = None
     ########################
     # Main data file read  #
     ########################
     #######################################
 
     def get_keyboard_data(self):
-
+        filepath = os.path.join(self.file_data, "file.keys")
         try:
-            with open('file.keys', 'rb') as load_keys:
+            with open(filepath, 'rb') as load_keys:
                 keys_data = pickle.load(load_keys)
         except FileNotFoundError:
             self.write_to_from_keys(" ")
@@ -47,7 +49,8 @@ class Data_Store():
     ########################################
 
     def write_to_from_keys(self, keys):
-        with open('file.keys', 'wb') as key_input:
+        filepath = os.path.join(self.file_data, "file.keys")
+        with open(filepath, 'wb') as key_input:
             pickle.dump(keys, key_input)
 
     #########################################
@@ -244,3 +247,96 @@ class Data_Store():
         else:
             return load_data
 
+    def getUser(self, user):
+        '''
+        tick
+        pass in a username looks for given user in file
+        if found, create a user object, fill it with the users data and return the object
+        if not found, return False
+        '''
+        filepath = os.path.join(self.file_data, "userfile.pickle")
+        thisUser = False
+
+        if type(user) == str:
+            name = user
+            user = P.User(name, "*")
+        try:
+            with open(filepath, 'rb') as handle:
+                userDict = pickle.load(handle)
+
+        except FileExistsError as e:
+            with open(filepath, 'w') as handle:
+                pickle.dump(handle, self.empty)
+                thisUser = False
+        else:
+            for u in userDict:
+                if u == user.name:
+                    item = userDict[u]
+                    password = item[0]
+                    admin = item[1]
+                    thisUser = P.User(u, password, admin)
+        return thisUser
+
+    def getUserList(self, ):
+        '''
+        tick
+        returns a list of all the user objects
+        '''
+        filepath = os.path.join(self.file_data, "userfile.pickle")
+        userList = []
+        try:
+            with open(filepath, 'rb') as handle:
+                userDict = pickle.load(handle)
+        except FileNotFoundError:
+            with open(filepath, 'wb') as handle:
+                pickle.dump(handle, self.empty)
+                return False
+        else:
+            for user in userDict:
+                password = userDict[user][0]
+                admin = userDict[user][1]
+                thisUser = P.User(user, password, admin)
+                userList.append(thisUser)
+
+        return userList
+
+    def putUser(self, user):
+        '''
+        tick
+        Pass in a user object and update the CSV file with it
+        '''
+        filepath = os.path.join(self.file_data, "userfile.pickle")
+        # create details array
+        details = ['', False]
+        details[0] = user.password
+        details[1] = user.admin
+
+        try:
+            with open(filepath, 'rb') as handle:
+                userDict = pickle.load(handle)
+
+        except FileNotFoundError:
+            with open(filepath, 'wb') as handle:
+                userDict = {user.name: details}
+                pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        else:
+            userDict[user.name] = details
+            with open(filepath, 'wb') as handle:
+                pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            return True
+
+    def removeUser(self, user):
+        '''
+        pass in a user object
+        removes a given user from the user list
+        '''
+        filepath = os.path.join(self.file_data, "userfile.pickle")
+        with open(filepath, 'rb') as handle:
+            userDict = pickle.load(handle)
+
+        if user in userDict:
+            userDict.pop(user)
+
+        with open(filepath, 'wb') as handle:
+            pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        return True

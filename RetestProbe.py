@@ -30,7 +30,7 @@ class RetestProbe(tk.Frame):
     def __init__(self, Parent, Controller):
         tk.Frame.__init__(self, Parent)
         self.qty_passed = None
-        self.check = None
+        self.failed_probe = None
         self.found = False
         self.probe_date = None
         self.probe_type = None
@@ -119,14 +119,16 @@ class RetestProbe(tk.Frame):
         self.test_finished = False
         self.finish = 0
         self.found = False
-        self.check = False
+        self.failed_probe = False
         self.info_canvas = None
         self.results_canvas.itemconfig(self.results, text=blank)
 
     def refresh_window(self):
         self.screen_layout()
-        self.set_devices()
-        self.reset_screen()
+        if self.set_devices():
+            self.reset_screen()
+        else:
+            self.refresh_window()
 
     def reset_screen(self):
         self.reset_display()
@@ -139,19 +141,23 @@ class RetestProbe(tk.Frame):
         port = P.Ports(probe=probe_port, analyer=analyser, active=False)
         DS.write_device_to_file(port)
         ports = DS.get_devices()
-        if len(ports['Analyser']) == 4:
-            self.znd.config(background="#7FB77E")
+        if not ports['Analyser']:
+            mb.showerror(title="Connection Error", message="Please connect all devices.")
+            return False
         else:
-            self.znd.config(background="#EB1D36")
-        if len(ports['ODM']) == 4:
-            self.odm.config(background="#7FB77E")
-        else:
-            self.odm.config(background="#EB1D36")
-        if len(ports['Probe']) == 4:
-            self.probe.config(background="#7FB77E")
-        else:
-            self.probe.config(background="#EB1D36")
-
+            if len(ports['Analyser']) == 4:
+                self.znd.config(background="#7FB77E")
+            else:
+                self.znd.config(background="#EB1D36")
+            if len(ports['ODM']) == 4:
+                self.odm.config(background="#7FB77E")
+            else:
+                self.odm.config(background="#EB1D36")
+            if len(ports['Probe']) == 4:
+                self.probe.config(background="#7FB77E")
+            else:
+                self.probe.config(background="#EB1D36")
+            return True
 
     def back_to_test(self):
         self.canvas_back.destroy()
@@ -179,7 +185,7 @@ class RetestProbe(tk.Frame):
             pass
         PT.text_destroy(self)
         self.results_canvas.config(bg=self.back_colour)
-        self.check = False
+        self.failed_probe = False
         self.reset_screen()
 
     def check_probe_present(self):
@@ -190,14 +196,14 @@ class RetestProbe(tk.Frame):
 
     def check_for_probe(self):
         probe_type = self.check_for_failed_probe()
-        if self.check:
+        if self.failed_probe:
             PT.text_destroy(self)
             filepath = DS.get_file_location()
             path = filepath['File']
             inProgressPath = os.path.join(path, "in_progress", "")
             completePath = os.path.join(path, "complete", "")
             PT.probe_canvas(self, "Checking folders ", False)
-            if self.check:
+            if self.failed_probe:
                 if self.check_folder(inProgressPath, self.probe_date, probe_type):
                     self.found_failed_probe()
                 if self.check_folder(completePath, self.probe_date, probe_type):
@@ -246,7 +252,7 @@ class RetestProbe(tk.Frame):
         return self.found
 
     def display_probe_data(self, last_line):
-        if self.check:
+        if self.failed_probe:
             qty_failed = last_line[7]
             self.qty_passed = last_line[3]
             date_complete = last_line[8][:-9]
@@ -266,7 +272,7 @@ class RetestProbe(tk.Frame):
             PT.text_destroy(self)
             PT.probe_canvas(self,"Are these details correct?",True)
             if not self.info_canvas:
-                self.check = False
+                self.failed_probe = False
                 self.refresh_window()
             if self.info_canvas:
                 PT.text_destroy(self)
@@ -357,9 +363,10 @@ class RetestProbe(tk.Frame):
         return result
 
     def check_for_failed_probe(self):
-        self.check = False
+        self.failed_probe = False
         probe_type = None
         self.finish += 1
+        print(self.finish)
         if self.check_probe_present():
             self.test_finished = False
         else:
@@ -371,5 +378,7 @@ class RetestProbe(tk.Frame):
             probe_type = serial_number[:3]
             self.probe_date = serial_number[8:]
             if 'Fail' in serial_number:
-                self.check = True
+                self.failed_probe = True
         return probe_type
+
+

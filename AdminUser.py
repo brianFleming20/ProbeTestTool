@@ -24,7 +24,6 @@ from tkinter import ttk
 import tkinter.messagebox as tm
 from tkinter import filedialog
 import SecurityManager
-from SecurityManager import User
 import BatchManager
 from time import gmtime, strftime
 import Sessions
@@ -115,7 +114,7 @@ class AdminWindow(tk.Frame):
         userList = []
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
-        self.text_area.insert('1.0', DS.get_username())
+        self.text_area.insert('1.0', DS.get_username().title())
         self.text_area.insert('2.0', '\n\nPlease choose an option.')
         for item in SM.GetUserList():
             if item.admin:
@@ -294,7 +293,7 @@ class ChangePasswordWindow(tk.Frame):
 
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
-        self.text_area.insert('1.0', DS.get_username())
+        self.text_area.insert('1.0', DS.get_username().title())
         self.text_area.insert('2.0', '\nChange password.')
         self.text_area.config(state=DISABLED)
 
@@ -470,7 +469,7 @@ class EditUserWindow(tk.Frame):
         # create a list of the current users using the dictionary of users
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
-        self.text_area.insert('1.0', DS.get_username())
+        self.text_area.insert('1.0', DS.get_username().title())
         self.text_area.insert('2.0', '\n\nPlease choose an option.')
         self.text_area.config(state=DISABLED)
         userList = []
@@ -565,7 +564,7 @@ class AddUserWindow(tk.Frame):
         # Create a new user object
         user_added = False
         if self.allow_add_admin:
-            newUser = User(self.newusername, self.newpassword, admin)
+            newUser = LO.User(self.newusername, self.newpassword, admin)
             if SM.addUser(newUser):
                 user_added = True
         return user_added
@@ -628,7 +627,7 @@ class AddUserWindow(tk.Frame):
         self.is_admin.set(0)
 
         self.text_area.delete('1.0', 'end')
-        self.text_area.insert('1.0', DS.get_username())
+        self.text_area.insert('1.0', DS.get_username().title())
         self.text_area.insert('2.0', '\nPlease complete the form.')
         self.text_area.config(state=DISABLED)
         admins = 0

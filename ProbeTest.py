@@ -269,7 +269,7 @@ class TestProgramWindow(tk.Frame):
         self.set_display()
         self.warnings()
         self.session_on_going = True
-        current_user = DS.get_username()
+        current_user = DS.get_username().title()
         self.user_admin = DS.get_user_data()['Over_rite']
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
