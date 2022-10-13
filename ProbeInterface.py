@@ -2,6 +2,8 @@
 Created on 28 Apr 2017
 @author: jackw
 '''
+from locale import normalize
+
 import serial
 import codecs
 import binascii
@@ -20,6 +22,7 @@ class PRI(object):
     def __init__(self):
         self.loggedInUser = False
         self.ser = None
+        self.serial_number = None
 
     def get_serial_port(self):
         port = DS.get_devices()['Probe']
@@ -30,6 +33,7 @@ class PRI(object):
             self.ser.stopbits = serial.STOPBITS_ONE
             self.ser.bytesize = serial.EIGHTBITS
             self.ser.timeout = 0.25
+            self.ser.close()
         except IOError:
             pass
 
@@ -48,9 +52,8 @@ class PRI(object):
         '''
 
         self.get_serial_port()
-        if not (self.ser.isOpen()):
+        if not self.ser.isOpen():
             self.ser.open()
-
         bit = self.send_probe_bits()
         self.ser.close()
         # check to see if the pin is pulled low by the probe
@@ -75,7 +78,8 @@ class PRI(object):
         returns a single byte as a 2 character string
         '''
         self.get_serial_port()
-
+        if not self.ser.isOpen():
+            self.ser.open()
         ##########################################################
         # write data to request first byte from the probe EEPROM #
         ##########################################################
@@ -99,7 +103,10 @@ class PRI(object):
         '''
         returns a single byte as a 2 character string
         '''
+        self.serial_number = None
         self.get_serial_port()
+        if not self.ser.isOpen():
+            self.ser.open()
         #############################################################
         # write data to request serial number from the probe EEPROM #
         #############################################################
@@ -108,19 +115,27 @@ class PRI(object):
         #######################
         # read the probe data #
         #######################
-        sn = self.read_data()
-        self.ser.close()
+        self.serial_number = self.read_data()
+        self.close_port()
+        num = str(codecs.decode(self.serial_number, "hex"), 'utf-8')[:16]
+        return num
 
-        return sn
+    # def get_converted_serial_number(self, num):
+    #     # binary_str = codecs.decode(num, "hex")
+    #     return str(codecs.decode(num, "hex"))[2:18]
+    # 53A00900323043444661696c50
+    # 53A00900324630443232313050
 
     def probe_write(self, data):
         '''
         pass in a list of bytes, writes a byte at a time to the probe
         '''
         self.get_serial_port()
+        if not self.ser.isOpen():
+            self.ser.open()
         for item in data:
             self.send_data(item)
-            time.sleep(0.01)
+            time.sleep(0.05)
         self.ser.close()
 
     def read_all_bytes(self):
@@ -133,6 +148,8 @@ class PRI(object):
         '''
 
         self.get_serial_port()
+        if not self.ser.isOpen():
+            self.ser.open()
         serialData = []
 
         self.send_data(b'53A0010053A11e50')
@@ -172,7 +189,6 @@ class PRI(object):
         serialData = serialData + self.read_data()
 
         self.ser.close()
-
         return serialData
 
     def check_probe_connection(self):
@@ -197,11 +213,11 @@ class PRI(object):
         pass in hex bytes, send the whole lot down the serial port.
         '''
         # flush the buffers
-        self.ser.flushInput()
-        self.ser.flushOutput()
+        self.ser.flush()
         self.ser.timeout = 0.2
         # convert the input to ASCII characters and send it
         self.ser.write(codecs.decode(data, "hex_codec"))
+
 
     def read_data(self):
         '''
@@ -209,19 +225,19 @@ class PRI(object):
         of hex bytes
         '''
         serialData = ''
-
         self.ser.flush()
         while self.ser.inWaiting() > 0:
             b = binascii.hexlify(self.ser.readline())
             serialData += codecs.decode(b)
+
         return serialData
 
-    def line_status(self):
-        self.send_data(b'12')
-        time.sleep(0.05)  # allow time for the data to be received
-        #######################
-        # read the first byte #
-        ######################
-
-        first_byte = self.read_data()
-        print(first_byte)
+    # def line_status(self):
+    #     self.send_data(b'12')
+    #     time.sleep(0.05)  # allow time for the data to be received
+    #     #######################
+    #     # read the first byte #
+    #     ######################
+    #
+    #     first_byte = self.read_data()
+    #     print(first_byte)

@@ -24,7 +24,6 @@ from tkinter import ttk
 from tkinter.ttk import *
 import tkinter.messagebox as tm
 import BatchManager
-from BatchManager import Batch
 import SecurityManager
 import UserLogin
 import Connection
@@ -58,6 +57,7 @@ def ignore():
 
 BTN_WIDTH = 22
 BTN_HEIGHT = 20
+batch_qty = 100
 
 
 class SessionSelectWindow(tk.Frame):
@@ -212,6 +212,7 @@ class NewSessionWindow(tk.Frame):
         self.control = controller
 
     def refresh_window(self):
+        global batch_qty
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
         self.canvas_back = Canvas(bg='#B1D0E0', width=ws - 10, height=hs - 10)
@@ -226,7 +227,8 @@ class NewSessionWindow(tk.Frame):
                   font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
                   font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
-        self.batchQty = 100
+
+        # self.batchQty = 100
         self.batchNumber = None
         self.probe_type.set("")
         self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=38)
@@ -261,27 +263,22 @@ class NewSessionWindow(tk.Frame):
         tk.Button(self.canvas_back, text='Continue', font=("Courier", 16), width=20, height=2,
                   command=self.to_devices).place(relx=0.82, rely=0.8, anchor=CENTER)
 
-        tk.Button(self.canvas_back, text='Cancel', font=("Courier", 14),
-                  command=self.back).place(relx=0.56, rely=0.8, anchor=CENTER)
+        self.cancel = tk.Button(self.canvas_back, text='Cancel', font=("Courier", 14), command=self.back)
+        self.cancel.place(relx=0.56, rely=0.8, anchor=CENTER)
 
-        self.bind('<Return>', self.confm_btn_clicked)
         self.type_text = self.canvas_type.create_text(250, 20, text=" ", fill="black",
                                                       font=(OnScreenKeys.FONT_NAME, 8, "bold"))
-        self.qty_text = self.canvas_qty.create_text(220, 20, text=" ", fill="black",
-                                                    font=(OnScreenKeys.FONT_NAME, 8, "bold"))
-        # font=('Courier',12),
 
         self.btn_1 = Button(self.canvas_type, text='Batch number: ', command=self.batch_entry)
         self.btn_1.place(relx=0.21, rely=0.3, anchor=N)
         Label(self.canvas_type, text="-->").place(x=180, y=18)
 
-        self.btn_2 = Button(self.canvas_qty, text='Batch Qty: ', command=self.qty_entry)
-        self.btn_2.place(relx=0.18, rely=0.3, anchor=N)
+        Label(self.canvas_qty, text="Batch Qty:", font=("bold", 14)).place(relx=0.18, rely=0.3, anchor=N)
         Label(self.canvas_qty, text="-->").place(x=180, y=18)
         style = Style(probe_type_frame)
         style.configure("TButton", font=("arial", 14))
 
-        ttk.Label(self.canvas_qty, text=self.batchQty, font=("bold", 14)).place(relx=0.75, rely=0.3, width=140,
+        ttk.Label(self.canvas_qty, text=batch_qty, font=("bold", 14)).place(relx=0.75, rely=0.3, width=140,
                                                                                 anchor=N)
         self.text_area.config(state=NORMAL)
         self.text_area.insert('1.0', DS.get_username().title())
@@ -291,22 +288,24 @@ class NewSessionWindow(tk.Frame):
     def get_keys(self):
         KY.get_keyboard()
         self.btn_1.config(state=DISABLED)
-        self.btn_2.config(state=DISABLED)
 
     def batch_entry(self):
         self.get_keys()
         data = self.wait_for_response(self.canvas_type, self.type_text)
         self.batchNumber = data
         self.btn_1.config(state=NORMAL)
-        self.btn_2.config(state=NORMAL)
 
-    def qty_entry(self):
-        self.get_keys()
-        data = 0
-        data = self.wait_for_response(self.canvas_qty, self.qty_text)
-        self.batchQty = int(data)
-        self.btn_1.config(state=NORMAL)
-        self.btn_2.config(state=NORMAL)
+    def change_batch_qty(self, qty):
+        global batch_qty
+        batch_qty = qty
+
+    # def qty_entry(self):
+    #     self.get_keys()
+    #     data = 0
+    #     data = self.wait_for_response(self.canvas_qty, self.qty_text)
+    #     self.batchQty = int(data)
+    #     self.btn_1.config(state=NORMAL)
+    #     self.btn_2.config(state=NORMAL)
 
     def wait_for_response(self, master, label):
         DS.write_to_from_keys("_")
@@ -329,30 +328,31 @@ class NewSessionWindow(tk.Frame):
         qty = self.batchQty
         user = DS.get_username()
         batch_type = self.probe_type.get()
-        check_qty = self.check_batch_qty(qty)
+        # check_qty = self.check_batch_qty(qty)
         check_batch = self.convert_batch_number(batch)
-        if not check_qty and not check_batch:
+        if not check_batch:
+            self.back()
             self.refresh_window()
-        if not self.create_new_batch(check_batch, batch_type, qty, user):
+        elif not self.create_new_batch(check_batch, batch_type, qty, user):
             self.canvas_back.destroy()
             self.refresh_window()
         else:
             self.canvas_back.destroy()
             self.control.show_frame(CO.Connection)
 
-    def check_batch_qty(self, qty):
-        check = True
-        if qty > 100:
-            tm.showerror('Batch Error', "Enter a correct batch quantity\nYou can't have more than 100.")
-            check = False
-        if qty < 100:
-            tm.showerror('Batch Error', "Enter a correct batch quantity\nYou can't have less than one.")
-            check = False
-
-        return check
+    # def check_batch_qty(self, qty):
+    #     check = True
+    #     if qty > 100:
+    #         tm.showerror('Batch Error', "Enter a correct batch quantity\nYou can't have more than 100.")
+    #         check = False
+    #     if qty < 100:
+    #         tm.showerror('Batch Error', "Enter a correct batch quantity\nYou can't have less than one.")
+    #         check = False
+    #
+    #     return check
 
     def create_new_batch(self, batch, batch_type, qty, user):
-        newBatch = Batch(batch)
+        newBatch = P.Batch(batch)
         newBatch.probe_type = batch_type
         newBatch.batchQty = qty
         check = True
@@ -368,13 +368,16 @@ class NewSessionWindow(tk.Frame):
             return False
 
     def convert_batch_number(self, batch):
-        if self.check_batch_number(batch):
-            batch_numbers = batch[:-1]
-            batch_letter = batch[-1].upper()
-            confirm_batch = batch_numbers + batch_letter
-            return confirm_batch
+        result = False
+        if len(batch) < 5:
+            tm.showerror(title="Batch Error", message="This batch number is not correct.")
         else:
-            return False
+            if self.check_batch_number(batch):
+                batch_numbers = batch[:-1]
+                batch_letter = batch[-1].upper()
+                confirm_batch = batch_numbers + batch_letter
+                result = confirm_batch
+        return result
 
     def check_batch_number(self, batch):
         check = False
@@ -436,13 +439,14 @@ class ContinueSessionWindow(tk.Frame):
         # #create a list of the current users using the dictionary of users
         self.sessionList = []
         self.probe_typeList = []
-
+        suspend_dict = {}
         self.set_display()
 
         for item in self.get_available_batches():
             self.sessionList.append(item)
-            self.get_batch_obj(item)
-            self.probe_typeList.append(self.obj.probe_type)
+            obj = self.get_batch_type(item)
+            self.probe_typeList.append(obj)
+            suspend_dict.update({item: obj})
             self.batch = None
 
         # clear the listbox
@@ -450,19 +454,22 @@ class ContinueSessionWindow(tk.Frame):
         self.probe_typeListBox.delete(0, END)
 
         # fill the listbox with the list of users
-        for item in self.sessionList:
-            self.sessionListBox.insert(END, item)
-
-        for item in self.probe_typeList:
-            self.probe_typeListBox.insert(END, item)
+        probe_item = ""
+        for batch, probe in suspend_dict.items():
+            # if probe != '---':
+            self.probe_typeListBox.insert(END, probe)
+            self.sessionListBox.insert(END, batch)
         self.probe_typeListBox.config(state=DISABLED)
+
+        # for item in self.sessionList:
+        #     self.sessionListBox.insert(END, item)
 
     def continue_btn_clicked(self):
         lstid = self.sessionListBox.curselection()
         if len(lstid) != 0:
             lstBatch = self.sessionListBox.get(lstid[0])
             batch = BM.GetBatchObject(lstBatch)
-            probe_data = P.Probes(batch.probe_type, batch.batchNumber, 0, int(batch.batchQty))
+            probe_data = P.Probes(batch[2], batch[0], 0, int(batch[3]))
             DS.write_probe_data(probe_data)
 
             self.control.show_frame(CO.Connection)
@@ -474,8 +481,8 @@ class ContinueSessionWindow(tk.Frame):
         self.text_area.config(state=DISABLED)
 
     def get_available_batches(self):
-        self.batches = BM.GetAvailableBatches()
-        return self.batches
+        batches = BM.GetAvailableBatches()
+        return batches
 
     def set_available_batches(self, batches):
         self.batches = batches
@@ -486,12 +493,14 @@ class ContinueSessionWindow(tk.Frame):
     def get_probe_type_list(self):
         return self.probe_typeList
 
-    def get_batch_obj(self, item):
-        self.obj = BM.GetBatchObject(item)
+    def get_batch_type(self, item):
+        ########################################
+        # get batch type from the batch number #
+        # of probe serial number from file     #
+        ########################################
+        batch_line = BM.GetBatchObject(item)
 
-        self.set_batch_obj(self.obj.batchNumber)
-        self.batch_obj.probe_type = self.obj.probe_type
-        # self.batch_obj.probe_type = "DP12"
+        return batch_line[2]
 
     def set_batch_obj(self, batch):
-        self.batch_obj = Batch(batch)
+        self.batch_obj = P.Batch(batch)

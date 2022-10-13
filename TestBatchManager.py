@@ -25,7 +25,7 @@ class BatchTests(unittest.TestCase):
         eachBatch = []
         print(f"path = {self.path}")
 
-        batch = Batch(f"{new_batch_number}B")
+        batch = P.Batch(f"{new_batch_number}B")
         batch.probe_type = new_batch_type
         inProgressPath = os.path.join(self.path, "in_progress", "")
         fullPath = os.path.abspath(inProgressPath + batch.batchNumber + '.csv')
@@ -44,7 +44,7 @@ class BatchTests(unittest.TestCase):
         # Check for batch quantity of over 100 probes
         print("Test 101 batch qty")
         # new_batch_number += 1
-        batch = Batch(f"{new_batch_number}B")
+        batch = P.Batch(f"{new_batch_number}B")
         batch.probe_type = new_batch_type
         batch_qty = 101
         result = BM.CreateBatch(batch,user)
@@ -52,7 +52,7 @@ class BatchTests(unittest.TestCase):
         self.assertEqual(result,False)
         
         new_batch_number += 1
-        batch = Batch(f"{new_batch_number}B")
+        batch = P.Batch(f"{new_batch_number}B")
         batch.probe_type = new_batch_type
         print("Test -1 batch qty")
         batch_qty = -1
@@ -90,14 +90,11 @@ class BatchTests(unittest.TestCase):
                 eachBatch.append(line)   
        
         file_result = eachBatch[-1][1]
-        
-        
+
         self.assertEqual(result, True)
         
         self.assertEqual(file_result, snum)
     
-    
-    
-    
+
 if __name__ == '__main__':
     unittest.main()

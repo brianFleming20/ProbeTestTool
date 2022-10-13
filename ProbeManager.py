@@ -4,7 +4,7 @@ Created on 28 Apr 2017
 '''
 import PI
 import InstrumentManager
-import NanoZND
+# import NanoZND
 import Datastore
 import ProbeInterface
 import codecs
@@ -19,18 +19,18 @@ class ProbeManager(object):
     classdocs
     '''
 
-    def __init__(self, dev=None):
+    def __init__(self):
         '''
         Constructor
         '''
         self.PD = PI.ProbeData()
-        self.NanoZND = NanoZND.NanoZND()
-        self.ZND = IM.ZND()
-        self.testResults = []
-        self.debugResults = [[1, 1, 1, ], [2, 2, 2], [3, 3, 3]]
-        self.serial = None
-        self.dev = dev
-        self.show = False
+        # self.NanoZND = NanoZND.NanoZND()
+        # self.ZND = IM.ZND()
+        # self.testResults = []
+        # self.debugResults = [[1, 1, 1, ], [2, 2, 2], [3, 3, 3]]
+        # self.serial = None
+
+        # self.show = False
 
     def TestProbe(self):
 
@@ -42,34 +42,33 @@ class ProbeManager(object):
         program the probe as that type
         returns the probes serial number if programming was succesful, False if not
         '''
-        result = False
-
+        ################################################
+        # The probe serial number memory is checked    #
+        # for errors by writing '0' to the chip. If    #
+        # the probe's chip reads all 0's. The probe is #
+        # given a serial number. When the serial       #
+        # number is given, the probe's serial number   #
+        # is read and matched against the first line   #
+        # of the raw data.                             #
+        ################################################
         if self.test_chip():
             probeData = self.PD.GenerateDataString(probe_type, test)
-
-        ######################################################
-        # get first two lots of 8 bights for error checking  #
-        # write the data to the probe                        #
-        ######################################################
             if not probeData:
-                result = False
+                return probeData
             else:
-                PF.probe_write(probeData[0])
-        ##############################################
-        # check to see if programming was successful #
-        ##############################################
-            pd = ''.join(probeData[1])
-            check = PF.read_all_bytes()
-            if check == pd:
-                result = PF.read_serial_number()
-
-            return result
+                PF.probe_write(probeData)
+                return self.read_serial_number()
 
     def test_chip(self):
         check = True
-        data = self.PD.GenerateDataString("blank",True)
-        PF.probe_write(data)
-        result = PF.read_all_bytes()
+        ################################################
+        # Checks the probe chip storage by writing     #
+        # '0' to the probe and then confining them by  #
+        # reading the '0' back.                        #
+        ################################################
+        blank_data = self.PD.GenerateDataString("blank", True)
+        PF.probe_write(blank_data)
+        result = str(PF.read_all_bytes())
         for num in result:
             if not num == '0':
                 check = False
@@ -94,13 +93,22 @@ class ProbeManager(object):
     def read_serial_number(self):
         return PF.read_serial_number()
 
-    def construct_new_serial_number(self,serial_number, test):
+    # def get_serial_number(self):
+    #     # sn = self.read_serial_number()
+    #     return self.get_converted_serial_number(self.read_serial_number())
+    # 53A00900324630443232313050
+    # 53A00900323043444661696c50
+
+    def get_converted_serial_number(self, num):
+        if not num:
+            return num
+        else:
+            return codecs.decode(num, "hex")[:16].decode()
+
+    def construct_new_serial_number(self, serial_number):
         converted = self.PD.convert_to_hex(serial_number)
-        data,stripped = self.PD.create_serial_data(converted,test)
+        data = self.PD.create_serial_data(converted)
         PF.probe_write(data)
-        # pcb_serial_number = PF.read_serial_number()
-        # binary_str = codecs.decode(pcb_serial_number, "hex")
-        # print(f"serial number now = {str(binary_str)[2:18]}")
 
     def blank_probe(self):
         data = self.PD.GenerateDataString("blank", True)

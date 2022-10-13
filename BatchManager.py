@@ -39,7 +39,6 @@ class BatchManager(object):
         # creates a new csv file in  the in progress folder                        #
         #############################################################################
 
-        self.CSVM = CSVManager()
         #####################################################
         # Check the batch quantity is not over 100 probes   #
         #####################################################
@@ -57,7 +56,7 @@ class BatchManager(object):
                     time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                     Stime_now = str(time_now)
                     info = [batch.batchNumber, self.blank_data, batch.probe_type, batch.batchQty, user, self.blank_data,
-                            self.blank_data, Stime_now]
+                            self.blank_data, self.blank_data, f"On {Stime_now}"]
                     self.CSVM.WriteCSVTitles(batch.batchNumber)  # create header #
 
                     self.CSVM.WriteListOfListsCSV(info, batch.batchNumber)  # create the CSV file
@@ -70,35 +69,35 @@ class BatchManager(object):
         else:
             return False
 
-    def SuspendBatch(self, batchnumber):
+    def SuspendBatch(self, batch_number):
         ################################################
         # tick                                         #
         # check if batch object is the current batch   #
         # makes the current_batch False                #
         ################################################
-        self.CSVM = CSVManager()
         self.blank_data = " "
 
-        batch_number = DS.get_probe_data()['Batch']
+        batch_num = DS.get_probe_data()['Batch']
         probe_type = DS.get_probe_data()['Probe_Type']
         probes_left = DS.get_probe_data()['Left_to_test']
 
         user = DS.get_username()
 
-        if batchnumber == batch_number:
+        if batch_number == batch_num:
             time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             Stime_now = str(time_now)
-            info = [batchnumber, " Suspended Batch ", probe_type, probes_left, user, " ", " ", " On ", Stime_now]
-            return self.CSVM.WriteListOfListsCSV(info, batchnumber)
+            info = [batch_number, " Suspended Batch ", probe_type, probes_left, user, " ", " ", " ", f"On {Stime_now}"]
+            return self.CSVM.WriteListOfListsCSV(info, batch_number)
         else:
             self.current_batch = False
             return False
 
-    def updateBatchInfo(self):
-        self.current_batch = self.GetBatchObject(DS.get_current_batch())
-
     def saveProbeInfoToCSVFile(self, data, batch):
-        self.CSVM = CSVManager()
+        ###############################################
+        # Save probe data to file with appended date  #
+        # format. This is saved to the batch number   #
+        # file.                                       #
+        ###############################################
         data_list = []
         data_list.extend(data)
         time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -113,8 +112,6 @@ class BatchManager(object):
         # move the batch file into the 'complete' folder                     #
         # refresh the current batch list                                     #
         ######################################################################
-        # # Call load method to deserialze
-
         self.current_batch = DS.get_current_batch()
 
         if self.current_batch == batch:
@@ -133,33 +130,25 @@ class BatchManager(object):
             return False
 
     def GetAvailableBatches(self):
-        batchList = []
-        for item in self.CSVM.GetFileNamesInProgress():
-            if item != 'FOO':
-                batchList.append(item)
+        # batchList = []
+        # for item in self.CSVM.GetFileNamesInProgress():
+        #     if item != 'FOO':
+        #         batchList.append(item)
 
-        return batchList
+        return self.CSVM.GetFileNamesInProgress()
 
     def GetBatchObject(self, batchNumber):
         # get the batch's info list
-        info = ['0','0','-','-']
-        info_line = self.CSVM.ReadLastLine(batchNumber)
-        for item in info_line:
-            if batchNumber in item[0]:
-                info = item[:]
-        try:
-            # get the batch's probe type
-            probe_type = info[2]
-            batchQty = info[3]
-        except FileNotFoundError:
-            probe_type = "000"
-            batchQty = 0
+        # batch = P.Batch(batchNumber=batchNumber)
+        # batch.probe_type = info_line[2]
+        # batch.batchQty = info_line[3]
+        # batch.serial_number = info_line[1]
+        return self.CSVM.ReadLastLine(batchNumber, False)
+        # search = "Suspended"
+        # if search in info_line[1]:
+        #     return info_line
 
-        batch = Batch(batchNumber)
-        batch.probe_type = probe_type
-        batch.batchQty = batchQty
 
-        return batch
 
     def UpdateResults(self, results, batchNumber):
         ########################################################
@@ -228,9 +217,8 @@ class CSVManager(object):
             self.check_directories()
         else:
             for item in a_list:
-                newItem = item[:-4]
-
-                batches.append(newItem)
+                # newItem = item[:-4]
+                batches.append(item[:-4])
 
         return batches
 
@@ -344,25 +332,17 @@ class CSVManager(object):
 
     #
 
-    def ReadLastLine(self, fileName):
+    def ReadLastLine(self, fileName, complete):
+        if complete:
+            path = self.completePath
+        else:
+            path = self.inProgressPath
 
-        fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
-        batches = []
-        eachBatch = []
+        fullPath = os.path.abspath(path + fileName + '.csv')
+        with open(fullPath,  "r", encoding="utf-8", errors="ignore") as csvfile:
+            datareader = csvfile.readlines()[-1]
 
-        with open(fullPath, 'r') as csvfile:
-            datareader = csv.reader(csvfile)
-
-            for line in datareader:
-                if "Batch No" in line:
-                    pass
-                elif not line:
-                    pass
-                else:
-                    eachBatch.append(line)
-
-            batches.append(eachBatch[-1])
-        return batches
+        return datareader.split(',')
 
     # def ReadAllLines(self, fileName):
     #     ################################################################
@@ -380,23 +360,26 @@ class CSVManager(object):
     #             for i,x in enumerate(lis):              #print the list items
     #                 print (i,x)
 
-    def read_all_lines(self, folder,batch):
+    def read_all_lines(self, folder, batch):
         lines = []
         fullPath = os.path.abspath(folder + batch)
-        with open(fullPath) as file:
+        with open(fullPath,  "r", encoding="utf-8", errors="ignore") as file:
             data_reader = csv.reader(file)
             for line in data_reader:
                 lines.append(line)
+            # lines = file.readlines()
+
         return lines
 
 
-class Batch(object):
-    ####################################
-    # USed to create batch objects.    #
-    ####################################
-
-    def __init__(self, batchNumber):
-        self.batchNumber = batchNumber
-        self.probesProgrammed = 0
-        self.batchQty = 0
-        self.probe_type = ''
+# class Batch(object):
+#     ####################################
+#     # USed to create batch objects.    #
+#     ####################################
+#
+#     def __init__(self, batchNumber=None):
+#         self.batchNumber = batchNumber
+#         self.probesProgrammed = 0
+#         self.batchQty = 0
+#         self.probe_type = ''
+#         self.serial_number = ''

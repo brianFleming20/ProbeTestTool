@@ -61,7 +61,7 @@ class FaultFindWindow(tk.Frame):
         self.device_details = StringVar()
         self.serialNumber = StringVar()
         self.read_probe_number = StringVar()
-        self.cable_len = IntVar()
+        self.cable_code = IntVar()
         self.fault_message = StringVar()
         self.plot_text = StringVar()
         self.action = StringVar()
@@ -72,7 +72,7 @@ class FaultFindWindow(tk.Frame):
         self.wait_for_test = True
         self.user_admin = DS.user_admin_status()
         self.analyser_port = DS.get_devices()['Analyser']
-        self.cable_length = 0
+        self.cable_length_code = 0
         self.device = "Not connected to analyser"
         self.graph_text = StringVar()
 
@@ -106,10 +106,10 @@ class FaultFindWindow(tk.Frame):
         ttk.Label(self.canvas_back, textvariable=self.device_details, font=("Courier",14),relief=SUNKEN,
                   width=30).place(relx=0.2, rely=0.44, anchor='w')
 
-        ttk.Label(self.canvas_back, text="cable length. ",
+        ttk.Label(self.canvas_back, text="cable code. ",
                   background='#B1D0E0', font=("Courier",14)).place(relx=0.1, rely=0.53, anchor='w')
         ttk.Label(self.canvas_back, text="meters", background='#B1D0E0', font=("Courier",14)).place(relx=0.35, rely=0.53, anchor="w")
-        ttk.Label(self.canvas_back, textvariable=self.cable_len, relief=SUNKEN,
+        ttk.Label(self.canvas_back, textvariable=self.cable_code, relief=SUNKEN,
                   width=14, font=("Courier", 14)).place(relx=0.2, rely=0.53, anchor='w')
 
         ttk.Label(self.canvas_back, text='Serial Number: ', background='#B1D0E0', font=("Courier",16)).place(
@@ -163,11 +163,12 @@ class FaultFindWindow(tk.Frame):
             DS.write_user_data(status)
             self.plot_text.set("OFF")
             self.control.attributes('-topmost', True)
-        self.cable_length = round(ZND.tdr(), 3)
+        self.cable_length_code = round(ZND.tdr(), 3)
 
     def break_out(self):
         if DS.get_plot_status():
             self.show_plot()
+
         self.canvas_back.destroy()
         self.control.show_frame(PT.TestProgramWindow)
 
@@ -196,22 +197,12 @@ class FaultFindWindow(tk.Frame):
 
     def refresh_window(self):
         self.display()
-        self.get_serial_numbers()
         self.plot_text.set("OFF")
         while PM.ProbePresent():
+            self.read_probe_number.set(PM.read_serial_number())
             self.fault_find_probe()
 
         self.break_out()
-
-    def get_serial_numbers(self):
-        serial_number = BM.CSVM.ReadLastLine(DS.get_current_batch())
-        if len(serial_number[0][1]) < 7:
-            self.serialNumber.set(serial_number[0][2])
-        else:
-            self.serialNumber.set(serial_number[0][1])
-        pcb_serial_number = PM.read_serial_number()
-        binary_str = codecs.decode(pcb_serial_number, "hex")
-        self.read_probe_number.set(str(binary_str)[2:18])
 
     def update_odm_data(self):
         if DS.get_devices()['odm_active']:
@@ -243,8 +234,8 @@ class FaultFindWindow(tk.Frame):
 
 
     def test_probe(self):
-        self.cable_length = ZND.tdr()
-        self.cable_len.set(round(self.cable_length, 3))
+        self.cable_length_code = ZND.tdr()
+        self.cable_code.set(round(self.cable_length_code, 3))
         fault = "Unknown"
         self.fault_text = ["No Fault", "Unknown", "Break in Blue wire",
                            "S/C in Red/Black wires", "S/C in Blue/Green wires",
@@ -253,33 +244,33 @@ class FaultFindWindow(tk.Frame):
                            "Break in Red wire", "Crystal Fault",
                            "S/C Screen to Red wires"]
         # No Fault
-        if 0.82 < self.cable_length < 0.9:
+        if 0.9 < self.cable_length_code < 3.0:
             fault = self.fault_text[0]
-        # S/C Red / Black wires
-        if 1.45 < self.cable_length < 1.40:
-            fault = self.fault_text[3]
-        # S/C in Blue / Green wires
-        if -0.1 < self.cable_length < -0.00:
-            fault = self.fault_text[4]
-        # S/C Screen / Blue wire
-        if 1.175 < self.cable_length < 1.19:
-            fault = self.fault_text[8]
-        # S/C Screen / Red wires
-        if 0.005 < self.cable_length < 0.01:
-            fault = self.fault_text[-1]
-        # Green wire disconnected
-        if 0.001 < self.cable_length < -0.001:
-            fault = self.fault_text[6]
-        # Black wire disconnected
-        if 0.001 < self.cable_length < 0.003:
-            fault = self.fault_text[7]
-        # Break in Blue wire
-        if self.cable_length > -0.01 > self.cable_length:
-            fault = self.fault_text[5]
-        # Break in Red wire
-        if 1.3 < self.cable_length < 0.01:
-            fault = self.fault_text[8]
-        # Crystal fault
-        if 000 < self.cable_length < 0.01:
+        # # S/C Red / Black wires
+        # if 1.45 < self.cable_length_code < 1.40:
+        #     fault = self.fault_text[3]
+        # # S/C in Blue / Green wires
+        # if -0.1 < self.cable_length_code < -0.00:
+        #     fault = self.fault_text[4]
+        # # S/C Screen / Blue wire
+        # if 1.175 < self.cable_length_code < 1.19:
+        #     fault = self.fault_text[8]
+        # # S/C Screen / Red wires
+        # if 0.005 < self.cable_length_code < 0.01:
+        #     fault = self.fault_text[-1]
+        # # Green wire disconnected
+        # if 0.001 < self.cable_length_code < -0.001:
+        #     fault = self.fault_text[6]
+        # # Black wire disconnected
+        # if 0.001 < self.cable_length_code < 0.003:
+        #     fault = self.fault_text[7]
+        # # Break in Blue wire
+        # if self.cable_length_code > -0.01 > self.cable_length_code:
+        #     fault = self.fault_text[5]
+        # # Break in Red wire
+        # if 1.3 < self.cable_length_code < 0.01:
+        #     fault = self.fault_text[8]
+        # # Crystal fault
+        if 000 < self.cable_length_code < 0.002:
             fault = self.fault_text[10]
         return fault

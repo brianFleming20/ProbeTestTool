@@ -1,4 +1,24 @@
 '''Factory pattern for generating python beans'''
+from tkinter import *
+
+
+def probe_canvas(self, message, btn):
+    self.canvas_text = Canvas(bg="#eae9e9", width=350, height=180)
+    self.canvas_text.place(x=self.cent_x - 150, y=self.cent_y - 20)
+    Label(self.canvas_text, text=message, font=("Courier", 12)).place(
+        x=50, y=20)
+    btn1 = Button(self.canvas_text, text="Continue", command=self.yes_answer, width=10, height=2)
+    btn2 = Button(self.canvas_text, text="Cancel", command=self.no_answer, width=10, height=2)
+    Tk.update(self)
+    while btn and self.info_canvas is None:
+        btn1.place(x=90, y=120)
+        btn2.place(x=190, y=120)
+        Tk.update(self)
+
+
+def text_destroy(self):
+    self.canvas_text.destroy()
+
 
 class Ports:
     def __init__(self, odm="", probe="", analyer="", move="", active=True):
@@ -15,13 +35,14 @@ class Location:
 
 
 class Probes:
-    def __init__(self, probe_type, current_batch, passed, tested, failed=0, scrap=0):
+    def __init__(self, probe_type, current_batch, passed, left_to_test, failed=0, scrap=0, qty_set=100):
         self.Probe_Type = probe_type
         self.Current_Batch = current_batch
         self.Passed = passed
-        self.Left = tested
+        self.Left = left_to_test
         self.failed = failed
         self.scrap = scrap
+        self.batch_qty_set = qty_set
 
 
 class Users:
@@ -43,3 +64,16 @@ class User(object):
         self.name = name
         self.password = password
         self.admin = admin
+
+
+class Batch(object):
+    ####################################
+    # USed to create batch objects.    #
+    ####################################
+
+    def __init__(self, batchNumber=None):
+        self.batchNumber = batchNumber
+        self.probesProgrammed = 0
+        self.batchQty = 0
+        self.probe_type = ''
+        self.serial_number = ''

@@ -63,6 +63,9 @@ def sort_probe_interface(self):
     return probe
 
 
+def check_analyser():
+    return ZND.get_vna_check()
+
 
 class Connection(tk.Frame):
     def __init__(self, parent, controller):
@@ -132,7 +135,7 @@ class Connection(tk.Frame):
     def sort_znd_interface(self):
         # Tests the analyser interface connection
 
-        read1 = self.check_analyser()
+        read1 = check_analyser()
         if not read1:
             tm.showerror(title="Connection Error",message="Check connected devices are switched on.")
             self.control.show_frame(SE.SessionSelectWindow)
@@ -141,9 +144,6 @@ class Connection(tk.Frame):
         self.znd_working = True
 
         return read1
-
-    def check_analyser(self):
-        return ZND.get_vna_check()
 
     def sort_odm_interface(self):
         # Tests the ODM monitor interface connection

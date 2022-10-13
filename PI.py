@@ -33,7 +33,7 @@ class ProbeData(object):
     def __init__(self):
         '''
         '''
-        self.probeData = None
+        self.probeData = False
         self.timeStamp = ''
         # self.typeBytes = ''
 
@@ -94,11 +94,6 @@ class ProbeData(object):
                        '53A009d0303030303030303050', '53A009d8303030303030303050', '53A009e0303030303030303050',
                        '53A009e8303030303030303050', '53A009f0303030303030303050', '53A009f8303030303030303050']
 
-        # firstStart = '53A00900'
-        # secondStart = '53A00908'
-        # end = '50'
-        fail = ['46,61,69,6C']
-
         if probe_type == 'blank':
             return probezeros
 
@@ -129,19 +124,15 @@ class ProbeData(object):
         timeStampFormatted = timeStamp[2:]
 
         if not test:
-            time_list = f"Fail{timeStampFormatted}"
+            timestamp_failed = timeStampFormatted[2:-2]
+            time_list = f"Fail{timestamp_failed}"
         else:
             time_list = timeStampFormatted
-
         # stick the type bytes and the timestamp together (good)
-        converted = self.convert_to_hex(time_list)
-        if not test:
-            serialNumber = typeBytes + converted
-        else:
-            serialNumber = typeBytes + converted
-        return self.create_serial_data(serialNumber,test)
+        serialNumber = typeBytes + self.convert_to_hex(time_list)
+        return self.create_serial_data(serialNumber)
 
-    def create_serial_data(self,serialNumber,test):
+    def create_serial_data(self, serialNumber):
         # put them in a format that can be sent via the SC18IM
         ##############################################################
         # for using month and day on to probe use in upper [10:-2]   #
@@ -149,8 +140,6 @@ class ProbeData(object):
         ##############################################################
         lower = serialNumber[0:8]
         upper = serialNumber[8:]
-        if not test:
-            upper = serialNumber[10:-2]
 
         firstStart = '53A00900'
         secondStart = '53A00908'
@@ -162,18 +151,16 @@ class ProbeData(object):
         # add them to the probe data list
         self.probeData.insert(0, secondByte)
         self.probeData.insert(0, firstByte)
-
-        # create a single string of the actual data for error checking
-        stripped = ''
-        for item in self.probeData:
-            stripped = stripped + item[8:-2]
-        return self.probeData, stripped
+        # stripped = ''
+        # for item in self.probeData:
+        #     stripped = stripped + item[8:-2]
+        return self.probeData
 
     def convert_to_hex(self, time_list):
         timeStampASCII = []
         for item in time_list:
             x = (ord(item))
-            timeStampASCII.append(format((x), "x"))
+            timeStampASCII.append(format(x, "x"))
         return timeStampASCII
 
 # PI = PI()

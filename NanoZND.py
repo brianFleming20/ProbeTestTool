@@ -7,15 +7,16 @@ import serial
 import numpy as np
 from matplotlib import pyplot as plt
 import time
-import tkinter.messagebox as tm
 import Datastore
-import csv
 import serial.tools.list_ports
+from scipy.constants import speed_of_light
+
 
 DS = Datastore.Data_Store()
 
 INDUCTANCE = 0.003526
 TEST_CABLE = 0.59
+BLANK_PROBE = 52140318.610617355
 
 
 class NanoZND(object):
@@ -24,7 +25,7 @@ class NanoZND(object):
     '''
 
     def __init__(self):
-        self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
+        # self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
         self.show_plot = False
         self.analyser_port = None
         self.ser_ana = None
@@ -37,10 +38,12 @@ class NanoZND(object):
             self.ser_ana.baudrate = '115200'
             self.ser_ana.bytesize = 8
             self.ser_ana.timeout = 0.05
+            self.ser_ana.close()
         except IOError:
             return False
 
     def get_znd_obj(self):
+        self.get_serial_port()
         return self.ser_ana
 
     def check_port_open(self):
@@ -81,130 +84,105 @@ class NanoZND(object):
             self.ser_ana.close()
         return result
 
-    def get_marker_3_command(self):
-        result = None
-        bottom,top = self.get_inv_markers()
-
-        return bottom
-
-    def get_inv_markers(self):
-        s11, data = self.fetch_frequencies()
-        value1 = 10
-        value2 = 0
-        for num in s11:
-            # inv = 1 / num
-            if num < value1:
-                value1 = num
-        for num in s11:
-            # inv = 1/num
-            if num > value2:
-                value2 = num
-        return value1,value2
-
-
-    def fetch_frequencies(self):
+    def fetch_s11(self):
         # self.get_serial_port()
         if not self.ser_ana.isOpen():
             self.ser_ana.open()
-        self.send_data(f"frequencies\r")
-
-        freq_data = self.ReadAnalyserData()
         self.send_data(f"data s11\r")
-        s11_data = self.ReadAnalyserData()
-        self.ser_ana.close()
-        x = []
-        for line in freq_data.split('\n'):
-            if line:
-                x.extend([float(d) for d in line.strip().split(' ')])
-        freq_result = np.array(x[0::2])
+        data = self.ReadAnalyserData()
+        # self.ser_ana.close()
 
         x = []
-        for line in s11_data.split('\n'):
+        for line in data.split('\n'):
             if line:
                 x.extend([float(d) for d in line.strip().split(' ')])
         s11_result = np.array(x[0::2])
-        s11_im = np.array(x[1::2])
 
-        return s11_result, freq_result
+        return s11_result
 
     def set_vna_controls(self):
-        self.check_port_open()
-        self.ser_ana.open()
+        if not self.ser_ana.isOpen():
+            self.ser_ana.open()
         self.send_data(f"sweep 3000000 5000000 1\r")
         self.ser_ana.close()  # close
 
     def flush_analyser_port(self):
         self.check_port_open()
-        self.ser_ana.open()
+        if not self.ser_ana.isOpen():
+            self.ser_ana.open()
         self.send_data("\r\n\r\n")  # flush serial port
         self.ser_ana.close()  # close
 
+    def get_marker(self):
+        if not self.ser_ana.isOpen():
+            self.ser_ana.open()
+        self.send_data("marker 3\r")
+        data = self.ReadAnalyserData()
+
+        return data
+
+    def reset_vna(self):
+        self.get_serial_port()
+        self.flush_analyser_port()
+        self.set_vna_controls()
+        return True
+        # self.ser_ana.close()
+
     def tdr(self):
+        # found in https://zs1sci.com/blog/nanovna-tdr/
         self.get_serial_port()
         if not self.ser_ana.isOpen():
             self.ser_ana.open()
-        c = 3 * 10**8
-        v = 0.85
-        s11, freq = self.fetch_frequencies()
-        bottom,top = self.get_inv_markers()
-        window = np.blackman(len(s11))
-        step_size = s11[1] - s11[2]
-        windowed_s11 = window * s11
-        NFFT = 2 ** 8
-        td = np.abs(np.fft.ifft(windowed_s11, NFFT))
+        self.send_data("marker 3\r")
+        marker = self.ReadAnalyserData().split(' ')
+        marker_int = int(marker[2])
+        raw_points = 101
+        NFFT = 16384
+        PROPAGATION_SPEED = 78.6  # For RG58U
 
-        time_axis = np.linspace(0, 1 / step_size, NFFT)
-        d_axis = time_axis * v * c
-        time1 = 1/((top - bottom) * 10**6)
-        value = (time1 * v * c * INDUCTANCE) / 2
+        _prop_speed = PROPAGATION_SPEED / 100
+        s11 = self.fetch_s11()
+        # Read skrf docs
+        step = abs(s11[2] - s11[1])
+        window = np.blackman(raw_points)
+        s11 = window * s11
+        td = np.abs(np.fft.ifft(s11, NFFT))
+        # Calculate maximum time axis
+        t_axis = np.linspace(0, 1 / step, NFFT)
+        d_axis = speed_of_light * _prop_speed * t_axis
 
-        cable_len = value - TEST_CABLE
+        # find the peak and distance
+        pk = np.max(td)
+        idx_pk = np.where(td == pk)[0]
+        cable_len = d_axis[1:][idx_pk[0]] / 2
+
+        #################################################
+        # Probe value code calculated from length       #
+        # divided by a blank probe value reading        #
+        #################################################
+        # print(cable_len / marker_int)
+        cable_code1 = BLANK_PROBE / cable_len
+        cable_code = marker_int / cable_len
         td_10 = td * 1000
         plt.grid(True)
         show = DS.get_plot_status()
         plt.plot(d_axis, td_10)
-        plt.xlabel("Distance (m) Length of cable(%.5fm)" % cable_len)
+        plt.xlabel("Distance (m) Length of cable(%.3fm)" % cable_code)
         plt.ylabel("Magnitude")
         plt.title("Return loss Time domain")
         if show:
             plt.show()
         else:
             plt.close('all')
-        return cable_len
-
-    # Collect the data points and send to a .csv file
-    def CSV_output(self, batch):
-        data = []
-        # data = self.analyser_data
-        b = []
-        b.append(batch)
-
-        file_to_output = open(self.file_location, mode='a', newline='')
-        csv_writer = csv.writer(file_to_output, delimiter=',')
-        try:
-
-            csv_writer.writerows([b, data])
-
-        except:
-            tm.showerror(
-                'Data writting Error', 'Unable to write data to file. \nCheck file path and analyser data.')
-
-        file_to_output.close()
-
-    def GetOutFileLocation(self):
-        return self.file_location
+        print(cable_code)
+        return cable_code
 
     def send_data(self, data):
-        # flush the buffers
 
         data_ = (ord(character) for character in data)
-        self.ser_ana.flushInput()
-        self.ser_ana.flushOutput()
+        self.ser_ana.flush()
         self.ser_ana.write(data_)
 
     def read_data(self):
-
-        result = self.ser_ana.read().decode("utf-8")
-
-        return result
+        return self.ser_ana.read().decode("utf-8")
 

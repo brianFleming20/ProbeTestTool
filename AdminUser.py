@@ -87,7 +87,8 @@ class AdminWindow(tk.Frame):
         hs = self.winfo_screenheight()
         self.canvas_back = Canvas(bg='#FFDAB9', width=ws - 10, height=hs - 10)
         self.canvas_back.place(x=5, y=5)
-        Label(self.canvas_back, text="Choose an option", font=("Courier", 16), background='#FFDAB9').place(relx=0.12, rely=0.25)
+        Label(self.canvas_back, text="Choose an option", font=("Courier", 16), background='#FFDAB9').place(relx=0.12,
+                                                                                                           rely=0.25)
         Label(self.canvas_back, text="Users", font=("Courier", 16), background='#FFDAB9').place(relx=0.4, rely=0.25)
         Label(self.canvas_back, text="System controls", font=("Courier", 16), background='#FFDAB9').place(
             relx=0.6, rely=0.25)
@@ -103,7 +104,7 @@ class AdminWindow(tk.Frame):
         ttk.Label(self.canvas_back, text="medical", background="#FFDAB9", foreground="#A2B5BB",
                   font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
 
-        self.text_area = tk.Text(self.canvas_back, font=("Courier",14),height=5, width=38)
+        self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=38)
         self.text_area.place(relx=0.18, rely=0.1, anchor=CENTER)
         time_now = strftime("%H:%M:%p", gmtime())
 
@@ -158,24 +159,31 @@ class AdminWindow(tk.Frame):
         ####################
         # Show user input  #
         ####################
-        self.canvas = Canvas(bg="#eae9e9", width=320, height=260)
-        self.canvas.place(relx=0.11, rely=0.38)
+        self.canvas = Canvas(bg="#eae9e9", width=320, height=300)
+        self.canvas.place(relx=0.11, rely=0.32)
         self.btn1 = Button(self.canvas, text='Add a new user', command=self.to_new_user, font=("Courier", 12))
-        self.btn1.place(relx=0.1,rely=0.14,height=50,anchor=W)
+        self.btn1.place(relx=0.1, rely=0.14, height=50, anchor=W)
 
-        Button(self.canvas, text='Edit a current user',command=self.to_edit_user,
-               font=("Courier", 12)).place(relx=0.1, rely=0.48, height=50, anchor=W)
+        Button(self.canvas, text='Edit a current user', command=self.to_edit_user,
+               font=("Courier", 12)).place(relx=0.1, rely=0.38, height=50, anchor=W)
         Button(self.canvas, text='Edit a device port number',
-               command=self.to_devices, font=("Courier", 12)).place(relx=0.1, rely=0.8, height=50, anchor=W)
+               command=self.to_devices, font=("Courier", 12)).place(relx=0.1, rely=0.62, height=50, anchor=W)
+        Button(self.canvas, text="Change Batch Qty", command=self.change_qty,
+               font=("Courier", 12)).place(relx=0.1, rely=0.85, height=50, anchor=W)
+        Label(self.canvas, text=f"Current Qty\n{SE.batch_qty}", font=('Arial', 12)).place(relx=0.68, rely=0.78)
+
         Button(self.canvas_back, text='Exit', width=40, command=self.canvas_gone).place(height=40,
                                                                                         width=180, relx=0.88, rely=0.82,
                                                                                         anchor=E)
-        ttk.Button(self.canvas_back, text="Browse", command=lambda: self.get_browse_file()).place(relx=0.5, rely=0.74,
-                                                                                                  height=50, width=120)
+
+        ttk.Button(self.canvas_back, text="Browse", command=lambda: self.get_browse_file()).place(relx=0.52, rely=0.74,
+                                                                                                  height=50, width=110)
+
         self.location.set(DS.get_file_location()['File'])
         title = ttk.Label(self.canvas_back, text="File storage location", font=("Courier", 14), background='#FFDAB9')
         title.place(relx=0.1, rely=0.7)
-        ttk.Label(self.canvas_back, textvariable=self.location, font=("Courier", 14)).place(relx=0.1, rely=0.75, width=520)
+        ttk.Label(self.canvas_back, textvariable=self.location, font=("Courier", 14)).place(relx=0.1, rely=0.75,
+                                                                                            width=520)
 
     def get_browse_file(self):
         default_loc = "/PTT_Results"
@@ -187,6 +195,35 @@ class AdminWindow(tk.Frame):
         DS.write_file_location(file)
         self.location.set(filename)
         Tk.update(self)
+
+    def change_qty(self):
+        qty_canvas = Canvas(bg="#FFDAB9", width=320, height=200)
+        qty_canvas.place(relx=0.3, rely=0.45)
+        qty_text = qty_canvas.create_text(150, 100, text=" ", fill="black",
+                                          font=(OnScreenKeys.FONT_NAME, 8, "bold"))
+        Label(qty_canvas, text="Enter a new batch quantity.", font=('Arial', 12)).place(x=100, y=30)
+        KY.get_keyboard()
+        data = self.wait_for_response(qty_canvas, qty_text)
+        if not data:
+            data = 100
+        batchQty = int(data)
+
+        SE.batch_qty = batchQty
+        qty_canvas.destroy()
+        Label(self.canvas, text=f"Current Qty\n{SE.batch_qty}", font=('Arial', 12)).place(relx=0.68, rely=0.78)
+        Tk.update(self)
+
+    def wait_for_response(self, master, label):
+        DS.write_to_from_keys(">")
+        while 1:
+            data = DS.get_keyboard_data()
+
+            if len(data) > 0 and data[-1] == "+":
+                data = data[:-1]
+                break
+            master.itemconfig(label, text=data, font=("bold", 14))
+            Tk.update(master)
+        return data
 
     #############################################
     # Set user admin status from the check box  #
@@ -234,7 +271,7 @@ class ChangePasswordWindow(tk.Frame):
                   font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#FFDAB9", foreground="#A2B5BB",
                   font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
-        self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
+        self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
 
     def confirm(self):
@@ -279,7 +316,7 @@ class ChangePasswordWindow(tk.Frame):
         self.is_admin = DS.user_admin_status()
         if not self.reset_pass:
             self.btn = Checkbutton(text=" Admin status ",
-                                   variable=self.is_admin,command=self.set_admin_state,
+                                   variable=self.is_admin, command=self.set_admin_state,
                                    font=("Courier", 14))
             self.btn.place(relx=0.35, rely=0.68)
 
@@ -394,13 +431,13 @@ class EditUserWindow(tk.Frame):
         ttk.Label(self, text="medical", background="#FFDAB9", foreground="#A2B5BB",
                   font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
 
-        self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
+        self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
 
         self.Label1 = ttk.Label(self, text='Choose a user to edit', background="#FFDAB9", font=("Courier", 18))
         self.Label1.place(relx=0.5, rely=0.07, anchor=CENTER)
         # Box to hold user list
-        self.userListBox = Listbox(self, height=10, width=20, font=("Courier",14))
+        self.userListBox = Listbox(self, height=10, width=20, font=("Courier", 14))
         self.userListBox.place(relx=0.25, rely=0.5, anchor=CENTER)
 
         self.CngPWrd_btn = ttk.Button(
@@ -524,7 +561,7 @@ class AddUserWindow(tk.Frame):
         self._setDefaults()
         self.control = controller
 
-        self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
+        self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
 
         ttk.Label(self, text="Deltex", background="#FFDAB9", foreground="#003865",
@@ -610,19 +647,22 @@ class AddUserWindow(tk.Frame):
         self.pass2_text = self.canvas_3.create_text(240, 20, text=" ", fill="black",
                                                     font=(OnScreenKeys.FONT_NAME, 14, "bold"))
         self.AUWl1 = Button(self.canvas_1, text='New user name: ', font=('Courier', 12), command=self.name_entry)
-        Label(self.canvas_1, text="-->",font=('Courier', 12)).place(x=185, y=12)
-        self.AUWl2 = Button(self.canvas_2, text='Enter Password: ', font=('Courier', 12),command=self.password_entry)
-        Label(self.canvas_2, text="-->",font=('Courier', 12)).place(x=185, y=12)
-        self.AUWl3 = Button(self.canvas_3, text='Confirm Password: ', font=('Courier', 12),command=self.conform_pwd)
-        Label(self.canvas_3, text="-->",font=('Courier', 12)).place(x=185, y=12)
+        Label(self.canvas_1, text="-->", font=('Courier', 12)).place(x=185, y=12)
+        self.AUWl2 = Button(self.canvas_2, text='Enter Password: ', font=('Courier', 12), command=self.password_entry)
+        Label(self.canvas_2, text="-->", font=('Courier', 12)).place(x=185, y=12)
+        self.AUWl3 = Button(self.canvas_3, text='Confirm Password: ', font=('Courier', 12), command=self.conform_pwd)
+        Label(self.canvas_3, text="-->", font=('Courier', 12)).place(x=185, y=12)
         self.AUWl1.place(x=15, y=12)
         self.AUWl2.place(x=15, y=12)
         self.AUWl3.place(x=15, y=12)
 
         Radiobutton(
-            self, text='Admin', variable=self.is_admin, font=('Courier', 14), value=True).place(relx=0.7, rely=0.35, anchor=CENTER)
+            self, text='Admin', variable=self.is_admin, font=('Courier', 14), value=True).place(relx=0.7, rely=0.35,
+                                                                                                anchor=CENTER)
         Radiobutton(
-            self, text='Non-Admin', variable=self.is_admin, font=('Courier', 14), value=False).place(relx=0.7, rely=0.45, anchor=CENTER)
+            self, text='Non-Admin', variable=self.is_admin, font=('Courier', 14), value=False).place(relx=0.7,
+                                                                                                     rely=0.45,
+                                                                                                     anchor=CENTER)
         self.get_admin_status()
         self.is_admin.set(0)
 
@@ -720,4 +760,3 @@ class AddUserWindow(tk.Frame):
         self.AUWl1.config(state=DISABLED)
         self.AUWl2.config(state=DISABLED)
         self.AUWl3.config(state=DISABLED)
-

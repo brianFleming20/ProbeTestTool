@@ -41,17 +41,16 @@ class CreateSessionTests(unittest.TestCase):
     def test_batch_qty(self):
         print("Test batch quantity")
 
-        bad_qty = 101
         below_qty = 99
+        good_batch = 100
+        self.S.change_batch_qty(good_batch)
 
-        result1 = self.S.check_batch_qty(bad_qty)
-        result2 = self.S.check_batch_qty(below_qty)
-        result3 = self.S.check_batch_qty(self.batch_qty)
+        result = SE.batch_qty
+        self.assertEqual(result, good_batch)
 
-        self.assertEqual(result1,False)
-        self.assertEqual(result2,False)
-        self.assertEqual(result3,True)
-
+        self.S.change_batch_qty(below_qty)
+        result2 = SE.batch_qty
+        self.assertEqual(result2, below_qty)
 
     def test_record_batch_object(self):
         print("Test save batch to file")
