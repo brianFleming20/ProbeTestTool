@@ -8,7 +8,7 @@ import Ports
 AU = AdminUser
 DS = Datastore.Data_Store()
 SM = SecurityManager()
-U = Ports
+P = Ports
 
 class AdminTestsChangePassword(unittest.TestCase):
 
@@ -66,7 +66,7 @@ class AdminTestsChangePassword(unittest.TestCase):
         self.A.set_password(password1)
         self.A.set_confirm(password2)
         # create user obj and add change password transfer name
-        user_data = U.Users(username,False,pw_user=user)
+        user_data = P.Users(username,False,pw_user=user)
         DS.write_user_data(user_data)
         
         result1 = self.A.change_password(password1)
@@ -81,7 +81,7 @@ class AdminTestsChangePassword(unittest.TestCase):
         
         admin_user_name = "brian"
         admin_password = "password"
-        admin_user = User(admin_user_name, admin_password)
+        admin_user = P.User(admin_user_name, admin_password)
         SM.logIn(admin_user)
         
         del_user = "User3"
@@ -94,7 +94,7 @@ class AdminTestsChangePassword(unittest.TestCase):
     def test_admin_status(self):
         print("Test user admin status")
         expected1 = False
-        user = U.Users("John",expected1)
+        user = P.Users("John",expected1)
         DS.write_user_data(user)
 
         self.A.get_admin_status()
@@ -105,7 +105,7 @@ class AdminTestsChangePassword(unittest.TestCase):
         self.assertEqual(get_admin,expected1)
 
         expected2 = True
-        user = U.Users("John",expected2)
+        user = P.Users("John",expected2)
         DS.write_user_data(user)
 
         self.A.is_admin.set(expected2)
@@ -125,7 +125,7 @@ class AdminTestsChangePassword(unittest.TestCase):
         
         admin_user_name = "brian"
         admin_password = "password"
-        admin_user = User(admin_user_name, admin_password)
+        admin_user = P.User(admin_user_name, admin_password)
         SM.logIn(admin_user)
         
         result = self.C.check_delete(del_user)

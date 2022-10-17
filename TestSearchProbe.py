@@ -42,16 +42,16 @@ class SearchProbeTests(unittest.TestCase):
         type_probe_DP6 = "DP6"
         non_type = "---"
 
-        check_type_DP240 = self.C.get_probe_type("2F0")
+        check_type_DP240 = RT.get_probe_type("2F0")
         self.assertEqual(type_probe_DP240,check_type_DP240)
 
-        check_type_DP12 = self.C.get_probe_type("20C")
+        check_type_DP12 = RT.get_probe_type("20C")
         self.assertEqual(type_probe_DP12,check_type_DP12)
 
-        check_type_DP6 = self.C.get_probe_type("206")
+        check_type_DP6 = RT.get_probe_type("206")
         self.assertEqual(type_probe_DP6,check_type_DP6)
 
-        error = self.C.get_probe_type("2F5")
+        error = RT.get_probe_type("2F5")
         self.assertEqual(error,non_type)
 
     def test_search_serial_number(self):

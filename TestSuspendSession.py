@@ -4,15 +4,15 @@ import ProbeTest
 import tkinter as tk
 import BatchManager
 import Datastore
-import csv
 import os
 
 PT = ProbeTest
-P = Ports.Probes
+P = Ports
 U = Ports.Users
 DS = Datastore.Data_Store()
 BM = BatchManager.BatchManager()
 B = BatchManager
+
 
 class SuspendSessionTests(unittest.TestCase):
 
@@ -20,6 +20,7 @@ class SuspendSessionTests(unittest.TestCase):
         self.parent = tk.Tk()
         self.controller = tk.Tk()
         self.T = PT.TestProgramWindow(self.parent, self.controller)
+        self.B = BatchManager.CSVManager()
         self.batch = "12348D"
         self.type = "DP240"
         self.batch_qty = 45
@@ -29,7 +30,7 @@ class SuspendSessionTests(unittest.TestCase):
     def test_batch_number(self):
         print("Identify in-progress batch number")
 
-        batch = P(self.type,self.batch,55,self.batch_qty)
+        batch = P.Probes(self.type, self.batch, 55, self.batch_qty)
         DS.write_probe_data(batch)
 
         user = U("John",False)
@@ -44,18 +45,18 @@ class SuspendSessionTests(unittest.TestCase):
         self.assertEqual(probe_type,self.type)
 
         qty_left = self.T.left_to_test.get()
-        self.assertEqual(qty_left,self.batch_qty)
+        self.assertEqual(qty_left, self.batch_qty)
 
 
     def test_save_to_file(self):
         print("Test sent batch data to file")
         user = U("John", False)
-        batch = B.Batch(self.batch)
+        batch = P.Batch(self.batch)
         batch.probe_type = self.type
         batch.batchQty = 100
         BM.CreateBatch(batch,user.Name)
         expected_text = " Suspended Batch "
-        batch = P(self.type, self.batch, 55, self.batch_qty)
+        batch = P.Probes(self.type, self.batch, 55, self.batch_qty)
         DS.write_probe_data(batch)
 
         location = DS.get_file_location()
@@ -67,7 +68,7 @@ class SuspendSessionTests(unittest.TestCase):
 
         for file in file_list:
             if file[:-4] == self.batch:
-                result_line = B.CSVManager.ReadLastLine(self,file[:-4])[0]
+                result_line = self.B.ReadLastLine(file[:-4], False)
                 print(result_line)
                 result_batch = result_line[0]
                 result_probe = result_line[2]

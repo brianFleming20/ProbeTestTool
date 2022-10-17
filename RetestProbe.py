@@ -94,7 +94,6 @@ def check_data(folder, probe_date):
                             return batch
 
 
-
 class RetestProbe(tk.Frame):
     def __init__(self, Parent, Controller):
         tk.Frame.__init__(self, Parent)
@@ -295,7 +294,6 @@ class RetestProbe(tk.Frame):
         self.display_probe_data(last_line)
         self.probe_type = get_probe_type(probe_type)
         self.found = True
-        # self.batch_from_file = file_loc[:-4]
         batch_info = f"{last_line[0]} : {self.probe_type}"
         self.found_batch_number.set(batch_info)
         return self.found

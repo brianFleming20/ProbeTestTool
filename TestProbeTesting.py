@@ -192,7 +192,7 @@ class ProbeTests(unittest.TestCase):
         ###########################################
         # Find passed probe                       #
         ###########################################
-        found = self.PT.detect_recorded_probe()
+        found, sn = PT.detect_recorded_probe(self)
         self.assertTrue(found)
 
         mb.showinfo(title="test", message="insert known probe serial number failed")
@@ -206,11 +206,11 @@ class ProbeTests(unittest.TestCase):
         #############################################
         # Find failed probe                         #
         #############################################
-        failed_found = self.PT.detect_recorded_probe()
+        failed_found = PT.detect_recorded_probe(self)
         self.assertTrue(failed_found)
 
         mb.showinfo(title="test", message="Insert an unknown probe.")
-        not_found = self.PT.detect_recorded_probe()
+        not_found = PT.detect_recorded_probe(self)
         self.assertFalse(not_found)
 
     def test_suspend_batch(self):

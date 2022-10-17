@@ -27,7 +27,7 @@ class ConnectionTests(unittest.TestCase):
 
         expected_ports = "COM4"
         
-        read3 = self.CO.sort_probe_interface()
+        read3 = self.CO.refresh_window()
         
         self.assertEqual(read3, expected_ports)
         

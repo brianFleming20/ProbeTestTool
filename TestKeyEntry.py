@@ -5,7 +5,7 @@ import tkinter as ttk
 
 
 DS = Datastore.Data_Store()
-KEY = OnScreenKeys
+KEY = OnScreenKeys.Keyboard()
 
 
 class KeysTests(unittest.TestCase):
@@ -20,7 +20,7 @@ class KeysTests(unittest.TestCase):
         self.keys = ""
         self.shift_lock = False
         
-        KEY.Keyboard.press(self,'t')
+        KEY.press('t')
         
         result = self.keys
         
@@ -28,8 +28,8 @@ class KeysTests(unittest.TestCase):
         
         self.keys = ""
         
-        KEY.Keyboard.shift(self)
-        KEY.Keyboard.press(self,'t')
+        KEY.shift()
+        KEY.press('t')
 
         result1 = self.keys
         
@@ -42,15 +42,14 @@ class KeysTests(unittest.TestCase):
         self.keys = ""
         self.shift_lock = False
     
-        KEY.Keyboard.press(self,'t')
-        KEY.Keyboard.press(self,'h')
-        KEY.Keyboard.press(self,'e')
+        KEY.press('t')
+        KEY.press('h')
+        KEY.press('e')
         
         result = DS.get_keyboard_data()
         
         self.assertEqual(result, "the")
-    
-    
-    
+
+
 if __name__ == '__main__':
     unittest.main()

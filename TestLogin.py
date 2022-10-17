@@ -4,10 +4,12 @@ import unittest
 import UserLogin
 import SecurityManager
 import tkinter as tk
+import Ports
 
 UL = UserLogin
 USER = SecurityManager.SecurityManager()
 U = SecurityManager
+P = Ports
 
 
 class LoginTests(unittest.TestCase):
@@ -25,7 +27,7 @@ class LoginTests(unittest.TestCase):
         password = "password"
         
         # Test return true when checking user
-        result_user = U.User(name, password)
+        result_user = P.User(name, password)
         # Test user object has the same username and password
         # from the one provided by the system
         
@@ -44,7 +46,7 @@ class LoginTests(unittest.TestCase):
         expected = False
         
         # Test return true when checking user
-        result_user = U.User(name, password)
+        result_user = P.User(name, password)
         # Test user object has the same username and password
         # from the one provided by the system
         
@@ -61,7 +63,7 @@ class LoginTests(unittest.TestCase):
         expected = False
         
         # Test return true when checking user
-        result_user = U.User(name, password)
+        result_user = P.User(name, password)
         # Test user object has the same username and password
         # from the one provided by the system
         

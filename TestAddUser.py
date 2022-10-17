@@ -3,10 +3,12 @@ import AdminUser
 import Datastore
 import tkinter as tk
 import SecurityManager
+import Ports
 
 AU = AdminUser
 DS = Datastore.Data_Store
 SC = SecurityManager
+P = Ports
 
 
 class AdminTestsNewUser(unittest.TestCase):
@@ -97,13 +99,13 @@ class AdminTestsNewUser(unittest.TestCase):
         password = "1234"
         confirm = "1234"
 
-        usr = SC.User(username,password)
+        usr = P.User(username, password)
 
-        users = SC.SecManDB.getUser(self,usr)
+        users = DS.getUser(usr)
         if not users:
             pass
         else:
-            SC.SecManDB.removeUser(self,username)
+            DS.removeUser(username)
         
         self.A._setDefaults()
         

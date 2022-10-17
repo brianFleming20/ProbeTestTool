@@ -4,7 +4,6 @@ import Sessions
 import tkinter as tk
 import BatchManager
 import Datastore
-import csv
 import os
 
 SE = Sessions

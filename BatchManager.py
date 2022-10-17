@@ -328,8 +328,6 @@ class CSVManager(object):
             lis = [line.split() for line in f]
         return lis[0]
 
-    #
-
     def ReadLastLine(self, fileName, complete):
         if complete:
             path = self.completePath
@@ -365,19 +363,6 @@ class CSVManager(object):
             data_reader = csv.reader(file)
             for line in data_reader:
                 lines.append(line)
-            # lines = file.readlines()
 
         return lines
 
-
-# class Batch(object):
-#     ####################################
-#     # USed to create batch objects.    #
-#     ####################################
-#
-#     def __init__(self, batchNumber=None):
-#         self.batchNumber = batchNumber
-#         self.probesProgrammed = 0
-#         self.batchQty = 0
-#         self.probe_type = ''
-#         self.serial_number = ''

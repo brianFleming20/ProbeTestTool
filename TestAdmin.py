@@ -9,7 +9,7 @@ import tkinter as tk
 AU = AdminUser
 DS = Datastore.Data_Store()
 SM = SecurityManager()
-U = Ports.Users
+P = Ports
 
 class AdminTests(unittest.TestCase):
 
@@ -25,7 +25,7 @@ class AdminTests(unittest.TestCase):
         # Login non-admin user
         user = "User1"
         password = "u1"
-        non_admin = User(user, password)
+        non_admin = P.User(user, password)
 
         signed_in = SM.logIn(non_admin)
 
@@ -36,7 +36,7 @@ class AdminTests(unittest.TestCase):
         # Login Admin user
         admin_user_name = "brian"
         admin_password = "password"
-        admin_user = User(admin_user_name, admin_password)
+        admin_user = P.User(admin_user_name, admin_password)
         SM.logIn(admin_user)
 
         admin_status = DS.user_admin_status()
@@ -59,14 +59,14 @@ class AdminTests(unittest.TestCase):
         
         username = "brian"
         admin = True
-        user1 = U(username,admin,over_right=True)
+        user1 = P.Users(username, admin, over_right=True)
         DS.write_user_data(user1)
         
         result = DS.get_user_data()['Over_rite']
         
         self.assertEqual(result, True)
         
-        user2 = U(username,admin,over_right=False)
+        user2 = P.Users(username, admin, over_right=False)
         DS.write_user_data(user2)
         
         result1 = DS.get_user_data()['Over_rite']
