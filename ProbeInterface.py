@@ -232,12 +232,3 @@ class PRI(object):
 
         return serialData
 
-    # def line_status(self):
-    #     self.send_data(b'12')
-    #     time.sleep(0.05)  # allow time for the data to be received
-    #     #######################
-    #     # read the first byte #
-    #     ######################
-    #
-    #     first_byte = self.read_data()
-    #     print(first_byte)

@@ -101,6 +101,11 @@ class Data_Store():
 
     ############################################
 
+    def get_probes_failed(self):
+        return self.get_probe_data()['Failures']
+
+    #############################################
+
     def device_locations(self, data):
         devices = {
             "ODM": data.ODM,

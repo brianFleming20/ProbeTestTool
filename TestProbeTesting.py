@@ -9,7 +9,6 @@ import SecurityManager
 import BatchManager
 import Connection
 import NanoZND
-import codecs
 
 PM = ProbeManager.ProbeManager()
 DS = Datastore.Data_Store()
@@ -56,7 +55,6 @@ class ProbeTests(unittest.TestCase):
 
         self.assertEqual(result, username)
 
-    # detect an inserted probe.
     def test_inserted_probe_detected(self):
 
         expected_result_probe_out = False
@@ -78,11 +76,10 @@ class ProbeTests(unittest.TestCase):
     def test_detect_programmed_probe(self):
         probe_here = False
         mb.showinfo(title="Probe programme test", message="Insert any programmed probe")
-        if self.PT.check_probe_present():
-            probe_sn = PT.probe_programmed()
-            print(probe_sn)
-            if len(probe_sn) > 1:
-                probe_here = True
+        # if self.PT.check_probe_present():
+        probe_sn = PT.probe_programmed()
+        if len(probe_sn) > 1:
+            probe_here = True
         probe_is_programmed = PM.ProbeIsProgrammed()
 
         self.assertEqual(probe_here, probe_is_programmed)
@@ -90,17 +87,30 @@ class ProbeTests(unittest.TestCase):
     # Detect a completed batch.
     def test_z_completed_batch(self):
         print("Detect a completed batch")
+        newBatch = P.Batch("7733A")
+        newBatch.probe_type = "I2C"
+        newBatch.batchQty = 1
+        BM.CreateBatch(newBatch, "User4")
+        self.PT.reset()
+        self.PT.session_complete = True
+        self.PT.session_on_going = False
+        self.PT.wait_for_probe()
 
-    # Detect a passed probe.
     def test_program_probe(self):
         mb.showinfo(title="Probe programme test", message="Insert a probe to pass")
         result = True
+        self.PT.left_to_test.set(3)
+        self.PT.probe_type.set("DP240")
         self.PT.programmed = True
         self.serial_number = self.PT.program_probe(self.type2, True)
         serial_number = PM.read_serial_number()
         if "Fail" in self.serial_number:
             result = False
         self.assertTrue(result)
+        ###########################################
+        # Program probe first to find good probe  #
+        ###########################################
+        self.PT.update_results(True, serial_number, "ODM not used", "12345H", 1.5)
         self.assertEqual(self.serial_number, serial_number)
 
     def test_fail_probe_program(self):
@@ -137,11 +147,11 @@ class ProbeTests(unittest.TestCase):
 
         users = P.Users("User3", True, plot=True)
         DS.write_user_data(users)
-        mb.showinfo(title="Probe programme and test test", message="Insert a passed probe 14")
+        mb.showinfo(title="Probe programme and test test", message="Insert a passed probe 9")
 
         result1 = PT.perform_probe_test()
         self.assertTrue(result1)
-        mb.showinfo(title="Probe programme and test test", message="Insert a failed probe 18")
+        mb.showinfo(title="Probe programme and test test", message="Insert a failed probe")
         result2 = PT.perform_probe_test()
         self.assertFalse(result2)
 
@@ -166,7 +176,7 @@ class ProbeTests(unittest.TestCase):
 
         check_overwrite = DS.get_user_data()['Over_rite']
         self.assertTrue(check_overwrite)
-        mb.showinfo(title="Probe over write test", message="Insert a passed probe for over write 14")
+        mb.showinfo(title="Probe over write test", message="Insert a passed probe for over write 9")
         over_write = self.PT.over_write_probe(self.batch, self.type)
         check_reset = DS.get_user_data()['Over_rite']
         self.assertFalse(check_reset)
@@ -176,14 +186,31 @@ class ProbeTests(unittest.TestCase):
         over_write = self.PT.over_write_probe(self.batch, self.type)
         self.assertFalse(over_write)
 
-    def test_retect_passed_probe(self):
+    def test_retect_recorded_probe(self):
         print("Detect passed probe")
-        mb.showinfo(title="test", message="insert known probe serial number")
-        found = self.PT.detect_passed_probe()
+        mb.showinfo(title="test", message="insert known probe serial number passed")
+        ###########################################
+        # Find passed probe                       #
+        ###########################################
+        found = self.PT.detect_recorded_probe()
         self.assertTrue(found)
 
-        mb.showinfo(title="test", message="insert unknown probe serial number")
-        not_found = self.PT.detect_passed_probe()
+        mb.showinfo(title="test", message="insert known probe serial number failed")
+        #############################################
+        # Program probe first to find failed probe  #
+        #############################################
+        failed_probe = "20CDFail10141045"
+        self.PT.left_to_test.set(5)
+        self.PT.probe_type.set("DP240")
+        self.PT.update_results(False, failed_probe, "ODM not used", "7531B", 0.25)
+        #############################################
+        # Find failed probe                         #
+        #############################################
+        failed_found = self.PT.detect_recorded_probe()
+        self.assertTrue(failed_found)
+
+        mb.showinfo(title="test", message="Insert an unknown probe.")
+        not_found = self.PT.detect_recorded_probe()
         self.assertFalse(not_found)
 
     def test_suspend_batch(self):
@@ -203,6 +230,7 @@ class ProbeTests(unittest.TestCase):
 
     def test_different_batch_probe(self):
         print("Test different batch probe")
+
 
 
     def test_reduce_probe_qty(self):

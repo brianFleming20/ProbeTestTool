@@ -40,7 +40,7 @@ DS = Datastore.Data_Store()
 PT = ProbeTest
 PF = ProbeInterface.PRI()
 SE = Sessions
-
+P = Ports
 
 def ignore():
     return 'break'
@@ -79,7 +79,6 @@ class Connection(tk.Frame):
         self.znd = StringVar()
         self.odm = StringVar()
         self.probe = StringVar()
-
         self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
         self.text_area.place(x=40, y=70)
         ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
@@ -128,9 +127,10 @@ class Connection(tk.Frame):
 
         ports = Ports.Ports(odm=odm_port, probe=probe_port, analyer=analyser_port, active=odm_active)
         DS.write_device_to_file(ports)
-
         Tk.update(self)
-        self.control.show_frame(PT.TestProgramWindow)
+
+        self.test_connections()
+
 
     def sort_znd_interface(self):
         # Tests the analyser interface connection
@@ -138,7 +138,7 @@ class Connection(tk.Frame):
         read1 = check_analyser()
         if not read1:
             tm.showerror(title="Connection Error",message="Check connected devices are switched on.")
-            self.control.show_frame(SE.SessionSelectWindow)
+            self.to_sessions()
 
         self.znd.set(read1)
         self.znd_working = True
@@ -160,17 +160,17 @@ class Connection(tk.Frame):
                 self.odm.set("Monitor not is use")
             return port
 
-
-
-
     def test_connections(self):
-
-        if not self.sort_odm_interface():
-            if self.probe_working and self.znd_working:
-                self.control.show_frame(PT.TestProgramWindow)
+        if self.probe_working and self.znd_working:
+            self.control.show_frame(PT.TestProgramWindow)
         else:
-            if self.probe_working and self.znd_working and self.monitor_working:
-                self.control.show_frame(PT.TestProgramWindow)
+            self.to_sessions()
 
     def to_sessions(self):
         self.control.show_frame(SE.SessionSelectWindow)
+
+    def yes_answer(self):
+        self.info_canvas = True
+
+    def no_answer(self):
+        self.info_canvas = False

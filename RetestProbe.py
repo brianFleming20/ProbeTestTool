@@ -91,7 +91,7 @@ def check_data(folder, probe_date):
                     if day == probe_day:
                         if minutes_in_range(hrs, probe_hrs):
                             # line = BM.CSVM.ReadLastLine(file_loc[:-4], complete)
-                            return batch, file_loc
+                            return batch
 
 
 
@@ -200,7 +200,8 @@ class RetestProbe(tk.Frame):
         if self.set_devices():
             self.reset_screen()
         else:
-            self.refresh_window()
+            P.probe_canvas(self, "Return", False)
+            self.sort_return()
 
     def reset_screen(self):
         self.reset_display()
@@ -290,12 +291,12 @@ class RetestProbe(tk.Frame):
             self.check_for_probe()
 
     def check_folder(self, folder, probe_date, probe_type):
-        last_line, file_loc = check_data(folder, probe_date)
+        last_line = check_data(folder, probe_date)
         self.display_probe_data(last_line)
         self.probe_type = get_probe_type(probe_type)
         self.found = True
         # self.batch_from_file = file_loc[:-4]
-        batch_info = f"{file_loc[:-4]} : {self.probe_type}"
+        batch_info = f"{last_line[0]} : {self.probe_type}"
         self.found_batch_number.set(batch_info)
         return self.found
 
@@ -391,7 +392,7 @@ class RetestProbe(tk.Frame):
         else:
             self.test_finished = True
         if not self.test_finished:
-            serial_number = PM.get_serial_number()
+            serial_number = PM.read_serial_number()
             self.serial_number.set(serial_number)
             probe_type = serial_number[:3]
             self.probe_date = serial_number[8:]

@@ -38,7 +38,7 @@ class NanoZND(object):
             self.ser_ana.baudrate = '115200'
             self.ser_ana.bytesize = 8
             self.ser_ana.timeout = 0.05
-            self.ser_ana.close()
+            # self.ser_ana.close()
         except IOError:
             return False
 
@@ -49,6 +49,9 @@ class NanoZND(object):
     def check_port_open(self):
         if self.ser_ana is None:
             self.get_serial_port()
+
+    def close(self):
+        self.ser_ana.close()
 
     def ReadAnalyserData(self):
         line = ""
@@ -174,7 +177,6 @@ class NanoZND(object):
             plt.show()
         else:
             plt.close('all')
-        print(cable_code)
         return cable_code
 
     def send_data(self, data):

@@ -148,8 +148,6 @@ class BatchManager(object):
         # if search in info_line[1]:
         #     return info_line
 
-
-
     def UpdateResults(self, results, batchNumber):
         ########################################################
         # Updates the batch's CSV file with a list of results  #
@@ -270,12 +268,12 @@ class CSVManager(object):
         #####################################################
         # get a list of all the files in the in_progress folder
         a_list = os.listdir(self.completePath)
-
+        print(a_list)
         # strip the '.csv' bit off the end
         newList = []
         for item in a_list:
-            newItem = item[2]
-            newList.append(newItem)
+            newList.append(item[2])
+        # newList = [item[2] for item in a_list]
 
         return newList
 

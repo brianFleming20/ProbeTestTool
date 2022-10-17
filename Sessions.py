@@ -17,7 +17,7 @@ to do:
 #         s = ttk.Separator(self.root, orient=VERTICAL)
 #         s.grid(row=0, column=1, sticky=(N,S))
 '''
-
+import time
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
@@ -76,7 +76,6 @@ class SessionSelectWindow(tk.Frame):
         self.canvas_text = None
         self.test = False
 
-
     def refresh_window(self):
         ####################################################
         # Refresh window on navigation from another window #
@@ -101,6 +100,7 @@ class SessionSelectWindow(tk.Frame):
         self.NSWL1.place(relx=0.5, rely=0.05, anchor=CENTER)
         ports = P.Ports()
         DS.write_device_to_file(ports)
+
         ################################
         # Start a new batch session    #
         ################################
@@ -116,7 +116,7 @@ class SessionSelectWindow(tk.Frame):
         ################################
         # Retest failed probe          #
         ################################
-        self.failed = tk.Button(self, text='Re-test Failed Probe.', background="#FFCB42", command=self.failed_probe)
+        self.failed = tk.Button(self, text='Re-test Failed Probe.', background="#A8E890", command=self.failed_probe)
         self.failed.place(height=30, width=200, relx=0.52, rely=0.45)
 
         ################################
@@ -130,12 +130,11 @@ class SessionSelectWindow(tk.Frame):
         self.SSW_b4 = tk.Button(self, text='Admin area', background="#FFDAB9",
                              command=lambda: self.control.show_frame(AU.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(height=50, width=250, relx=0.5, rely=0.65)
-        # self.SSW_b5 = tk.Button(self, text='...', background="#FFDAB9",
-        #                         command=self.blank, width=10)
-        # self.SSW_b5.place( relx=0.5, rely=0.8)
-
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
+        ################################
+        # User greeting                #
+        ################################
         if "AM" in time_now:
             self.text_area.insert('1.0', 'Good Morning ')
         else:
@@ -181,14 +180,11 @@ class SessionSelectWindow(tk.Frame):
         SM.logOut()
         self.control.show_frame(UL.LogInWindow)
 
-    def blank(self):
-        probe = P.Ports(probe="COM4")
-        DS.write_device_to_file(probe)
-        tm.showinfo("test","Insert a probe to blank")
-        PM.blank_probe()
-
-        # self.SSW_b5.config(state=DISABLED)
-
+    # def blank(self):
+    #     probe = P.Ports(probe="COM4")
+    #     DS.write_device_to_file(probe)
+    #     tm.showinfo("test","Insert a probe to blank")
+    #     PM.blank_probe()
 
     def failed_probe(self):
         probe_port = CO.sort_probe_interface(self)
@@ -227,8 +223,6 @@ class NewSessionWindow(tk.Frame):
                   font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
                   font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
-
-        # self.batchQty = 100
         self.batchNumber = None
         self.probe_type.set("")
         self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=38)
@@ -299,14 +293,6 @@ class NewSessionWindow(tk.Frame):
         global batch_qty
         batch_qty = qty
 
-    # def qty_entry(self):
-    #     self.get_keys()
-    #     data = 0
-    #     data = self.wait_for_response(self.canvas_qty, self.qty_text)
-    #     self.batchQty = int(data)
-    #     self.btn_1.config(state=NORMAL)
-    #     self.btn_2.config(state=NORMAL)
-
     def wait_for_response(self, master, label):
         DS.write_to_from_keys("_")
 
@@ -328,7 +314,6 @@ class NewSessionWindow(tk.Frame):
         qty = self.batchQty
         user = DS.get_username()
         batch_type = self.probe_type.get()
-        # check_qty = self.check_batch_qty(qty)
         check_batch = self.convert_batch_number(batch)
         if not check_batch:
             self.back()
@@ -339,17 +324,6 @@ class NewSessionWindow(tk.Frame):
         else:
             self.canvas_back.destroy()
             self.control.show_frame(CO.Connection)
-
-    # def check_batch_qty(self, qty):
-    #     check = True
-    #     if qty > 100:
-    #         tm.showerror('Batch Error', "Enter a correct batch quantity\nYou can't have more than 100.")
-    #         check = False
-    #     if qty < 100:
-    #         tm.showerror('Batch Error', "Enter a correct batch quantity\nYou can't have less than one.")
-    #         check = False
-    #
-    #     return check
 
     def create_new_batch(self, batch, batch_type, qty, user):
         newBatch = P.Batch(batch)
@@ -448,21 +422,13 @@ class ContinueSessionWindow(tk.Frame):
             self.probe_typeList.append(obj)
             suspend_dict.update({item: obj})
             self.batch = None
-
         # clear the listbox
         self.sessionListBox.delete(0, END)
         self.probe_typeListBox.delete(0, END)
-
-        # fill the listbox with the list of users
-        probe_item = ""
         for batch, probe in suspend_dict.items():
-            # if probe != '---':
             self.probe_typeListBox.insert(END, probe)
             self.sessionListBox.insert(END, batch)
         self.probe_typeListBox.config(state=DISABLED)
-
-        # for item in self.sessionList:
-        #     self.sessionListBox.insert(END, item)
 
     def continue_btn_clicked(self):
         lstid = self.sessionListBox.curselection()

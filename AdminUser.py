@@ -121,12 +121,12 @@ class AdminWindow(tk.Frame):
             if item.admin:
                 item.name = item.name + "--> Admin"
             userList.append(item.name)
+        # userList = [item.name + "--> Admin" for item in SM.GetUserList() if item.admin]
             # clear the listbox
         self.userListBox.delete(0, END)
         # fill the listbox with the list of users
         for item in userList:
             self.userListBox.insert(END, ' ' + item)
-        # Getting the selected user
 
         # Read admin state of the check box
         if self.admin_state.get():
