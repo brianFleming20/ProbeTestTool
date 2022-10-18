@@ -17,7 +17,7 @@ to do:
 #         s = ttk.Separator(self.root, orient=VERTICAL)
 #         s.grid(row=0, column=1, sticky=(N,S))
 '''
-
+import os.path
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
@@ -190,10 +190,10 @@ class AdminWindow(tk.Frame):
         filename = filedialog.askdirectory(initialdir="/", title="Select file")
         if default_loc not in filename:
             filename = f"{filename}{default_loc}"
-
         file = LO.Location(file=filename)
         DS.write_file_location(file)
         self.location.set(filename)
+        BM.CSVM.check_directories()
         Tk.update(self)
 
     def change_qty(self):

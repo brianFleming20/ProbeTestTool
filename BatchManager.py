@@ -179,7 +179,6 @@ class CSVManager(object):
             self.path = filepath['File']
         self.inProgressPath = os.path.join(self.path, "in_progress", "")
         self.completePath = os.path.join(self.path, "complete", "")
-        self.check_directories()
 
     def check_directories(self):
         #########################################################

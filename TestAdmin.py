@@ -4,12 +4,16 @@ import AdminUser
 import Ports
 from SecurityManager import *
 import tkinter as tk
-
+import BatchManager
+import os
 
 AU = AdminUser
 DS = Datastore.Data_Store()
 SM = SecurityManager()
 P = Ports
+CSV = BatchManager.CSVManager()
+BM = BatchManager.BatchManager()
+
 
 class AdminTests(unittest.TestCase):
 
@@ -49,28 +53,28 @@ class AdminTests(unittest.TestCase):
     def test_list_users(self):
         print("Check user in user list")
         # Chech that the length os the list is greater than zero
-        
+
         user_list = len(SM.GetUserList())
         self.assertGreater(user_list,0)
 
     # allow serial number over-write
     def test_serial_number_overwrite(self):
         print("Serial number over write")
-        
+
         username = "brian"
         admin = True
         user1 = P.Users(username, admin, over_right=True)
         DS.write_user_data(user1)
-        
+
         result = DS.get_user_data()['Over_rite']
-        
+
         self.assertEqual(result, True)
-        
+
         user2 = P.Users(username, admin, over_right=False)
         DS.write_user_data(user2)
-        
+
         result1 = DS.get_user_data()['Over_rite']
-        
+
         self.assertEqual(result1, False)
 
     def test_monitor_status(self):
@@ -83,9 +87,28 @@ class AdminTests(unittest.TestCase):
         self.assertEqual(odm_data,odm_active)
 
 
-        
-        
-   
-    
+    def test_create_remote_path(self):
+        print("Create a remote PTT_Results folder")
+
+        path = DS.get_file_location()['File']
+        CSV.check_directories()
+        batch_number = "14762N"
+
+        is_here = os.path.isdir(path)
+
+        self.assertTrue(is_here)
+
+        batch = P.Batch(batch_number)
+        batch.probe_type = "DP6"
+        batch.batchQty = 100
+        user = "Brian"
+        BM.CreateBatch(batch, user)
+
+        line = CSV.ReadLastLine(batch_number, False)
+        result = line[0]
+
+        self.assertEqual(result, batch_number)
+
+
 if __name__ == '__main__':
     unittest.main()
