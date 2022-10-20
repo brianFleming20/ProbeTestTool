@@ -89,14 +89,14 @@ def perform_probe_test():
     if LOWER_LIMIT < marker < UPPER_LIMIT:
         # Also check marker data from analyser too
         analyser = True
-        return marker
+    return marker
 
 
 def probe_programmed():
     return PM.read_serial_number()
 
 
-def detect_recorded_probe(self):
+def detect_recorded_probe():
     found = False
     filepath = DS.get_file_location()
     path = filepath['File']
@@ -108,10 +108,10 @@ def detect_recorded_probe(self):
     found_complete = RT.check_data(completePath, serial_number[8:])
     if found_in_progress or found_complete:
         found = found_in_progress[0]
-    else:
-        P.probe_canvas(self, f"Batch number ??\n\nfor {probe_type}", False)
-        time.sleep(1.8)
-        P.text_destroy(self)
+    # else:
+    #     P.probe_canvas(self, f"Batch number ??\n\nfor {probe_type}", False)
+    #     time.sleep(1.8)
+    #     P.text_destroy(self)
     return found, serial_number
 
 
@@ -420,11 +420,11 @@ class TestProgramWindow(tk.Frame):
 
     def do_test_and_programme(self, current_batch, probe_type):
         self.info_canvas = None
-        found, not_used = detect_recorded_probe(self)
-        if current_batch == found:
+        found, sn = detect_recorded_probe()
+        if not sn:
             pass
-        else:
-            P.probe_canvas(self, f"Batch number {found} error\n\ndoes not match current\n\nbatch number {current_batch}", False)
+        elif current_batch != found:
+            P.probe_canvas(self, f"Batch number {found} error\n\ndoes not match current\n\nbatch number {current_batch}", True)
             time.sleep(1.8)
             P.text_destroy(self)
             return False
@@ -572,20 +572,20 @@ class TestProgramWindow(tk.Frame):
         if probe_programmed() and PM.ProbePresent():
             self.action.set(warning_text["2"])
             Tk.update(self)
-        found, serial_number = detect_recorded_probe(self)
+        found, serial_number = detect_recorded_probe()
+        # P.probe_canvas(self, f"Batch number ??\n\nfor {probe_type}", False)
+        # time.sleep(1.8)
+        # P.text_destroy(self)
         self.show_serial_number.set(serial_number)
-        P.probe_canvas(self, f"This probe is from {probe_type}\n \nbatch number {found}", False)
-        time.sleep(1.8)
-        P.text_destroy(self)
+        P.probe_canvas(self, f"This probe is from {probe_type}\n \nbatch number {found}", True)
+
         if DS.get_user_data()['Over_rite']:
             ###############################################
             # ask for user input to reprogramme the probe #
             ###############################################
             if self.programmed and tm.askyesno(title=warning_text["2"], message=warning_text['3']):
                 if self.do_test_and_programme(current_batch, probe_type):
-                    P.probe_canvas(self, warning_text["13"], False)
-                    time.sleep(1.8)
-                    P.text_destroy(self)
+                    pass
                 else:
                     self.action.set(warning_text["15"])
                     over_write = True
@@ -744,9 +744,11 @@ class TestProgramWindow(tk.Frame):
 
     def yes_answer(self):
         self.info_canvas = True
+        P.text_destroy(self)
 
     def no_answer(self):
         self.info_canvas = False
+        P.text_destroy(self)
 
     def do_reflection_test(self):
         return True

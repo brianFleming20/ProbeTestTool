@@ -182,7 +182,7 @@ class FaultFindWindow(tk.Frame):
         self.text_area.insert('2.0', '\nCurrent batch ')
         self.text_area.insert('2.30', batch_data['Batch'])
         self.probe_type.set(batch_data['Probe_Type'])
-        batch, serial_number = PT.detect_recorded_probe(self)
+        batch, serial_number = PT.detect_recorded_probe()
         if not batch:
             batch = "Not Found"
         self.current_batch.set(batch)

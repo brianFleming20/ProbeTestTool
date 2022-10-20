@@ -172,13 +172,17 @@ class CSVManager(object):
 
     def __init__(self):
         # default_loc = "/PTT_Results"
-        filepath = DS.get_file_location()
-        if not filepath:
-            self.path = os.path.join("C:\\Users", os.getenv('username'), "Documents\\PTT_Results", "")
-        else:
-            self.path = filepath['File']
-        self.inProgressPath = os.path.join(self.path, "in_progress", "")
-        self.completePath = os.path.join(self.path, "complete", "")
+        self.inProgressPath = None
+        self.completePath = None
+        self.path = None
+        self.check_file_location()
+        # filepath = DS.get_file_location()
+        # if not filepath:
+        #     self.path = os.path.join("C:\\Users", os.getenv('username'), "Documents\\PTT_Results", "")
+        # else:
+        #     self.path = filepath['File']
+        # self.inProgressPath = os.path.join(self.path, "in_progress", "")
+        # self.completePath = os.path.join(self.path, "complete", "")
 
     def check_directories(self):
         #########################################################
@@ -202,11 +206,20 @@ class CSVManager(object):
             except OSError:
                 pass
 
+    def check_file_location(self):
+        filepath = DS.get_file_location()
+        if not filepath:
+            self.path = os.path.join("C:\\Users", os.getenv('username'), "Documents\\PTT_Results", "")
+        else:
+            self.path = filepath['File']
+        self.inProgressPath = os.path.join(self.path, "in_progress", "")
+        self.completePath = os.path.join(self.path, "complete", "")
+
     def GetFileNamesInProgress(self):
         ###############################
         # get in progress files       #
         ###############################
-
+        self.check_file_location()
         batches = []
         try:
             a_list = os.listdir(self.inProgressPath)
@@ -223,6 +236,7 @@ class CSVManager(object):
         ########################
         # get completed files  #
         ########################
+        self.check_file_location()
         batches = []
 
         try:

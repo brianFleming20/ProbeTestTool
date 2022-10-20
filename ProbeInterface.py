@@ -103,7 +103,7 @@ class PRI(object):
         '''
         returns a single byte as a 2 character string
         '''
-        self.serial_number = None
+        self.serial_number = False
         self.get_serial_port()
         if not self.ser.isOpen():
             self.ser.open()
@@ -117,7 +117,10 @@ class PRI(object):
         #######################
         self.serial_number = self.read_data()
         self.close_port()
-        num = str(codecs.decode(self.serial_number, "hex"), 'utf-8')[:16]
+        if self.serial_number:
+            num = str(codecs.decode(self.serial_number, "hex"), 'utf-8')[:16]
+        else:
+            num = self.serial_number
         return num
 
     # def get_converted_serial_number(self, num):
