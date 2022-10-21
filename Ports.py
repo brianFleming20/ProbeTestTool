@@ -46,13 +46,14 @@ class Probes:
 
 
 class Users:
-    def __init__(self, name, admin, plot=False, over_right=False, pw_user="", reset_password=False):
+    def __init__(self, name, admin, plot=False, over_right=False, pw_user="", reset_password=False, non_human=False):
         self.Name = name
         self.Admin = admin
         self.Plot = plot
         self.Over_rite = over_right
         self.Change_password = pw_user
         self.reset_password = reset_password
+        self.Non_Human = non_human
 
 
 class User(object):

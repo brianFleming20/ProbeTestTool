@@ -95,6 +95,8 @@ class AdminWindow(tk.Frame):
         ###################
         # Show user list  #
         ###################
+        self.non_human.set(DS.get_user_data()['Non_Human'])
+        self.admin_state.set(DS.get_user_data()['Over_rite'])
         self.userListBox = Listbox(self.canvas_back, height=11, width=18)
         self.userListBox.place(relx=0.38, rely=0.35)
         self.userListBox.config(font=("Courier", 16))
@@ -149,7 +151,7 @@ class AdminWindow(tk.Frame):
         self.odm_active.get()
 
         self.nhp_button = Checkbutton(text=" Test Non-Human Probe",
-                                      variable=self.non_human, command=self.set_odm_state, font=("Courier", 12))
+                                      variable=self.non_human, command=self.non_human_probe, font=("Courier", 12))
         self.nhp_button.place(relx=0.6, rely=0.6)
         self.non_human.get()
         Tk.update(self)
@@ -228,12 +230,20 @@ class AdminWindow(tk.Frame):
     # Set user admin status from the check box  #
     #############################################
     def set_admin_state(self):
-        user = LO.Users(DS.get_username(), DS.user_admin_status(), over_right=self.admin_state.get())
+        user_data = DS.get_user_data()
+        user = LO.Users(user_data['Username'], user_data['Admin'],
+                        over_right=self.admin_state.get(), non_human=user_data['Non_Human'])
         DS.write_user_data(user)
 
     def set_odm_state(self):
         odm_state = LO.Ports(active=self.odm_active.get())
         DS.write_device_to_file(odm_state)
+
+    def non_human_probe(self):
+        user_data = DS.get_user_data()
+        animal_probe = LO.Users(user_data['Username'], user_data['Admin'],
+                                non_human=self.non_human.get(), over_right=user_data['Over_rite'])
+        DS.write_user_data(animal_probe)
 
     def to_new_user(self):
         self.canvas_gone()

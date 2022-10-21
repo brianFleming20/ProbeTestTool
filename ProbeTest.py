@@ -55,7 +55,7 @@ h = 600  # window height
 LARGE_FONT = ("Verdana", 14)
 BTN_WIDTH = 30
 LOWER_LIMIT = 0.9
-UPPER_LIMIT = 3.0
+UPPER_LIMIT = 2.8
 
 warning_text = {
     "overrite on": "Probe serial number re-issue enabled.",
@@ -103,15 +103,14 @@ def detect_recorded_probe():
     inProgressPath = os.path.join(path, "in_progress", "")
     completePath = os.path.join(path, "complete", "")
     serial_number = PM.read_serial_number()
-    probe_type = RT.get_probe_type(serial_number[:3])
     found_in_progress = RT.check_data(inProgressPath, serial_number[8:])
-    found_complete = RT.check_data(completePath, serial_number[8:])
-    if found_in_progress or found_complete:
+    if found_in_progress:
         found = found_in_progress[0]
-    # else:
-    #     P.probe_canvas(self, f"Batch number ??\n\nfor {probe_type}", False)
-    #     time.sleep(1.8)
-    #     P.text_destroy(self)
+    found_complete = RT.check_data(completePath, serial_number[8:])
+    if found_complete:
+        found = found_complete[0]
+    # if found_in_progress or found_complete:
+    #     found = found_in_progress[0]
     return found, serial_number
 
 
@@ -423,9 +422,13 @@ class TestProgramWindow(tk.Frame):
         found, sn = detect_recorded_probe()
         if not sn:
             pass
+        elif not found:
+            P.probe_canvas(self,
+                           f"Inserted probe not related to {current_batch}", True)
+            P.text_destroy(self)
         elif current_batch != found:
-            P.probe_canvas(self, f"Batch number {found} error\n\ndoes not match current\n\nbatch number {current_batch}", True)
-            time.sleep(1.8)
+            P.probe_canvas(self, f"Batch number {found} error\n\ndoes not match current\n\nbatch number {current_batch}",
+                           True)
             P.text_destroy(self)
             return False
         failure = False
@@ -454,7 +457,10 @@ class TestProgramWindow(tk.Frame):
             # If the analyser passes the probe, the probe   #
             # is given a serial number, or a fault text.    #
             #################################################
-            serial_num = self.program_probe(probe_type, True)
+            if not self.non_human_probe():
+                serial_num = self.program_probe(probe_type, True)
+            else:
+                serial_num = "Animal Probe"
             if not serial_num:
                 pass
             else:
@@ -472,7 +478,10 @@ class TestProgramWindow(tk.Frame):
             # is given a short serial number that can be    #
             # adjusted into a full serial number later.     #
             #################################################
-            serial_num = self.program_probe(probe_type, False)
+            if not self.non_human_probe():
+                serial_num = self.program_probe(probe_type, False)
+            else:
+                serial_num = f"Animal-{serial_num[4:]}"
             failed += 1
             ##################################################
             # Notify the user that a probe has failed.       #
@@ -488,6 +497,9 @@ class TestProgramWindow(tk.Frame):
                 P.text_destroy(self)
         if result and programmed:
             self.show_green_image()
+            Tk.update(self)
+        else:
+            self.show_red_light()
             Tk.update(self)
         if self.update_results(result, serial_num, odm_data, current_batch, marker):
             probe_data = P.Probes(probe_type,
@@ -512,6 +524,10 @@ class TestProgramWindow(tk.Frame):
             pass
         P.text_destroy(self)
         self.show_serial_number.set("      ---")
+
+    def non_human_probe(self):
+        animal_probe = DS.get_user_data()['Non_Human']
+        return animal_probe
 
     def program_blank_probe(self):
         ###############################################################
@@ -573,11 +589,14 @@ class TestProgramWindow(tk.Frame):
             self.action.set(warning_text["2"])
             Tk.update(self)
         found, serial_number = detect_recorded_probe()
-        # P.probe_canvas(self, f"Batch number ??\n\nfor {probe_type}", False)
-        # time.sleep(1.8)
-        # P.text_destroy(self)
+        probe_type_ = RT.get_probe_type(serial_number[:3])
         self.show_serial_number.set(serial_number)
-        P.probe_canvas(self, f"This probe is from {probe_type}\n \nbatch number {found}", True)
+        if not found:
+            P.probe_canvas(self, f"Location of {probe_type_} not found.", True)
+        else:
+            P.probe_canvas(self, f"This probe is from {probe_type_}\n \nbatch number {found}", False)
+            time.sleep(2)
+            P.text_destroy(self)
 
         if DS.get_user_data()['Over_rite']:
             ###############################################

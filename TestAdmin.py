@@ -84,7 +84,46 @@ class AdminTests(unittest.TestCase):
 
         self.A.set_odm_state()
         odm_data = DS.get_devices()['odm_active']
-        self.assertEqual(odm_data,odm_active)
+        self.assertEqual(odm_data, odm_active)
+
+    def test_animal_probe(self):
+        print("Test animal probe settings")
+        user_data = DS.get_user_data()
+        non_human = user_data['Non_Human']
+        over_write = user_data['Over_rite']
+        ##############################################
+        # Set up non-human probe settings for False  #
+        # and set over-write to False, Default       #
+        ##############################################
+        user = P.Users("Brian", True)
+        DS.write_user_data(user)
+        ##############################################
+        # Set for non-human probe and not over-write #
+        ##############################################
+        self.assertFalse(non_human)
+        self.A.non_human.set(True)
+        self.A.non_human_probe()
+        non_human_set = DS.get_user_data()['Non_Human']
+        self.assertTrue(non_human_set)
+        self.assertFalse(over_write)
+        ##############################################
+        # Set for over-write and not non-human probe #
+        ##############################################
+        self.A.admin_state.set(True)
+        self.A.set_admin_state()
+        self.assertTrue(DS.get_user_data()['Over_rite'])
+        self.A.non_human.set(False)
+        self.A.non_human_probe()
+        self.assertFalse(DS.get_user_data()['Non_Human'])
+        ##############################################
+        # Set both over-write and non-human probe on #
+        ##############################################
+        self.A.admin_state.set(True)
+        self.A.non_human.set(True)
+        self.A.set_admin_state()
+        self.A.non_human_probe()
+        self.assertTrue(DS.get_user_data()['Over_rite'])
+        self.assertTrue(DS.get_user_data()['Non_Human'])
 
 
     def test_create_remote_path(self):

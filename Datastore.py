@@ -151,6 +151,7 @@ class Data_Store():
             "Over_rite": user_data.Over_rite,
             "Change_password": user_data.Change_password,
             "reset_password": user_data.reset_password,
+            "Non_Human": user_data.Non_Human,
         }
         return user_dict
 

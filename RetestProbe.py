@@ -92,6 +92,8 @@ def check_data(folder, probe_date):
                     if day == probe_day:
                         if minutes_in_range(hrs, probe_hrs):
                             return batch
+                        else:
+                            return False
 
 
 class RetestProbe(tk.Frame):

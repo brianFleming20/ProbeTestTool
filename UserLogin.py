@@ -111,7 +111,7 @@ class LogInWindow(tk.Frame):
         ###################################
         self.set_username("brian")
         self.set_password("password")
-        reset_user = P.Users("", "")
+        reset_user = P.Users("", "", over_right=False, non_human=False)
         DS.write_user_data(reset_user)
         probe_data = P.Probes("", "", 0, 0, failed=0, scrap=0)
         DS.write_probe_data(probe_data)

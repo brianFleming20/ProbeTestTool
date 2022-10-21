@@ -117,9 +117,9 @@ class PRI(object):
         #######################
         self.serial_number = self.read_data()
         self.close_port()
-        if self.serial_number:
-            num = str(codecs.decode(self.serial_number, "hex"), 'utf-8')[:16]
-        else:
+        try:
+            num = str(codecs.decode(self.serial_number[:32], "hex"), 'utf-8')[:16]
+        except IOError:
             num = self.serial_number
         return num
 
