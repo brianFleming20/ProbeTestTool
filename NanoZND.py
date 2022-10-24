@@ -35,7 +35,7 @@ class NanoZND(object):
         try:
             self.ser_ana = serial.Serial()
             self.ser_ana.port = port
-            self.ser_ana.baudrate = '115200'
+            self.ser_ana.baudrate = 115200
             self.ser_ana.bytesize = 8
             self.ser_ana.timeout = 0.05
             # self.ser_ana.close()

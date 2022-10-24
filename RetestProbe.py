@@ -70,10 +70,9 @@ def minutes_in_range(file_time, probe_time):
 def check_data(folder, probe_date):
     hrs = 0
     probe_hrs = 0
-    batch = False
-    complete_folder = "complete"
-    if complete_folder in folder:
-        complete = True
+    # complete_folder = "complete"
+    # if complete_folder in folder:
+    #     complete = True
     for file_loc in os.listdir(folder):
         lines = BM.CSVM.read_all_lines(folder, file_loc)
         for batch in lines:
@@ -237,6 +236,8 @@ class RetestProbe(tk.Frame):
     def sort_return(self):
         global from_test
         P.text_destroy(self)
+        if not self.found:
+            P.probe_canvas(self, "Probe has not been \nregistered with the system", True)
         self.canvas_back.destroy()
         if not from_test:
             self.control.show_frame(SE.SessionSelectWindow)
@@ -261,8 +262,10 @@ class RetestProbe(tk.Frame):
             completePath = os.path.join(path, "complete", "")
             if self.check_folder(inProgressPath, self.probe_date, probe_type):
                 self.found_failed_probe()
+                self.found = True
             if self.check_folder(completePath, self.probe_date, probe_type):
                 self.found_failed_probe()
+                self.found = True
         if self.finish < 1:
             self.sort_return()
         elif not self.test_finished:
@@ -271,7 +274,9 @@ class RetestProbe(tk.Frame):
     def check_folder(self, folder, probe_date, probe_type):
         found = False
         last_line = check_data(folder, probe_date)
-        if last_line is not None:
+        if last_line is None:
+            last_line = False
+        if last_line is not False:
             found = True
             self.display_probe_data(last_line)
             self.batch_from_file = last_line[0]
@@ -284,7 +289,6 @@ class RetestProbe(tk.Frame):
             batch_info = f"{last_line[0]} : {get_probe_type(probe_type)}"
             self.found_batch_number.set(batch_info)
         return found
-
 
     def display_probe_data(self, last_line):
         if self.failed_probe:

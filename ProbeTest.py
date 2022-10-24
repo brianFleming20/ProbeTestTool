@@ -54,8 +54,9 @@ w = 800  # window width
 h = 600  # window height
 LARGE_FONT = ("Verdana", 14)
 BTN_WIDTH = 30
-LOWER_LIMIT = 0.9
-UPPER_LIMIT = 2.8
+LOWER_LIMIT = 1.8
+UPPER_LIMIT = 4.5
+KDP_UPPER = 3.0
 
 warning_text = {
     "overrite on": "Probe serial number re-issue enabled.",
@@ -86,9 +87,13 @@ analyser = False
 def perform_probe_test():
     global analyser
     marker = ZND.tdr()
-    if LOWER_LIMIT < marker < UPPER_LIMIT:
-        # Also check marker data from analyser too
-        analyser = True
+    top_limit = UPPER_LIMIT
+    if DS.get_probe_data()['Probe_Type'] == "KDP72":
+        top_limit = KDP_UPPER
+    if PM.ProbePresent():
+        if LOWER_LIMIT < marker < top_limit:
+            # Also check marker data from analyser too
+            analyser = True
     return marker
 
 
@@ -320,7 +325,7 @@ class TestProgramWindow(tk.Frame):
         self.probe_type.set(DS.get_current_probe_type())
         self.current_batch.set(current_batch)
         self.current_user.set(current_user)
-        self.RLLimit = -1
+        # self.RLLimit = -1
         self.canvas_back.pack()
         self.reflection.set("--->")
         self.show_serial_number.set("      ---")
@@ -419,17 +424,12 @@ class TestProgramWindow(tk.Frame):
 
     def do_test_and_programme(self, current_batch, probe_type):
         self.info_canvas = None
-        found, sn = detect_recorded_probe()
+        found, sn = detect_recorded_probe() # Detect if probe has serial number and where from
         if not sn:
             pass
-        elif not found:
-            P.probe_canvas(self,
-                           f"Inserted probe not related to {current_batch}", True)
-            P.text_destroy(self)
-        elif current_batch != found:
+        elif current_batch != found and not DS.get_user_data()['Over_rite']:
             P.probe_canvas(self, f"Batch number {found} error\n\ndoes not match current\n\nbatch number {current_batch}",
                            True)
-            P.text_destroy(self)
             return False
         failure = False
         programmed = False
@@ -448,24 +448,28 @@ class TestProgramWindow(tk.Frame):
         # batch number.                              #
         ##############################################
         failed = DS.get_probe_data()['Failures']
+        non_human = DS.get_user_data()['Non_Human']
         ##############################################
         # Do the analyser testing of the probe.      #
         ##############################################
-        result, marker, odm_data = self.test_probe()
+        result, marker, odm_data = self.test_probe() # Test probe
         if result:
             #################################################
             # If the analyser passes the probe, the probe   #
             # is given a serial number, or a fault text.    #
             #################################################
-            if not self.non_human_probe():
-                serial_num = self.program_probe(probe_type, True)
+            if not non_human: # Check for non-human probe selected
+                serial_num = self.program_probe(probe_type, True) # Gives the probe a serial number
             else:
-                serial_num = "Animal Probe"
-            if not serial_num:
+                serial_num = "Animal Probe" # Probe serial number is given elsewhere
+            if not serial_num: # If probe serial number process fails
                 pass
             else:
-                programmed = True
+                programmed = True # Sets flag for passed probe
             self.show_serial_number.set(serial_num)
+            probes_passed = self.probes_passed.get() + 1
+            self.probes_passed.set(probes_passed)
+            Tk.update(self)
             #################################################
             # If the probe fails the analyser test, the     #
             # probe is failed and may be re-worked.         #
@@ -478,15 +482,18 @@ class TestProgramWindow(tk.Frame):
             # is given a short serial number that can be    #
             # adjusted into a full serial number later.     #
             #################################################
-            if not self.non_human_probe():
-                serial_num = self.program_probe(probe_type, False)
-            else:
-                serial_num = f"Animal-{serial_num[4:]}"
+            serial_num = self.program_probe(probe_type, False)  # Gives the probe a fail serial number
+            if non_human: # Check for non-human probe selected
+                serial_num = f"Animal-{serial_num[4:]}" # Records the non-human serial number as a failure
             failed += 1
             ##################################################
             # Notify the user that a probe has failed.       #
             ##################################################
             self.show_serial_number.set(serial_num)
+            ##################################################
+            # Ask user if they want to fault find the failed #
+            # probe. If not record probe results.            #
+            ##################################################
             P.probe_canvas(self, f"{warning_text['13']} {warning_text['14']}", True)
             if self.info_canvas:
                 self.session_on_going = False
@@ -501,13 +508,21 @@ class TestProgramWindow(tk.Frame):
         else:
             self.show_red_light()
             Tk.update(self)
+        #########################################################
+        # Whatever the probe test outcome, the results are sent #
+        # to the batch number file in-progress.                 #
+        #########################################################
+        probes_left = self.left_to_test.get() - 1
+        self.left_to_test.set(probes_left)
+        if probes_left < 0:
+            self.left_to_test.set(0)
         if self.update_results(result, serial_num, odm_data, current_batch, marker):
             probe_data = P.Probes(probe_type,
                                   current_batch, int(self.probes_passed.get()), int(self.left_to_test.get()),
                                   failed=failed)
             DS.write_probe_data(probe_data)
-        self.show_gray_light()
         self.remove_probe()
+        self.show_gray_light() # Reset light show
         return failure
 
     def save_probe_data(self, batch, failure):
@@ -571,7 +586,7 @@ class TestProgramWindow(tk.Frame):
             self.programmed = False
             Tk.update(self)
         if self.programmed:
-            self.action.set(warning_text['11'])
+            self.action.set(warning_text['15'])
             Tk.update(self)
             return self.serial_number
         else:
@@ -698,15 +713,16 @@ class TestProgramWindow(tk.Frame):
         marker_data = perform_probe_test()
         if analyser:
             pass_analyser = True
-            self.action.set(warning_text["17"])
+            self.action.set(warning_text["17"]) # Passed analyser message
             Tk.update(self)
         if self.do_reflection_test():
             pass_reflection = True
-            self.action.set(warning_text["18"])
+            self.action.set(warning_text["18"]) # Passed reflection message
             Tk.update(self)
         if pass_analyser and pass_reflection:
             pass_tests = True
         else:
+            self.action.set(warning_text["13"]) # Failed probe message
             self.show_red_light()
             pass_tests = False
         Tk.update(self)
@@ -739,14 +755,17 @@ class TestProgramWindow(tk.Frame):
         odm_to_file = "ODM not used"
         if DS.get_devices()['odm_active'] and self.programmed:
             odm_to_file = str(odm_data[9])
-        probes_left = self.left_to_test.get() - 1
-        probes_passed = self.probes_passed.get() + 1
-        self.left_to_test.set(probes_left)
-        self.probes_passed.set(probes_passed)
+        # probes_left = self.left_to_test.get() - 1
+        # if probes_left < 0:
+        #     pass
+        # probes_passed = self.probes_passed.get() + 1
+        # self.left_to_test.set(probes_left)
+        # self.probes_passed.set(probes_passed)
+        # Tk.update(self)
         data_list_to_file.append(batch)  # by pass the batch number column
         data_list_to_file.append(snum)  # insert serial number
         data_list_to_file.append(self.probe_type.get())
-        data_list_to_file.append(probes_left)
+        data_list_to_file.append(self.left_to_test.get())
         data_list_to_file.append(self.current_user.get())  # insert the logged in user
         data_list_to_file.append(results)  # results of reflection test
         data_list_to_file.append(marker)  # results of analyser data
