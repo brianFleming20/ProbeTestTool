@@ -33,7 +33,6 @@ class SecurityManager(object):
         self.is_admin_status = False
 
     def logIn(self, user):
-
         nuser = False
 
         if len(user.name) > 0 or len(user.password) > 0:
@@ -55,7 +54,9 @@ class SecurityManager(object):
         tick
         logs a current user out by setting the loggedInUser attribute to false
         '''
-        self.loggedInUser = False
+        login_user = P.Users("", False)
+        DS.write_user_data(login_user)
+        # self.loggedInUser = False
 
     def addUser(self, user):
         '''
@@ -80,7 +81,7 @@ class SecurityManager(object):
         else:
             return False
 
-    def updatePassword(self, password):
+    def updatePassword(self, password, admin):
         """
         tick
         pass in a new user object
@@ -89,12 +90,9 @@ class SecurityManager(object):
 
         name = DS.get_user_data()['Change_password']
         user = self.GetUserObject(name)
-        user_details = user.password
         user.password = password
-
-        DS.putUser(user)
-
-        return True
+        user.admin = admin
+        return DS.putUser(user)
 
     def GetUserObject(self, userName):
         return DS.getUser(userName)

@@ -1,10 +1,10 @@
 '''Factory pattern for generating python beans'''
-from tkinter import *
+from tkinter import Canvas, Label, Button, Tk
 
 
 def probe_canvas(self, message, btn):
     self.canvas_text = Canvas(bg="#eae9e9", width=350, height=180)
-    self.canvas_text.place(x=self.cent_x - 150, y=self.cent_y - 20)
+    self.canvas_text.place(relx=0.4, rely=0.5)
     Label(self.canvas_text, text=message, font=("Courier", 12)).place(
         x=50, y=20)
     btn1 = Button(self.canvas_text, text="Continue", command=self.yes_answer, width=10, height=2)
@@ -35,14 +35,13 @@ class Location:
 
 
 class Probes:
-    def __init__(self, probe_type, current_batch, passed, left_to_test, failed=0, scrap=0, qty_set=100):
+    def __init__(self, probe_type, current_batch, passed, left_to_test, failed=0, scrap=0):
         self.Probe_Type = probe_type
         self.Current_Batch = current_batch
         self.Passed = passed
         self.Left = left_to_test
         self.failed = failed
         self.scrap = scrap
-        self.batch_qty_set = qty_set
 
 
 class Users:

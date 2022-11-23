@@ -167,11 +167,11 @@ class AdminWindow(tk.Frame):
 
         Button(self.canvas, text='Edit a current user', command=self.to_edit_user,
                font=("Courier", 12)).place(relx=0.1, rely=0.38, height=50, anchor=W)
-        Button(self.canvas, text='Edit a device port number',
-               command=self.to_devices, font=("Courier", 12)).place(relx=0.1, rely=0.62, height=50, anchor=W)
+        # Button(self.canvas, text='Edit a device port number',
+        #        command=self.to_devices, font=("Courier", 12)).place(relx=0.1, rely=0.62, height=50, anchor=W)
         Button(self.canvas, text="Change Batch Qty", command=self.change_qty,
-               font=("Courier", 12)).place(relx=0.1, rely=0.85, height=50, anchor=W)
-        Label(self.canvas, text=f"Current Qty\n{SE.batch_qty}", font=('Arial', 12)).place(relx=0.68, rely=0.78)
+               font=("Courier", 12)).place(relx=0.1, rely=0.65, height=50, anchor=W)
+        Label(self.canvas, text=f"Current Qty\n{SE.BATCH_QTY}", font=('Arial', 12)).place(relx=0.62, rely=0.78)
 
         Button(self.canvas_back, text='Exit', width=40, command=self.canvas_gone).place(height=40,
                                                                                         width=180, relx=0.88, rely=0.82,
@@ -253,9 +253,9 @@ class AdminWindow(tk.Frame):
         self.canvas_gone()
         self.control.show_frame(EditUserWindow)
 
-    def to_devices(self):
-        self.canvas_gone()
-        self.control.show_frame(AP.AdminPorts)
+    # def to_devices(self):
+    #     self.canvas_gone()
+    #     self.control.show_frame(AP.AdminPorts)
 
 
 class ChangePasswordWindow(tk.Frame):
@@ -308,7 +308,7 @@ class ChangePasswordWindow(tk.Frame):
         self.canvas_1.place(relx=0.3, rely=0.4)
         self.canvas_2 = Canvas(bg="#eae9e9", width=550, height=48)
         self.canvas_2.place(relx=0.3, rely=0.54)
-
+        Label(self, text="Change password", background="#FFDAB9", font=("Courier", 18)).place(relx=0.55, rely=0.07, anchor=CENTER)
         self.pass1_text = self.canvas_1.create_text(350, 20, text=" ", fill="black",
                                                     font=(OnScreenKeys.FONT_NAME, 16, "bold"))
         self.pass2_text = self.canvas_2.create_text(350, 20, text=" ", fill="black",
@@ -365,10 +365,11 @@ class ChangePasswordWindow(tk.Frame):
         self.confirmPassword = conf
 
     def get_admin_status(self):
-        self.admin = self.is_admin.get()
+        return self.is_admin.get()
 
     def set_admin_state(self):
-        self.is_admin = DS.user_admin_status()
+        # set admin status of selected user
+        self.is_admin = DS.getUser(DS.get_reset_password_name()).admin
 
     def get_keys(self):
         KY.display()
@@ -389,36 +390,37 @@ class ChangePasswordWindow(tk.Frame):
         return pw_data
 
     def password_change(self):
-        result = self.check_entries()
-        if result:
+        if self.check_entries():
             self.return_to_edit_user()
         else:
             self.refresh_window()
 
     def check_entries(self):
-        pw_len = len(self.newPassword)
-        cfm_pw = len(self.confirmPassword)
-        if pw_len > 0 and cfm_pw > 0:
+        change = False
+        name = DS.get_reset_password_name()
+        user_admin = DS.getUser(name).admin
+        if not user_admin and not check_user_admin(name):
+            # if not check_user_admin(name):
+            get_admin = False
+        if len(self.newPassword) > 0 and len(self.confirmPassword) > 0:
             if self.newPassword == self.confirmPassword:
-                done = self.change_password(self.newPassword)
-                return done
+                change = True
             else:
                 tm.showerror(title="Error", message="Please check your password spelling \nThey don't match.")
-                return False
         else:
-            tm.showerror(title="Error", message="Your have left one of the entries empty.")
-            return False
+            if self.get_admin_status() is not user_admin:
+                change = True
 
-    def change_password(self, password):
-        admin = DS.user_admin_status()
-        if not admin:
-            print("*****")
+        return self.change_password(change, self.newPassword, self.get_admin_status())
 
-        if SM.updatePassword(password):
-            tm.showinfo('Changed password', 'Password change successful')
-            return True
+    def change_password(self, change, password, admin):
+        update = False
+        if change and SM.updatePassword(password, admin):
+            tm.showinfo('Change Password', 'Password change successful')
+            update = True
         else:
-            return False
+            tm.showinfo('Change Password', 'Password NOT change.')
+        return update
 
     def return_to_edit_user(self):
         if self.reset_pass:
@@ -443,8 +445,8 @@ class EditUserWindow(tk.Frame):
         self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
 
-        self.Label1 = ttk.Label(self, text='Choose a user to edit', background="#FFDAB9", font=("Courier", 18))
-        self.Label1.place(relx=0.5, rely=0.07, anchor=CENTER)
+        self.Label1 = ttk.Label(self, text='Edit user', background="#FFDAB9", font=("Courier", 18))
+        self.Label1.place(relx=0.55, rely=0.07, anchor=CENTER)
         # Box to hold user list
         self.userListBox = Listbox(self, height=10, width=20, font=("Courier", 14))
         self.userListBox.place(relx=0.25, rely=0.5, anchor=CENTER)
@@ -501,15 +503,17 @@ class EditUserWindow(tk.Frame):
             command=lambda: self._getSelectedUser(controller))
 
     def check_delete(self, delete_user):
+        delete = False
         sure = tm.askyesno(
             'Delete confirm', 'Are you sure you want to Delete this user?')
         if sure:
             if delete_user != DS.get_username():
-                SM.delete_user(SM.GetUserObject(delete_user))
-                return True
+                delete = SM.delete_user(SM.GetUserObject(delete_user))
+                print(delete)
+                # delete = True
             else:
                 tm.showerror('Error', 'Cannot delete yourself')
-                return False
+        return delete
 
     def refresh_window(self):
         # create a list of the current users using the dictionary of users
@@ -538,17 +542,15 @@ class EditUserWindow(tk.Frame):
         self.userListBox.select_set(0)
 
 
-def check_user_admin(self):
+def check_user_admin(name):
     admin = False
     admin_count = 0
     for item in SM.GetUserList():
         if item.admin:
             admin_count += 1
-
-    if admin_count > 1:
+    if admin_count >= 2:
         tm.showerror(title="Admin User Error",
-                     message=f"{self.newusername} cannot be an administrator,\nDefault standard user.")
-        admin = False
+                     message=f"{name} cannot be an administrator,\nDefault standard user.")
     else:
         admin = True
     return admin
@@ -609,6 +611,8 @@ class AddUserWindow(tk.Frame):
     def add_user(self, admin):
         # Create a new user object
         user_added = False
+        if not check_user_admin(self.newusername):
+            admin = False
         if self.allow_add_admin:
             newUser = LO.User(self.newusername, self.newpassword, admin)
             if SM.addUser(newUser):
@@ -644,11 +648,12 @@ class AddUserWindow(tk.Frame):
     def refresh_window(self):
         # create a list of the current users using the dictionary of users
         self.canvas_1 = Canvas(bg="#eae9e9", width=520, height=45)
-        self.canvas_1.place(relx=0.15, rely=0.3)
+        self.canvas_1.place(relx=0.15, rely=0.4)
         self.canvas_2 = Canvas(bg="#eae9e9", width=520, height=45)
-        self.canvas_2.place(relx=0.15, rely=0.4)
+        self.canvas_2.place(relx=0.15, rely=0.5)
         self.canvas_3 = Canvas(bg="#eae9e9", width=520, height=45)
-        self.canvas_3.place(relx=0.15, rely=0.5)
+        self.canvas_3.place(relx=0.15, rely=0.6)
+        Label(self, text="Add new user", background="#FFDAB9", font=("Courier", 18)).place(relx=0.55, rely=0.07, anchor=CENTER)
         self.name_text = self.canvas_1.create_text(240, 20, text=" ", fill="black",
                                                    font=(OnScreenKeys.FONT_NAME, 16, "bold"))
         self.pass1_text = self.canvas_2.create_text(240, 20, text=" ", fill="black",
@@ -666,11 +671,11 @@ class AddUserWindow(tk.Frame):
         self.AUWl3.place(x=15, y=12)
 
         Radiobutton(
-            self, text='Admin', variable=self.is_admin, font=('Courier', 14), value=True).place(relx=0.7, rely=0.35,
+            self, text='Admin', variable=self.is_admin, font=('Courier', 14), value=True).place(relx=0.7, rely=0.45,
                                                                                                 anchor=CENTER)
         Radiobutton(
             self, text='Non-Admin', variable=self.is_admin, font=('Courier', 14), value=False).place(relx=0.7,
-                                                                                                     rely=0.45,
+                                                                                                     rely=0.55,
                                                                                                      anchor=CENTER)
         self.get_admin_status()
         self.is_admin.set(0)
@@ -679,17 +684,6 @@ class AddUserWindow(tk.Frame):
         self.text_area.insert('1.0', DS.get_username().title())
         self.text_area.insert('2.0', '\nPlease complete the form.')
         self.text_area.config(state=DISABLED)
-        admins = 0
-        self.check_admin()
-
-    def check_admin(self):
-        admin_names = []
-        for item in SM.GetUserList():
-            if item.admin:
-                admin_names.append(item)
-        admins = len(admin_names)
-        if admins >= 2:
-            self.allow_add_admin = False
 
     def get_admin_status(self):
         self.admin = self.is_admin.get()

@@ -10,9 +10,11 @@ import time
 import Datastore
 import serial.tools.list_ports
 from scipy.constants import speed_of_light
-
+import Ports
+from tkinter import messagebox as mb
 
 DS = Datastore.Data_Store()
+P = Ports
 
 INDUCTANCE = 0.003526
 TEST_CABLE = 0.59
@@ -28,6 +30,7 @@ class NanoZND(object):
         # self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
         self.show_plot = False
         self.analyser_port = None
+        self.info_canvas = None
         self.ser_ana = None
 
     def get_serial_port(self):
@@ -47,8 +50,14 @@ class NanoZND(object):
         return self.ser_ana
 
     def check_port_open(self):
+        print("Check analyser")
         if self.ser_ana is None:
             self.get_serial_port()
+            # print(self.ser_ana)
+            # if not self.get_serial_port():
+            #     P.probe_canvas(self, "Ensure the analyser is turned on.", False)
+            #     time.sleep(2)
+            #     P.text_destroy(self)
 
     def close(self):
         self.ser_ana.close()
@@ -104,6 +113,7 @@ class NanoZND(object):
         return s11_result
 
     def set_vna_controls(self):
+        self.check_port_open()
         if not self.ser_ana.isOpen():
             self.ser_ana.open()
         self.send_data(f"sweep 3000000 5000000 1\r")
@@ -134,8 +144,20 @@ class NanoZND(object):
     def tdr(self):
         # found in https://zs1sci.com/blog/nanovna-tdr/
         self.get_serial_port()
+        print("Analyser start")
+        self.set_vna_controls()
+        # self.ser_ana.isOpen()
         if not self.ser_ana.isOpen():
-            self.ser_ana.open()
+            try:
+                self.ser_ana.open()
+            except IOError:
+                pass
+
+        if not self.ser_ana.isOpen():
+            print(self.ser_ana)
+            mb.showinfo(title="Analyser", message="Ensure the analyser is turned on.")
+            print("Finish check")
+
         self.send_data("marker 3\r")
         marker = self.ReadAnalyserData().split(' ')
         marker_int = int(marker[2])
@@ -180,7 +202,8 @@ class NanoZND(object):
         return cable_code
 
     def send_data(self, data):
-
+        if not self.ser_ana.isOpen():
+            self.ser_ana.open()
         data_ = (ord(character) for character in data)
         self.ser_ana.flush()
         self.ser_ana.write(data_)

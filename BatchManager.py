@@ -7,7 +7,7 @@ fix path variables
 
 import csv
 import os
-from time import gmtime, strftime
+from time import gmtime, strftime, sleep
 import Datastore
 import Ports
 from tkinter import messagebox as mb
@@ -112,41 +112,36 @@ class BatchManager(object):
         # move the batch file into the 'complete' folder                     #
         # refresh the current batch list                                     #
         ######################################################################
+        print(batch)
+        check = True
         self.current_batch = DS.get_current_batch()
+        for file in self.get_completed_batches():
+            if file[:-4] == batch:
+                check = False
 
-        if self.current_batch == batch:
-            self.CSVM.MoveToCompleted(self.current_batch)
-            # move the batch file to the complete folder
-            try:
-                self.availableBatchs = self.CSVM.GetFileNamesInProgress()
-                # update the availableBaths list
-            except FileExistsError:
-                if not os.path.isdir(self.inProgressPath):
-                    self.CSVM.check_directories()
-            else:
-                self.availableBatchs = self.CSVM.GetFileNamesInProgress()
-                return True
+        if self.current_batch == batch and check:
+            self.CSVM.MoveToCompleted(batch)
         else:
-            return False
+            P.probe_canvas(self, f"Complete file contains {batch}", False)
+            sleep(2)
+            P.text_destroy(self)
+            # move the batch file to the complete folder
+        #     try:
+        #         self.availableBatchs = self.CSVM.GetFileNamesInProgress()
+        #         # update the availableBaths list
+        #     except FileExistsError:
+        #         if not os.path.isdir(self.inProgressPath):
+        #             self.CSVM.check_directories()
+        #     else:
+        #         self.availableBatchs = self.CSVM.GetFileNamesInProgress()
+        #         check = True
+        # return check
 
     def GetAvailableBatches(self):
-        # batchList = []
-        # for item in self.CSVM.GetFileNamesInProgress():
-        #     if item != 'FOO':
-        #         batchList.append(item)
-
         return self.CSVM.GetFileNamesInProgress()
 
-    def GetBatchObject(self, batchNumber):
-        # get the batch's info list
-        # batch = P.Batch(batchNumber=batchNumber)
-        # batch.probe_type = info_line[2]
-        # batch.batchQty = info_line[3]
-        # batch.serial_number = info_line[1]
-        return self.CSVM.ReadLastLine(batchNumber, False)
-        # search = "Suspended"
-        # if search in info_line[1]:
-        #     return info_line
+    def GetBatchObject(self, batchNumber, complete):
+        return self.CSVM.ReadLastLine(batchNumber, complete)
 
     def UpdateResults(self, results, batchNumber):
         ########################################################
@@ -321,7 +316,7 @@ class CSVManager(object):
     def MoveToCompleted(self, fileName):
         #################################################################################################
         # tick                                                                                          #
-        # pass in a file  name, move this file from the inprogress folder to the completed folder       #
+        # pass in a file  name, move this file from the in progress folder to the completed folder       #
         #################################################################################################
         originalPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
         destinationPath = os.path.abspath(self.completePath + fileName + '.csv')

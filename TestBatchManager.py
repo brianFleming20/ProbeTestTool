@@ -94,7 +94,7 @@ class BatchTests(unittest.TestCase):
         self.assertEqual(result, True)
         
         self.assertEqual(file_result, snum)
-    
+
 
 if __name__ == '__main__':
     unittest.main()

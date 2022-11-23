@@ -70,9 +70,6 @@ def minutes_in_range(file_time, probe_time):
 def check_data(folder, probe_date):
     hrs = 0
     probe_hrs = 0
-    # complete_folder = "complete"
-    # if complete_folder in folder:
-    #     complete = True
     for file_loc in os.listdir(folder):
         lines = BM.CSVM.read_all_lines(folder, file_loc)
         for batch in lines:
@@ -187,8 +184,9 @@ class RetestProbe(tk.Frame):
         self.date_finished.set("--/--/----")
         self.testers.set(DS.get_username())
         self.found = False
-        self.failed_probe = False
+        self.failed_probe = None
         self.info_canvas = None
+        self.test_finished = False
         self.scrapped = ""
         self.results.set(blank)
 
@@ -199,6 +197,8 @@ class RetestProbe(tk.Frame):
         if self.set_devices():
             P.probe_canvas(self, "\nPlease insert a failed probe.", False)
             self.check_for_probe()
+        else:
+            self.refresh_window()
 
     def set_devices(self):
         probe_port = CO.sort_probe_interface(self)
@@ -260,6 +260,7 @@ class RetestProbe(tk.Frame):
             path = filepath['File']
             inProgressPath = os.path.join(path, "in_progress", "")
             completePath = os.path.join(path, "complete", "")
+
             if self.check_folder(inProgressPath, self.probe_date, probe_type):
                 self.found_failed_probe()
                 self.found = True

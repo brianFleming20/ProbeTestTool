@@ -57,7 +57,7 @@ def ignore():
 
 BTN_WIDTH = 22
 BTN_HEIGHT = 20
-batch_qty = 100
+BATCH_QTY = 100
 
 
 class SessionSelectWindow(tk.Frame):
@@ -130,6 +130,9 @@ class SessionSelectWindow(tk.Frame):
         self.SSW_b4 = tk.Button(self, text='Admin area', background="#FFDAB9",
                              command=lambda: self.control.show_frame(AU.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(height=50, width=250, relx=0.5, rely=0.65)
+
+        tk.Button(self, text="...", background="#B1D0E0", command=self.blank).place(relx=0.2, rely=0.8)
+
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
         ################################
@@ -180,11 +183,11 @@ class SessionSelectWindow(tk.Frame):
         SM.logOut()
         self.control.show_frame(UL.LogInWindow)
 
-    # def blank(self):
-    #     probe = P.Ports(probe="COM4")
-    #     DS.write_device_to_file(probe)
-    #     tm.showinfo("test","Insert a probe to blank")
-    #     PM.blank_probe()
+    def blank(self):
+        probe = P.Ports(probe="COM4")
+        DS.write_device_to_file(probe)
+        tm.showinfo("test","Insert a probe to blank")
+        PM.blank_probe()
 
     def failed_probe(self):
         probe_port = CO.sort_probe_interface(self)
@@ -204,8 +207,9 @@ class NewSessionWindow(tk.Frame):
         self.canvas_back = None
         self.batchNumber = None
         self.probe_type = StringVar()
-        self.batchQty = 100
+        self.batchQty = BATCH_QTY
         self.control = controller
+        self.test = False
 
     def refresh_window(self):
         global batch_qty
@@ -272,8 +276,7 @@ class NewSessionWindow(tk.Frame):
         style = Style(probe_type_frame)
         style.configure("TButton", font=("arial", 14))
 
-        ttk.Label(self.canvas_qty, text=batch_qty, font=("bold", 14)).place(relx=0.75, rely=0.3, width=140,
-                                                                                anchor=N)
+        ttk.Label(self.canvas_qty, text=batch_qty, font=("bold", 14)).place(relx=0.75, rely=0.3, width=140, anchor=N)
         self.text_area.config(state=NORMAL)
         self.text_area.insert('1.0', DS.get_username().title())
         self.text_area.insert('3.3', '\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
@@ -290,15 +293,13 @@ class NewSessionWindow(tk.Frame):
         self.btn_1.config(state=NORMAL)
 
     def change_batch_qty(self, qty):
-        global batch_qty
-        batch_qty = qty
+        global BATCH_QTY
+        BATCH_QTY = qty
 
     def wait_for_response(self, master, label):
         DS.write_to_from_keys("_")
-
         while 1:
             data = DS.get_keyboard_data()
-
             if len(data) > 0 and data[-1] == "+":
                 data = data[:-1]
                 break
@@ -311,37 +312,37 @@ class NewSessionWindow(tk.Frame):
         # create new batch   #
         ######################
         batch = self.batchNumber
-        qty = self.batchQty
         user = DS.get_username()
         batch_type = self.probe_type.get()
-        check_batch = self.convert_batch_number(batch)
+        check_batch = self.convert_to_uppercase(batch)
         if not check_batch:
             self.back()
             self.refresh_window()
-        elif not self.create_new_batch(check_batch, batch_type, qty, user):
+        elif not self.create_new_batch(check_batch, batch_type, BATCH_QTY, user):
             self.canvas_back.destroy()
             self.refresh_window()
         else:
-            self.canvas_back.destroy()
-            self.control.show_frame(CO.Connection)
+            if not self.test:
+                self.connection()
+            else:
+                return True
 
-    def create_new_batch(self, batch, batch_type, qty, user):
-        newBatch = P.Batch(batch)
+    def create_new_batch(self, batch_number, batch_type, qty, user):
+        newBatch = P.Batch(batch_number)
         newBatch.probe_type = batch_type
         newBatch.batchQty = qty
-        check = True
+        check = False
         DAnswer = tm.askyesno(title='Confirm',
-                              message=f'Are batch details correct?\n\n Batch number {batch} \n Batch Qty{self.batchQty}')
+                              message=f'Are batch details correct?\n\n Batch number {batch_number} \n Batch Qty{qty}')
         if DAnswer:
             # create the batch file
             if not BM.CreateBatch(newBatch, user):
-                tm.showerror('Error', 'Batch number not unique')
-                check = False
-            return check
-        else:
-            return False
+                tm.showerror(title='Error', message='Batch number not unique')
+            else:
+                check = True
+        return check
 
-    def convert_batch_number(self, batch):
+    def convert_to_uppercase(self, batch):
         result = False
         if len(batch) < 5:
             tm.showerror(title="Batch Error", message="This batch number is not correct.")
@@ -356,11 +357,20 @@ class NewSessionWindow(tk.Frame):
     def check_batch_number(self, batch):
         check = False
         if len(batch) == 0:
-            tm.showerror("error","Enter a batch number")
-        check = [True for element in batch if element.isalpha()]
+            tm.showerror(title="error", message="Enter a batch number")
+            return check
+        # check = [True for element in batch if element.isalpha()]
+        end = batch[-1]
+        start = batch[:-1]
+        if end.isalpha() and start.isnumeric():
+            check = True
         if not check:
-            tm.showerror("Error","Batch number in-complete")
+            tm.showerror(title="Error", message="Batch number in-complete")
         return check
+
+    def connection(self):
+        self.canvas_back.destroy()
+        self.control.show_frame(CO.Connection)
 
     def back(self):
         self.canvas_type.destroy()

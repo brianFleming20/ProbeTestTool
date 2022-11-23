@@ -33,7 +33,7 @@ class PRI(object):
             self.ser.stopbits = serial.STOPBITS_ONE
             self.ser.bytesize = serial.EIGHTBITS
             self.ser.timeout = 0.25
-            self.ser.close()
+            # self.ser.close()
         except IOError:
             pass
 
@@ -215,6 +215,8 @@ class PRI(object):
         '''
         pass in hex bytes, send the whole lot down the serial port.
         '''
+        if not self.ser.isOpen():
+            self.ser.open()
         # flush the buffers
         self.ser.flush()
         self.ser.timeout = 0.2

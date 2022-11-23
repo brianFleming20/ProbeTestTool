@@ -30,7 +30,6 @@ P = Ports
 class Data_Store():
     def __init__(self):
         self.file_data = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
-        self.empty = None
     ########################
     # Main data file read  #
     ########################
@@ -101,8 +100,23 @@ class Data_Store():
 
     ############################################
 
+    def get_reset_password_name(self):
+        return self.get_user_data()['Change_password']
+
+    ############################################
+
     def get_probes_failed(self):
         return self.get_probe_data()['Failures']
+
+    #############################################
+
+    def get_monitor_setting(self):
+        return self.get_devices()['odm_active']
+
+    #############################################
+
+    def get_overwrite_setting(self):
+        return self.get_user_data()['Over_rite']
 
     #############################################
 
@@ -214,7 +228,7 @@ class Data_Store():
             with open(filepath, 'r') as load_user_file:
                 load_data = json.load(load_user_file)
         except FileNotFoundError:
-            probe_data = Ports.Probes("","",0,0)
+            probe_data = Ports.Probes("", "", 0, 0)
             self.write_probe_data(probe_data)
             return self.probe_dict(probe_data)
         else:
@@ -271,9 +285,7 @@ class Data_Store():
                 userDict = pickle.load(handle)
 
         except FileExistsError as e:
-            with open(filepath, 'w') as handle:
-                pickle.dump(handle, self.empty)
-                thisUser = False
+            pass
         else:
             for u in userDict:
                 if u == user.name:
@@ -283,7 +295,7 @@ class Data_Store():
                     thisUser = P.User(u, password, admin)
         return thisUser
 
-    def getUserList(self, ):
+    def getUserList(self ):
         '''
         tick
         returns a list of all the user objects
@@ -293,10 +305,9 @@ class Data_Store():
         try:
             with open(filepath, 'rb') as handle:
                 userDict = pickle.load(handle)
+                print(userDict)
         except FileNotFoundError:
-            with open(filepath, 'wb') as handle:
-                pickle.dump(handle, self.empty)
-                return False
+            pass
         else:
             for user in userDict:
                 password = userDict[user][0]
@@ -320,11 +331,9 @@ class Data_Store():
         try:
             with open(filepath, 'rb') as handle:
                 userDict = pickle.load(handle)
-
         except FileNotFoundError:
-            with open(filepath, 'wb') as handle:
-                userDict = {user.name: details}
-                pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            return False
+
         else:
             userDict[user.name] = details
             with open(filepath, 'wb') as handle:
@@ -340,8 +349,13 @@ class Data_Store():
         with open(filepath, 'rb') as handle:
             userDict = pickle.load(handle)
 
-        if user in userDict:
-            userDict.pop(user)
+        for usr in userDict:
+            user_obj = self.getUser(usr)
+
+        if user.name in userDict:
+            userDict.pop(user.name)
+        else:
+            return False
 
         with open(filepath, 'wb') as handle:
             pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)

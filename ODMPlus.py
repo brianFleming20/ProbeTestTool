@@ -28,6 +28,7 @@ class ODMData(object):
             self.odm_port.baudrate = '9600'
             self.odm_port.bytesize = 8
             self.odm_port.timeout = 0.1
+            return True
         except IOError:
             return False
 
@@ -50,8 +51,10 @@ class ODMData(object):
         temp = ""
         parameters = ''
         # Set up port connection
-        self.check_port_open()
-        self.odm_port.open()
+        if self.check_port_open():
+            self.odm_port.open()
+        else:
+            return False
         parameters = self.odm_port.readline()  # read line of ODM
         while sec:
             parameters = self.odm_port.readline()

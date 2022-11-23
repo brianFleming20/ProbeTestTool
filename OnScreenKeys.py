@@ -20,7 +20,6 @@ to do:
 
 import Datastore
 from tkinter import *
-from tkinter import ttk
 
 _TITLE = "This is the title"
 PTT_Version = 'self.canvasboard By Danish'  # title Name
@@ -216,6 +215,7 @@ class Keyboard():
     def press(self, num):
         if not self.shift_lock:
             self.keys = self.keys + str(num)
+            print(f"{num} : {self.keys}")
 
         else:
             cap = str(num).upper()

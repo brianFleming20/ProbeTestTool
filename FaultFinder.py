@@ -163,7 +163,7 @@ class FaultFindWindow(tk.Frame):
             status = P.Users(name, admin, plot=False)
             DS.write_user_data(status)
             self.control.attributes('-topmost', True)
-        self.cable_length_code = round(ZND.tdr(), 3)
+        self.cable_length_code = round(ZND.tdr, 3)
 
     def break_out(self):
         if DS.get_plot_status():
@@ -178,7 +178,7 @@ class FaultFindWindow(tk.Frame):
         ZND.flush_analyser_port()
         ZND.set_vna_controls()
         batch_data = DS.get_probe_data()
-        self.text_area.insert('1.0', DS.get_username())
+        self.text_area.insert('1.0', DS.get_username().title())
         self.text_area.insert('2.0', '\nCurrent batch ')
         self.text_area.insert('2.30', batch_data['Batch'])
         self.probe_type.set(batch_data['Probe_Type'])
@@ -237,21 +237,21 @@ class FaultFindWindow(tk.Frame):
         self.update_odm_data()
 
     def test_probe(self):
-        self.cable_length_code = ZND.tdr()
+        self.cable_length_code = ZND.tdr
         self.cable_code.set(round(self.cable_length_code, 3))
         fault = "Unknown"
-        self.fault_text = ["No Fault", "Unknown", "Break in Blue wire",
-                           "S/C in Red/Black wires", "S/C in Blue/Green wires",
-                           "Break in Black wire", "Break in Green wire",
+        self.fault_text = ["No Fault", "Unknown", "Break in Blue/Green wire",
+                           "Break in Red/Black wires", "Poor pass Red/Black",
+                           "Poor pass Blue/Green", "Poor pass Red/Black",
                            "Signal wires connected", "S/C Screen to Blue wire",
                            "Break in Red wire", "Crystal Fault",
                            "S/C Screen to Red wires"]
         # No Fault
-        if 0.9 < self.cable_length_code < 3.0:
+        if 0.6 < self.cable_length_code < 1.3:
             fault = self.fault_text[0]
         # # S/C Red / Black wires
-        # if 1.45 < self.cable_length_code < 1.40:
-        #     fault = self.fault_text[3]
+        # if 0.1 < self.cable_length_code < 0.9:
+        #     fault = self.fault_text[2]
         # # S/C in Blue / Green wires
         # if -0.1 < self.cable_length_code < -0.00:
         #     fault = self.fault_text[4]
@@ -261,15 +261,15 @@ class FaultFindWindow(tk.Frame):
         # # S/C Screen / Red wires
         # if 0.005 < self.cable_length_code < 0.01:
         #     fault = self.fault_text[-1]
-        # # Green wire disconnected
-        # if 0.001 < self.cable_length_code < -0.001:
-        #     fault = self.fault_text[6]
-        # # Black wire disconnected
-        # if 0.001 < self.cable_length_code < 0.003:
-        #     fault = self.fault_text[7]
-        # # Break in Blue wire
-        # if self.cable_length_code > -0.01 > self.cable_length_code:
-        #     fault = self.fault_text[5]
+        # Poor pass Red / Black
+        if 0.7 < self.cable_length_code < 2.1:
+            fault = self.fault_text[4]
+        # Poor pass Blue / Green
+        if 0.9 < self.cable_length_code < 2.6:
+            fault = self.fault_text[5]
+        # Break in Blue wire
+        if 0.04 < self.cable_length_code < 0.2:
+            fault = self.fault_text[2]
         # # Break in Red wire
         # if 1.3 < self.cable_length_code < 0.01:
         #     fault = self.fault_text[8]

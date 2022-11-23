@@ -263,9 +263,9 @@ class LogInWindow(tk.Frame):
         user_list = SM.GetUserList()
         found = False
         if not self.current_user:
-            PT.probe_canvas(self, "Enter your name to \nreset your password", False)
+            PT.P.probe_canvas(self, "Enter your name to \nreset your password", False)
             sleep(3)
-            PT.text_destroy(self)
+            PT.P.text_destroy(self)
             self.name_entry()
         for name in user_list:
             if name.name == self.current_user:
@@ -277,10 +277,9 @@ class LogInWindow(tk.Frame):
             self.canvas_go()
             self.control.show_frame(AU.ChangePasswordWindow)
         else:
-            PT.probe_canvas(self, "Your name is not registered.", False)
+            PT.P.probe_canvas(self, "Your name is not registered.", False)
             sleep(3)
-            PT.text_destroy(self)
-
+            PT.P.text_destroy(self)
 
     def yes_answer(self):
         pass

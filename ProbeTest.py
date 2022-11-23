@@ -54,8 +54,8 @@ w = 800  # window width
 h = 600  # window height
 LARGE_FONT = ("Verdana", 14)
 BTN_WIDTH = 30
-LOWER_LIMIT = 1.8
-UPPER_LIMIT = 4.5
+LOWER_LIMIT = 0.0
+UPPER_LIMIT = 2.5
 KDP_UPPER = 3.0
 
 warning_text = {
@@ -86,8 +86,9 @@ analyser = False
 
 def perform_probe_test():
     global analyser
-    marker = ZND.tdr()
+    marker = round(ZND.tdr(), 3)
     top_limit = UPPER_LIMIT
+    print(marker)
     if DS.get_probe_data()['Probe_Type'] == "KDP72":
         top_limit = KDP_UPPER
     if PM.ProbePresent():
@@ -144,6 +145,7 @@ class TestProgramWindow(tk.Frame):
         self.info_canvas = None
         self.test = False
         self.serial_number = None
+        self.reset_ana = None
         self.file_data = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
 
         ###############################################################
@@ -186,8 +188,9 @@ class TestProgramWindow(tk.Frame):
             relx=0.73, rely=0.2, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.device_details, relief=SUNKEN,
                   width=30).place(relx=0.7, rely=0.25, anchor='w')
-        Button(self.canvas_back, text="Reset Analyser", background="#FF731D",
-               command=self.reset_analyser).place(relx=0.85, rely=0.23)
+        self.reset_ana = Button(self.canvas_back, text="Reset Analyser", background="#FF731D", font=('Arial', 12),
+               command=self.reset_analyser)
+        self.reset_ana.place(relx=0.85, rely=0.23)
         ttk.Label(self.canvas_back, textvariable=self.odm_details, relief=SUNKEN,
                   width=30).place(relx=0.7, rely=0.30, anchor='w')
         ttk.Label(self.canvas_back, text="Data from ODM", background=self.back_colour, font=("Courier", 14)).place(
@@ -255,18 +258,8 @@ class TestProgramWindow(tk.Frame):
         self.control.show_frame(RT.RetestProbe)
 
     def reset_analyser(self):
-        return ZND.reset_vna()
-
-    def cmplt_btn_clicked(self):
-        if self.get_probes_left():
-            current_batch = DS.get_current_batch()
-            complete = BM.CompleteBatch(current_batch)
-            self.canvas_back.destroy()
-            self.control.show_frame(SE.SessionSelectWindow)
-            return complete
-        ###########################################################
-        # Suspend button detected pressed                         #
-        ###########################################################
+        if ZND.reset_vna():
+            self.reset_ana.config(background="#82CD47")
 
     def suspnd_btn_clicked(self):
         self.session_on_going = False
@@ -276,10 +269,8 @@ class TestProgramWindow(tk.Frame):
             DS.write_probe_data(probe_data)
             BM.SuspendBatch(self.current_batch.get())
             self.canvas_back.destroy()
-            try:
+            if not self.test:
                 self.control.show_frame(SE.SessionSelectWindow)
-            except:
-                pass
         else:
             self.session_on_going = True
             self.wait_for_probe()
@@ -309,7 +300,7 @@ class TestProgramWindow(tk.Frame):
         self.display_layout()
         self.session_on_going = True
         current_user = DS.get_username().title()
-        self.user_admin = DS.get_user_data()['Over_rite']
+        # self.user_admin = DS.get_user_data()['Over_rite']
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
         current_batch = DS.get_current_batch()
@@ -334,8 +325,7 @@ class TestProgramWindow(tk.Frame):
         # Display to screen the probe over-write status             #
         #############################################################
     def set_reprogram_status(self):
-        over_write = DS.get_user_data()['Over_rite']
-        if self.user_admin and over_write:
+        if self.user_admin and self.check_overwrite():
             self.display_message(warning_text["overrite on"])
         else:
             self.display_message(warning_text["overrite off"])
@@ -351,6 +341,9 @@ class TestProgramWindow(tk.Frame):
             return False
         else:
             return True
+
+    def check_overwrite(self):
+        return DS.get_user_data()['Over_rite']
 
         ##############################################
         # Show if the external devices are connected #
@@ -395,11 +388,14 @@ class TestProgramWindow(tk.Frame):
         #                     Main loop                                #
         ################################################################
     def wait_for_probe(self):
-        self.test = False
+        # self.test = False
+        if self.get_probes_left():
+            self.session_on_going = False
+            self.session_complete = True
         while self.session_on_going:
-            if self.get_probes_left():
-                self.session_on_going = False
-                self.session_complete = True
+            # if self.get_probes_left():
+            #     self.session_on_going = False
+            #     self.session_complete = True
             self.show_gray_light()
             Tk.update(self)
             if self.check_probe_present():
@@ -418,7 +414,7 @@ class TestProgramWindow(tk.Frame):
         if self.session_complete and not self.check_probe_present():
             if self.get_probes_left():
                 P.probe_canvas(self, f"{warning_text['7']} {warning_text['8']}", False)
-                time.sleep(1.8)
+                time.sleep(2)
                 P.text_destroy(self)
                 self.complete_batch()
 
@@ -427,7 +423,7 @@ class TestProgramWindow(tk.Frame):
         found, sn = detect_recorded_probe() # Detect if probe has serial number and where from
         if not sn:
             pass
-        elif current_batch != found and not DS.get_user_data()['Over_rite']:
+        elif current_batch != found and not self.check_overwrite():
             P.probe_canvas(self, f"Batch number {found} error\n\ndoes not match current\n\nbatch number {current_batch}",
                            True)
             return False
@@ -486,6 +482,7 @@ class TestProgramWindow(tk.Frame):
             if non_human: # Check for non-human probe selected
                 serial_num = f"Animal-{serial_num[4:]}" # Records the non-human serial number as a failure
             failed += 1
+
             ##################################################
             # Notify the user that a probe has failed.       #
             ##################################################
@@ -506,7 +503,8 @@ class TestProgramWindow(tk.Frame):
             self.show_green_image()
             Tk.update(self)
         else:
-            self.show_red_light()
+            if not self.test:
+                self.show_red_light()
             Tk.update(self)
         #########################################################
         # Whatever the probe test outcome, the results are sent #
@@ -522,7 +520,8 @@ class TestProgramWindow(tk.Frame):
                                   failed=failed)
             DS.write_probe_data(probe_data)
         self.remove_probe()
-        self.show_gray_light() # Reset light show
+        if not self.test:
+            self.show_gray_light() # Reset light show
         return failure
 
     def save_probe_data(self, batch, failure):
@@ -571,7 +570,7 @@ class TestProgramWindow(tk.Frame):
         #################################################
 
     def program_probe(self, probe_type, test):
-        self.programmed = True
+        programmed = True
         fail_message = "Chip fault"
         self.action.set(warning_text["9"])
         self.serial_number = PM.ProgramProbe(probe_type, test)
@@ -583,9 +582,9 @@ class TestProgramWindow(tk.Frame):
             P.probe_canvas(self, f"{warning_text['13']} {warning_text['12']} ", False)
             time.sleep(1.8)
             P.text_destroy(self)
-            self.programmed = False
+            programmed = False
             Tk.update(self)
-        if self.programmed:
+        if programmed:
             self.action.set(warning_text['15'])
             Tk.update(self)
             return self.serial_number
@@ -597,7 +596,6 @@ class TestProgramWindow(tk.Frame):
         ##########################################################
 
     def over_write_probe(self, current_batch, probe_type):
-        self.programmed = True
         self.info_canvas = None
         over_write = False
         if probe_programmed() and PM.ProbePresent():
@@ -613,11 +611,11 @@ class TestProgramWindow(tk.Frame):
             time.sleep(2)
             P.text_destroy(self)
 
-        if DS.get_user_data()['Over_rite']:
+        if self.check_overwrite():
             ###############################################
             # ask for user input to reprogramme the probe #
             ###############################################
-            if self.programmed and tm.askyesno(title=warning_text["2"], message=warning_text['3']):
+            if tm.askyesno(title=warning_text["2"], message=warning_text['3']):
                 if self.do_test_and_programme(current_batch, probe_type):
                     pass
                 else:
@@ -649,7 +647,8 @@ class TestProgramWindow(tk.Frame):
         DS.write_probe_data(probe_data)
         self.session_on_going = False
         self.canvas_back.destroy()
-        self.control.show_frame(FF.FaultFindWindow)
+        if not self.test:
+            self.control.show_frame(FF.FaultFindWindow)
 
         ##################################
         # Show probe state to user       #
@@ -753,15 +752,8 @@ class TestProgramWindow(tk.Frame):
     def update_results(self, results, snum, odm_data, batch, marker):
         data_list_to_file = []
         odm_to_file = "ODM not used"
-        if DS.get_devices()['odm_active'] and self.programmed:
+        if DS.get_devices()['odm_active']:
             odm_to_file = str(odm_data[9])
-        # probes_left = self.left_to_test.get() - 1
-        # if probes_left < 0:
-        #     pass
-        # probes_passed = self.probes_passed.get() + 1
-        # self.left_to_test.set(probes_left)
-        # self.probes_passed.set(probes_passed)
-        # Tk.update(self)
         data_list_to_file.append(batch)  # by pass the batch number column
         data_list_to_file.append(snum)  # insert serial number
         data_list_to_file.append(self.probe_type.get())
@@ -778,7 +770,7 @@ class TestProgramWindow(tk.Frame):
                          current_batch, DS.get_probes_failed(), self.probes_passed.get())
         BM.CompleteBatch(current_batch)
         self.canvas_back.destroy()
-        self.control.show_frame(SE.SessionSelectWindow)
+        self.to_sessions_window()
 
     def yes_answer(self):
         self.info_canvas = True
@@ -790,3 +782,10 @@ class TestProgramWindow(tk.Frame):
 
     def do_reflection_test(self):
         return True
+
+    def to_sessions_window(self):
+        if not self.test:
+            self.control.show_frame(SE.SessionSelectWindow)
+
+    def set_test_flag(self):
+        self.test = True
