@@ -21,7 +21,7 @@ TEST_CABLE = 0.59
 BLANK_PROBE = 52140318.610617355
 
 
-class NanoZND(object):
+class NanoZND():
     '''
     Handles VNA operations. Primarily: configuring, refreshing traces and retrieving trace values
     '''

@@ -48,18 +48,18 @@ def ignore():
 
 def sort_probe_interface(self):
     # Tests the probe interface connection
-
-    probe = PF.check_probe_connection()
-    if probe:
-        self.probe_working = True
-    else:
-        probe = "Not connected"
-        self.probe_working = False
+    probe = False
     try:
-        self.probe.set(probe)
-    except:
+        probe = PF.check_probe_connection()
+    except IOError:
         pass
-
+    else:
+        if probe:
+            self.probe_working = True
+        else:
+            probe = "Not connected"
+            self.probe_working = False
+            self.probe.set(probe)
     return probe
 
 
@@ -110,9 +110,9 @@ class Connection(tk.Frame):
         self.text_area.insert('1.0', "\nPlease continue to the next screen..")
 
     def refresh_window(self):
-        self.probe.set("")
-        self.odm.set("")
-        self.znd.set("")
+        self.probe.set("---")
+        self.odm.set("---")
+        self.znd.set("---")
 
         analyser_port = self.sort_znd_interface()
 
@@ -131,24 +131,20 @@ class Connection(tk.Frame):
 
         self.test_connections()
 
-
     def sort_znd_interface(self):
         # Tests the analyser interface connection
-
         read1 = check_analyser()
         if not read1:
             tm.showerror(title="Connection Error",message="Check connected devices are switched on.")
             self.to_sessions()
-
         self.znd.set(read1)
         self.znd_working = True
-
         return read1
 
     def sort_odm_interface(self):
         # Tests the ODM monitor interface connection
-
-        if DS.get_devices()['odm_active']:
+        port = None
+        if DS.get_monitor_setting():
             port = ODM.check_odm_port()
             if port:
                 self.monitor_working = True
@@ -157,8 +153,9 @@ class Connection(tk.Frame):
                 self.monitor_working = False
                 # port = "Monitor not in use"
                 port = False
-                self.odm.set("Monitor not is use")
-            return port
+        else:
+            self.odm.set("Monitor not is use")
+        return port
 
     def test_connections(self):
         if self.probe_working and self.znd_working:

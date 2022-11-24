@@ -4,6 +4,7 @@ import Datastore
 import ProbeInterface
 import ODMPlus
 import NanoZND
+import Ports
 import tkinter as tk
 
 CO = Connection
@@ -11,6 +12,7 @@ DS = Datastore.Data_Store()
 PI = ProbeInterface.PRI()
 ODM = ODMPlus.ODMData()
 ZND = NanoZND.NanoZND()
+P = Ports
 
 
 class ConnectionTests(unittest.TestCase):
@@ -19,101 +21,74 @@ class ConnectionTests(unittest.TestCase):
         self.parent = tk.Tk()
         self.controller = tk.Tk()
         self.CO = CO.Connection(self.parent, self.controller)
-        
-        
+
     # Check the probe check from connection class
     def test_probe_connection(self):
-        print("Test the connection class")
+        print("Test the probe port number")
+        expected = "COM4"
+        probe_port = PI.check_probe_connection()
+        self.assertEqual(probe_port, expected)
 
-        expected_ports = "COM4"
-        
-        read3 = self.CO.refresh_window()
-        
-        self.assertEqual(read3, expected_ports)
-        
-        
-     
-        
-    # detect the port number of the ODM monitor.
-    def test_detect_ODM_monitor(self):
-        print("Detect ODM")
-        
-        expected_port = "COM5"
-        
-        ODM.get_odm_port("COM5")
-        
-        port = ODM.get_port_obj()
-        
-        result = port.port
-        
-        self.assertEqual(result, expected_port)
-        
-        
     # accept data from ODM.
     def test_show_data_ODM(self):
-        print("Show ODM data")
+        print("Test ODM port number")
+        expected = "COM5"
+        odm_port = ODM.check_odm_port()
+        self.assertEqual(odm_port, expected)
 
-        while len(ODM.ReadSerialODM()) < 5:
-            data = ODM.ReadSerialODM()
-            print(data)
-        data = ODM.ReadSerialODM()
-        
-        print(f"ODM data {data}")
-        
-        result = len(data)
-        
-        self.assertGreater(result, 0)
-        
-        
-    #  cable length from the NanoVNA external device.
-    # def test_cable_length(self):
-    #     print("Show cable length")
-
-    #     ZND.NanoZND()
-        
-    #     length = ZND.NanoZND.tdr(self)
-        
-    #     result = len(length)
-        
-    #     self.assertGreater(result, 0)
-    # To be tested in the probe tests
-        
-        
-        
     # Prove NanoZND device connection
     def test_znd_connection(self):
-        print("Prove ZND connection")
+        print("Test the analyser port number")
+        analyser = "COM3"
+        analyser_port = ZND.get_vna_check()
+        self.assertEqual(analyser_port, analyser)
 
-        expected_ports = "COM3"
-        
-        read3 = self.CO.sort_znd_interface()
-        
-        self.assertEqual(read3, expected_ports)
-        
-        
-        
-        
     # record external device port to file.
     def test_ports_to_file(self):
         print("Record ports to file")
-        
-        expected_probe_port = "COM3"
-        expected_odm_port = "COM5"
-        expected_znd_port = "COM4"
+        probe = "COM4"
+        ODM = "COM5"
+        analyser = "COM3"
+        move = "Not Used"
+        ports = P.Ports(odm=ODM, probe=probe, analyer=analyser, move=move)
+        DS.write_device_to_file(ports)
 
-        ports = DS.get_devices()
-        print(ports)
-        probe_result = ports['Probe']
-        odm_result = ports['ODM']
-        znd_result = ports['Analyser']
-        
-        self.assertEqual(probe_result, expected_probe_port)
-        self.assertEqual(odm_result, expected_odm_port)
-        self.assertEqual(znd_result, expected_znd_port)
-    
-    
-    
-    
-    
+        devices = DS.get_devices()
+        probe_check = devices['Probe']
+        self.assertEqual(probe_check, probe)
+
+        odm_check = devices['ODM']
+        self.assertEqual(odm_check, ODM)
+
+        analyser_check = devices['Analyser']
+        self.assertEqual(analyser_check, analyser)
+
+        move_check = devices['Move']
+        self.assertEqual(move_check, move)
+
+        active = devices['odm_active']
+        self.assertTrue(active)
+
+        set_active = P.Ports(active=False)
+        DS.write_device_to_file(set_active)
+        get_active = DS.get_devices()['odm_active']
+        self.assertFalse(get_active)
+
+    def test_check_ports_from_connection(self):
+        print("Check ports from the connection window")
+        # probe connection test
+        expected_probe = "COM4"
+        expected_analyser = "COM3"
+        expected_odm = "COM5"
+        result_probe = CO.sort_probe_interface(self)
+        self.assertEqual(expected_probe, result_probe)
+
+        result_analyser = self.CO.sort_znd_interface()
+        self.assertEqual(expected_analyser, result_analyser)
+
+        result_odm = self.CO.sort_odm_interface()
+        self.assertEqual(expected_odm, result_odm)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -93,12 +93,12 @@ class RetestTests(unittest.TestCase):
             in_selected = [item[0] for item in inprog_line if item[1] == sn]
             batch = in_selected[0]
             folder = "In-progress"
-        print(f"probe data {batch} : {folder} : {sn}")
+
         self.assertEqual(batch, self.batch)
         fail_text = "<-Scrapped"
         mb.showinfo(title="Probe Test", message="Insert a failed probe")
         serial_num = PM.ProgramProbe(self.probe_type2, False)
-        print(serial_num)
+
         # batch_data.append(self.batch2)
         # batch_data.append(serial_num)
         # batch_data.append(self.probe_type2)

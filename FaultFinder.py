@@ -163,7 +163,7 @@ class FaultFindWindow(tk.Frame):
             status = P.Users(name, admin, plot=False)
             DS.write_user_data(status)
             self.control.attributes('-topmost', True)
-        self.cable_length_code = round(ZND.tdr, 3)
+        self.cable_length_code = round(ZND.tdr(), 3)
 
     def break_out(self):
         if DS.get_plot_status():
@@ -203,10 +203,12 @@ class FaultFindWindow(tk.Frame):
         self.display()
         self.plot_text.set("OFF")
         while PM.ProbePresent():
-            self.read_probe_number.set(PM.read_serial_number())
+            self.read_probe_number.set(self.get_probe_serial_number())
             self.fault_find_probe()
-
         self.break_out()
+
+    def get_probe_serial_number(self):
+        return PM.read_serial_number()
 
     def update_odm_data(self):
         if DS.get_devices()['odm_active']:
@@ -237,7 +239,7 @@ class FaultFindWindow(tk.Frame):
         self.update_odm_data()
 
     def test_probe(self):
-        self.cable_length_code = ZND.tdr
+        self.cable_length_code = ZND.tdr()
         self.cable_code.set(round(self.cable_length_code, 3))
         fault = "Unknown"
         self.fault_text = ["No Fault", "Unknown", "Break in Blue/Green wire",
