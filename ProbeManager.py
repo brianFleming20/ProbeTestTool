@@ -58,6 +58,8 @@ class ProbeManager(object):
             else:
                 PF.probe_write(probeData)
                 return self.read_serial_number()
+        else:
+            return False
 
     def test_chip(self):
         check = True
@@ -68,9 +70,17 @@ class ProbeManager(object):
         ################################################
         blank_data = self.PD.GenerateDataString("blank", True)
         PF.probe_write(blank_data)
-        result = str(PF.read_all_bytes())
-        for num in result:
+        result0 = str(PF.read_all_bytes())
+        if len(result0) == 0:
+            check = False
+        for num in result0:
             if not num == '0':
+                check = False
+        blank_data = self.PD.GenerateDataString("ones", True)
+        PF.probe_write(blank_data)
+        result1 = str(PF.read_all_bytes())
+        for num in result1:
+            if not num == '1':
                 check = False
         return check
 
@@ -108,7 +118,7 @@ class ProbeManager(object):
     def construct_new_serial_number(self, serial_number):
         converted = self.PD.convert_to_hex(serial_number)
         data = self.PD.create_serial_data(converted)
-        PF.probe_write(data)
+        return PF.probe_write(data)
 
     def blank_probe(self):
         data = self.PD.GenerateDataString("blank", True)

@@ -58,19 +58,20 @@ class ProbeTests(unittest.TestCase):
 
     # Detect an inserted probe
     def test_inserted_probe_detected(self):
-        expected_result_probe_out = False
-        expected_result_probe_in = True
+
         # Test the bits for a probe has been inserted #
-        result_probe_out = self.PT.check_probe_present()
-        self.assertEqual(result_probe_out, expected_result_probe_out)
         mb.showinfo(title="Probe test", message="Insert a probe ")
         result_probe_in = self.PT.check_probe_present()
-        self.assertEqual(result_probe_in, expected_result_probe_in)
+        self.assertTrue(result_probe_in)
+
         mb.showinfo(title="Probe test", message="Remove the probe")
+        result_probe_out = self.PT.check_probe_present()
+        self.assertFalse(result_probe_out)
 
     def test_detect_programmed_probe_passed(self):
         print("Detect a programmed pass probe")
         mb.showinfo(title="Probe test", message="Insert a programmed passed probe")
+        self.PT.set_test_flag()
         expected = False
         result = self.PT.program_blank_probe()
         self.assertEqual(expected, result)
@@ -81,6 +82,7 @@ class ProbeTests(unittest.TestCase):
         newBatch = "7733A"
         probe_type = "I2C"
         batchQty = 0
+        self.PT.set_test_flag()
         inProgressPath = os.path.join(self.path, "in_progress", "")
         completePath = os.path.join(self.path, "complete", "")
         probe_data = P.Probes(probe_type, newBatch, 95, batchQty)
@@ -103,6 +105,7 @@ class ProbeTests(unittest.TestCase):
     def test_detect_a_passed_probe(self):
         print("Detect a analyser passed probe, tested")
         mb.showinfo(title="Probe test", message="Insert a probe to pass")
+        self.PT.set_test_flag()
         result, one, two = self.PT.test_probe()
         self.assertTrue(result)
 
@@ -129,7 +132,6 @@ class ProbeTests(unittest.TestCase):
         print("Test failed probe")
         expected_fail = False
         result_fail = self.PT.do_test_and_programme(self.batch, self.type)
-        print(result_fail)
         self.assertEqual(result_fail, expected_fail)
 
     # Suspend a batch
@@ -160,7 +162,6 @@ class ProbeTests(unittest.TestCase):
         probe_date = sn[8:]
         inProgressPath = os.path.join(self.path, "in_progress", "")
         result = self.RT.check_folder(inProgressPath, probe_type, probe_date)
-        print(f"result {result}")
         self.assertFalse(result)
 
     # Check reduce batch qty after passed probe
@@ -202,7 +203,7 @@ class ProbeTests(unittest.TestCase):
         #######################################
         last_line_pass = BM.CSVM.ReadLastLine(self.batch, False)
         print(last_line_pass)
-        mb.showinfo(title="Probe test", message="Remove the probe")
+        mb.showinfo(title="Probe test", message="Remove test probe")
         ####################################
         # check for failed probe           #
         # test for passed probes stay same #
@@ -226,11 +227,13 @@ class ProbeTests(unittest.TestCase):
     # Detect a non-human probe
     def test_non_human_probe(self):
         print("Test non human probe save to file test with passed probe")
-        user = P.Users("Brian", True, non_human=True)
-        DS.write_user_data(user)
+        animal_probe = DS.get_animal_probe()
+        if not animal_probe:
+            user = P.Users("Brian", True, non_human=True)
+            DS.write_user_data(user)
         batch = "12345H"
         expected = "Animal Probe"
-        mb.showinfo(title="test", message="Insert a passed probe")
+        mb.showinfo(title="test", message="Insert a passed probe for animal")
         self.PT.do_test_and_programme(batch, "DP12")
 
         data_line = BM.CSVM.ReadLastLine(batch, False)
@@ -276,7 +279,7 @@ class ProbeTests(unittest.TestCase):
     # Record a successfully repaired probe
     def test_pass_probe(self):
         print("Detect a passed probe")
-        mb.showinfo(title="Probe Test", message="Insert probe repaired")
+        mb.showinfo(title="Probe Test", message="Insert failed probe for repair")
         fail_text = "Fail"
         check = False
         check_for_fault = PM.read_serial_number()
@@ -333,6 +336,14 @@ class ProbeTests(unittest.TestCase):
         result = PT.perform_probe_test()
         self.assertGreater(result, limit_lower)
         self.assertGreater(limit_upper, result)
+
+    def test_bad_chip(self):
+        print("Test for bad chip")
+        expected = False
+        mb.showinfo(title="Probe Test", message="Insert a known bad chip probe")
+        check = PM.ProgramProbe(self.type, True)
+        self.assertEqual(expected, check)
+
 
     # Reflection test
     def test_reflection_test(self):

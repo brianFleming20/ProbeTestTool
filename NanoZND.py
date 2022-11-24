@@ -50,7 +50,6 @@ class NanoZND(object):
         return self.ser_ana
 
     def check_port_open(self):
-        print("Check analyser")
         if self.ser_ana is None:
             self.get_serial_port()
             # print(self.ser_ana)
@@ -144,7 +143,6 @@ class NanoZND(object):
     def tdr(self):
         # found in https://zs1sci.com/blog/nanovna-tdr/
         self.get_serial_port()
-        print("Analyser start")
         self.set_vna_controls()
         # self.ser_ana.isOpen()
         if not self.ser_ana.isOpen():
@@ -154,9 +152,7 @@ class NanoZND(object):
                 pass
 
         if not self.ser_ana.isOpen():
-            print(self.ser_ana)
             mb.showinfo(title="Analyser", message="Ensure the analyser is turned on.")
-            print("Finish check")
 
         self.send_data("marker 3\r")
         marker = self.ReadAnalyserData().split(' ')

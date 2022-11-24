@@ -444,7 +444,7 @@ class ContinueSessionWindow(tk.Frame):
         lstid = self.sessionListBox.curselection()
         if len(lstid) != 0:
             lstBatch = self.sessionListBox.get(lstid[0])
-            batch = BM.GetBatchObject(lstBatch)
+            batch = BM.GetBatchObject(lstBatch, False)
             probe_data = P.Probes(batch[2], batch[0], 0, int(batch[3]))
             DS.write_probe_data(probe_data)
 
@@ -474,7 +474,7 @@ class ContinueSessionWindow(tk.Frame):
         # get batch type from the batch number #
         # of probe serial number from file     #
         ########################################
-        batch_line = BM.GetBatchObject(item)
+        batch_line = BM.GetBatchObject(item, False)
 
         return batch_line[2]
 

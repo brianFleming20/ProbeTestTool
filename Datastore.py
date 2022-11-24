@@ -120,6 +120,11 @@ class Data_Store():
 
     #############################################
 
+    def get_animal_probe(self):
+        return self.get_user_data()['Non_Human']
+
+    #############################################
+
     def device_locations(self, data):
         devices = {
             "ODM": data.ODM,

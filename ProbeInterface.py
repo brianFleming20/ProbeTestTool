@@ -133,13 +133,15 @@ class PRI(object):
         '''
         pass in a list of bytes, writes a byte at a time to the probe
         '''
+        result = False
         self.get_serial_port()
         if not self.ser.isOpen():
             self.ser.open()
         for item in data:
-            self.send_data(item)
+            result = self.send_data(item)
             time.sleep(0.05)
         self.ser.close()
+        return result
 
     def read_all_bytes(self):
         '''
@@ -221,7 +223,7 @@ class PRI(object):
         self.ser.flush()
         self.ser.timeout = 0.2
         # convert the input to ASCII characters and send it
-        self.ser.write(codecs.decode(data, "hex_codec"))
+        return self.ser.write(codecs.decode(data, "hex_codec"))
 
 
     def read_data(self):
