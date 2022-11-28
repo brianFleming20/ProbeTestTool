@@ -40,13 +40,9 @@ P = Ports
 RT = RetestProbe
 
 
-def ignore():
-    return 'break'
-
-
 BTN_WIDTH = 25
 
-REF_LEVEL = (1 << 9)
+# REF_LEVEL = (1 << 9)
 
 
 class FaultFindWindow(tk.Frame):
@@ -239,45 +235,37 @@ class FaultFindWindow(tk.Frame):
         self.update_odm_data()
 
     def test_probe(self):
-        self.cable_length_code = ZND.tdr()
-        self.cable_code.set(round(self.cable_length_code, 3))
+        cable = self.get_cable_length()
+        self.cable_code.set(round(cable, 3))
         fault = "Unknown"
-        self.fault_text = ["No Fault", "Unknown", "Break in Blue/Green wire",
-                           "Break in Red/Black wires", "Poor pass Red/Black",
-                           "Poor pass Blue/Green", "Poor pass Red/Black",
-                           "Signal wires connected", "S/C Screen to Blue wire",
-                           "Break in Red wire", "Crystal Fault",
-                           "S/C Screen to Red wires"]
+        probe_passed = "No Fault"
+        # self.fault_text = ["No Fault", "Unknown", "Break in Blue/Green wire",
+        #                    "Break in Red/Black wires", "Poor pass Red/Black",
+        #                    "Poor pass Blue/Green", "Poor pass Red/Black",
+        #                    "Signal wires connected", "S/C Screen to Blue wire",
+        #                    "Break in Red wire", "Crystal Fault",
+        #                    "S/C Screen to Red wires"]
+        fault_fails = [
+            {(0.6, 0.8): "Break in Blue / Green wire"},
+            {(2.8, 5.0): "Short circuit in crystal"},
+            {(0.01, 0.1): "Open circuit Black / Blue wire"},
+            {(0.1, 0.4): "Crystal fault"},
+            {(0.4, 0.5): "S/C  to screen"}
+        ]
         # No Fault
-        if 0.6 < self.cable_length_code < 1.3:
-            fault = self.fault_text[0]
-        # # S/C Red / Black wires
-        # if 0.1 < self.cable_length_code < 0.9:
-        #     fault = self.fault_text[2]
-        # # S/C in Blue / Green wires
-        # if -0.1 < self.cable_length_code < -0.00:
-        #     fault = self.fault_text[4]
-        # # S/C Screen / Blue wire
-        # if 1.175 < self.cable_length_code < 1.19:
-        #     fault = self.fault_text[8]
-        # # S/C Screen / Red wires
-        # if 0.005 < self.cable_length_code < 0.01:
-        #     fault = self.fault_text[-1]
-        # Poor pass Red / Black
-        if 0.7 < self.cable_length_code < 2.1:
-            fault = self.fault_text[4]
-        # Poor pass Blue / Green
-        if 0.9 < self.cable_length_code < 2.6:
-            fault = self.fault_text[5]
-        # Break in Blue wire
-        if 0.04 < self.cable_length_code < 0.2:
-            fault = self.fault_text[2]
-        # # Break in Red wire
-        # if 1.3 < self.cable_length_code < 0.01:
-        #     fault = self.fault_text[8]
-        # # Crystal fault
-        if 000 < self.cable_length_code < 0.002:
-            fault = self.fault_text[10]
+        upper = self.get_lower_limit()
+        lower = self.get_upper_limit()
+        if lower < cable < upper:
+            fault = probe_passed
+
+        for items in fault_fails:
+            data = list(items.keys())[0]
+            lower_data = float(data[0])
+            upper_data = float(data[1])
+            val = list(items.values())[0]
+            if lower_data < cable < upper_data:
+                fault = val
+            print(f" {lower_data} - {upper_data} : {val}")
         return fault
 
     def yes_answer(self):
@@ -285,3 +273,12 @@ class FaultFindWindow(tk.Frame):
 
     def no_answer(self):
         self.info_canvas = False
+
+    def get_cable_length(self):
+        return ZND.tdr()
+
+    def get_upper_limit(self):
+        return PT.UPPER_LIMIT
+
+    def get_lower_limit(self):
+        return PT.LOWER_LIMIT
