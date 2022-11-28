@@ -108,7 +108,6 @@ class NanoZND():
             if line:
                 x.extend([float(d) for d in line.strip().split(' ')])
         s11_result = np.array(x[0::2])
-
         return s11_result
 
     def set_vna_controls(self):
@@ -125,12 +124,18 @@ class NanoZND():
         self.send_data("\r\n\r\n")  # flush serial port
         self.ser_ana.close()  # close
 
-    def get_marker(self):
+    def get_marker3(self):
         if not self.ser_ana.isOpen():
             self.ser_ana.open()
         self.send_data("marker 3\r")
         data = self.ReadAnalyserData()
+        return data
 
+    def get_marker1(self):
+        if not self.ser_ana.isOpen():
+            self.ser_ana.open()
+        self.send_data("marker 1\r")
+        data = self.ReadAnalyserData()
         return data
 
     def reset_vna(self):
@@ -144,7 +149,6 @@ class NanoZND():
         # found in https://zs1sci.com/blog/nanovna-tdr/
         self.get_serial_port()
         self.set_vna_controls()
-        # self.ser_ana.isOpen()
         if not self.ser_ana.isOpen():
             try:
                 self.ser_ana.open()
@@ -153,10 +157,10 @@ class NanoZND():
 
         if not self.ser_ana.isOpen():
             mb.showinfo(title="Analyser", message="Ensure the analyser is turned on.")
+        marker3 = int(self.get_marker3().split()[2])
+        marker1 = int(self.get_marker1().split()[2])
 
-        self.send_data("marker 3\r")
-        marker = self.ReadAnalyserData().split(' ')
-        marker_int = int(marker[2])
+        marker_total = marker1 - marker3
         raw_points = 101
         NFFT = 16384
         PROPAGATION_SPEED = 78.6  # For RG58U
@@ -164,26 +168,23 @@ class NanoZND():
         _prop_speed = PROPAGATION_SPEED / 100
         s11 = self.fetch_s11()
         # Read skrf docs
-        step = abs(s11[2] - s11[1])
+        # step = abs(s11[2] - s11[1])
+        step = marker_total
         window = np.blackman(raw_points)
         s11 = window * s11
         td = np.abs(np.fft.ifft(s11, NFFT))
+
         # Calculate maximum time axis
-        t_axis = np.linspace(0, 1 / step, NFFT)
+        t_axis = np.linspace(0, 1/step, NFFT)
         d_axis = speed_of_light * _prop_speed * t_axis
-
-        # find the peak and distance
         pk = np.max(td)
-        idx_pk = np.where(td == pk)[0]
-        cable_len = d_axis[1:][idx_pk[0]] / 2
-
+        # idx_pk = np.where(td == pk)[0]
+        # cable_len = d_axis[1:][idx_pk[0]] / 2
         #################################################
         # Probe value code calculated from length       #
         # divided by a blank probe value reading        #
         #################################################
-        # print(cable_len / marker_int)
-        cable_code1 = BLANK_PROBE / cable_len
-        cable_code = marker_int / cable_len
+        cable_code = (abs(1/pk) / 2) - 195.9
         td_10 = td * 1000
         plt.grid(True)
         show = DS.get_plot_status()

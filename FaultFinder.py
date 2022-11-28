@@ -65,6 +65,7 @@ class FaultFindWindow(tk.Frame):
         self.FTc_data = IntVar()
         self.PV_data = IntVar()
         self.wait_for_test = True
+        self.test = False
         self.user_admin = DS.user_admin_status()
         self.analyser_port = DS.get_devices()['Analyser']
         self.cable_length_code = 0
@@ -236,16 +237,27 @@ class FaultFindWindow(tk.Frame):
 
     def test_probe(self):
         cable = self.get_cable_length()
-        self.cable_code.set(round(cable, 3))
+        self.cable_code.set(cable)
         fault = "Unknown"
-        probe_passed = "No Fault"
+        # probe_passed = "No Fault"
+        upper = self.get_lower_limit()
+        lower = self.get_upper_limit()
         # self.fault_text = ["No Fault", "Unknown", "Break in Blue/Green wire",
         #                    "Break in Red/Black wires", "Poor pass Red/Black",
         #                    "Poor pass Blue/Green", "Poor pass Red/Black",
         #                    "Signal wires connected", "S/C Screen to Blue wire",
         #                    "Break in Red wire", "Crystal Fault",
         #                    "S/C Screen to Red wires"]
+        ############################################################
+        # Adjusting the limits for each of the failure types could #
+        # be achieved by using the lower and upper limits with a   #
+        # calculation on each fault required to find.              #
+        # These parameters can be inserted into the Admin screen   #
+        # to be adjusted from there. The limits would have to be   #
+        # recorded in the system data sets.                        #
+        ############################################################
         fault_fails = [
+            {(lower, upper): "No Fault"},
             {(0.6, 0.8): "Break in Blue / Green wire"},
             {(2.8, 5.0): "Short circuit in crystal"},
             {(0.01, 0.1): "Open circuit Black / Blue wire"},
@@ -253,11 +265,8 @@ class FaultFindWindow(tk.Frame):
             {(0.4, 0.5): "S/C  to screen"}
         ]
         # No Fault
-        upper = self.get_lower_limit()
-        lower = self.get_upper_limit()
-        if lower < cable < upper:
-            fault = probe_passed
-
+        # if lower < cable < upper:
+        #     fault = probe_passed
         for items in fault_fails:
             data = list(items.keys())[0]
             lower_data = float(data[0])
@@ -265,7 +274,8 @@ class FaultFindWindow(tk.Frame):
             val = list(items.values())[0]
             if lower_data < cable < upper_data:
                 fault = val
-            print(f" {lower_data} - {upper_data} : {val}")
+            if self.test:
+                print(f" {lower_data} - {upper_data} : {val} cable = {cable}")
         return fault
 
     def yes_answer(self):
@@ -282,3 +292,6 @@ class FaultFindWindow(tk.Frame):
 
     def get_lower_limit(self):
         return PT.LOWER_LIMIT
+
+    def set_test(self):
+        self.test = True
