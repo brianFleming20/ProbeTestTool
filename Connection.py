@@ -31,6 +31,7 @@ import Sessions
 import Datastore
 import ProbeInterface
 import Ports
+from time import sleep
 
 BM = BatchManager.BatchManager()
 PM = ProbeManager.ProbeManager()
@@ -48,18 +49,17 @@ def ignore():
 
 def sort_probe_interface(self):
     # Tests the probe interface connection
-    probe = False
-    try:
-        probe = PF.check_probe_connection()
-    except IOError:
-        pass
+
+    probe = PF.check_probe_connection()
+    # if not probe:
+    #     return probe
+    # else:
+    if probe:
+        self.probe_working = True
     else:
-        if probe:
-            self.probe_working = True
-        else:
-            probe = "Not connected"
-            self.probe_working = False
-            self.probe.set(probe)
+        probe = "Not connected"
+        self.probe_working = False
+        self.probe.set(probe)
     return probe
 
 
@@ -82,9 +82,9 @@ class Connection(tk.Frame):
         self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
         self.text_area.place(x=40, y=70)
         ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
-                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
+                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
-                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
+                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
 
         self.label_9 = ttk.Label(self, text=" Press 'Continue' and wait to connect sensors... ", background="#B1D0E0")
         self.label_9.config(font=("Courier", 16))
@@ -135,8 +135,9 @@ class Connection(tk.Frame):
         # Tests the analyser interface connection
         read1 = check_analyser()
         if not read1:
-            tm.showerror(title="Connection Error",message="Check connected devices are switched on.")
-            self.to_sessions()
+            tm.showerror(title="Connection Error", message="Check connected devices are switched on.")
+            sleep(1)
+            self.refresh_window()
         self.znd.set(read1)
         self.znd_working = True
         return read1

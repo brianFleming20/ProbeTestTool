@@ -17,7 +17,6 @@ to do:
 #         s = ttk.Separator(self.root, orient=VERTICAL)
 #         s.grid(row=0, column=1, sticky=(N,S))
 '''
-import os.path
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
@@ -40,6 +39,7 @@ SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
 DS = Datastore.Data_Store()
 KY = OnScreenKeys.Keyboard()
+K = OnScreenKeys
 PM = ProbeManager
 P = PI.ProbeData()
 PR = ProbeInterface.PRI()
@@ -51,6 +51,8 @@ UL = UserLogin
 
 def ignore():
     return 'break'
+
+ADMIN_COUNT = 3
 
 
 class AdminWindow(tk.Frame):
@@ -102,9 +104,9 @@ class AdminWindow(tk.Frame):
         self.userListBox.config(font=("Courier", 16))
 
         ttk.Label(self.canvas_back, text="Deltex", background="#FFDAB9", foreground="#003865",
-                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
+                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self.canvas_back, text="medical", background="#FFDAB9", foreground="#A2B5BB",
-                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
+                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
 
         self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=38)
         self.text_area.place(relx=0.18, rely=0.1, anchor=CENTER)
@@ -151,7 +153,7 @@ class AdminWindow(tk.Frame):
         self.odm_active.get()
 
         self.nhp_button = Checkbutton(text=" Test Non-Human Probe",
-                                      variable=self.non_human, command=self.non_human_probe, font=("Courier", 12))
+                                      variable=self.non_human, command=self.set_non_human_probe, font=("Courier", 12))
         self.nhp_button.place(relx=0.6, rely=0.6)
         self.non_human.get()
         Tk.update(self)
@@ -198,33 +200,35 @@ class AdminWindow(tk.Frame):
         Tk.update(self)
 
     def change_qty(self):
-        qty_canvas = Canvas(bg="#FFDAB9", width=320, height=200)
+        qty_canvas = Canvas(bg="#FFDAB9", width=500, height=120)
         qty_canvas.place(relx=0.3, rely=0.45)
-        qty_text = qty_canvas.create_text(150, 100, text=" ", fill="black",
-                                          font=(OnScreenKeys.FONT_NAME, 8, "bold"))
-        Label(qty_canvas, text="Enter a new batch quantity.", font=('Arial', 12)).place(x=100, y=30)
+        # qty_text = None
+        qty_text = qty_canvas.create_text(200, 45, text=" ", fill="black",
+                                          font=(K.FONT_NAME, 8, "bold"))
+        Label(qty_canvas, text="Enter a new batch quantity.", font=('Arial', 12)).place(x=75, y=42)
         KY.get_keyboard()
-        data = self.wait_for_response(qty_canvas, qty_text)
+
+        data = K.wait_for_response(qty_canvas, qty_text)
         if not data:
             data = 100
         batchQty = int(data)
 
-        SE.batch_qty = batchQty
+        SE.set_qty(batchQty)
         qty_canvas.destroy()
-        Label(self.canvas, text=f"Current Qty\n{SE.batch_qty}", font=('Arial', 12)).place(relx=0.68, rely=0.78)
+        Label(self.canvas, text=f"Current Qty\n{SE.get_qty()}", font=('Arial', 12)).place(relx=0.62, rely=0.38)
         Tk.update(self)
 
-    def wait_for_response(self, master, label):
-        DS.write_to_from_keys(">")
-        while 1:
-            data = DS.get_keyboard_data()
-
-            if len(data) > 0 and data[-1] == "+":
-                data = data[:-1]
-                break
-            master.itemconfig(label, text=data, font=("bold", 14))
-            Tk.update(master)
-        return data
+    # def wait_for_response(self, master, label):
+    #     DS.write_to_from_keys(">")
+    #     while 1:
+    #         data = DS.get_keyboard_data()
+    #
+    #         if len(data) > 0 and data[-1] == "+":
+    #             data = data[:-1]
+    #             break
+    #         master.itemconfig(label, text=data, font=("bold", 14))
+    #         Tk.update(master)
+    #     return data
 
     #############################################
     # Set user admin status from the check box  #
@@ -239,7 +243,7 @@ class AdminWindow(tk.Frame):
         odm_state = LO.Ports(active=self.odm_active.get())
         DS.write_device_to_file(odm_state)
 
-    def non_human_probe(self):
+    def set_non_human_probe(self):
         user_data = DS.get_user_data()
         animal_probe = LO.Users(user_data['Username'], user_data['Admin'],
                                 non_human=self.non_human.get(), over_right=user_data['Over_rite'])
@@ -277,16 +281,16 @@ class ChangePasswordWindow(tk.Frame):
         self.control = controller
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
         ttk.Label(self, text="Deltex", background="#FFDAB9", foreground="#003865",
-                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
+                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#FFDAB9", foreground="#A2B5BB",
-                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
+                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
         self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
 
     def confirm(self):
         self.canvas_1.destroy()
         self.canvas_2.destroy()
-        self.password_change()
+        # self.password_change()
 
     def confirm_change(self):
         self.canvas_1.destroy()
@@ -325,7 +329,7 @@ class ChangePasswordWindow(tk.Frame):
         self.is_admin = DS.user_admin_status()
         if not self.reset_pass:
             self.btn = Checkbutton(text=" Admin status ",
-                                   variable=self.is_admin, command=self.set_admin_state,
+                                   variable=self.is_admin.get(), command=self.set_admin_state,
                                    font=("Courier", 14))
             self.btn.place(relx=0.35, rely=0.68)
 
@@ -345,7 +349,7 @@ class ChangePasswordWindow(tk.Frame):
 
     def password_entry(self):
         self.get_keys()
-        pw_data = self.wait_for_response(self.canvas_1, self.pass1_text)
+        pw_data = K.wait_for_response(self.canvas_1, self.pass1_text)
         self.CPWb1.config(state=NORMAL)
         self.CPWb2.config(state=NORMAL)
         self.newPassword = pw_data
@@ -353,47 +357,46 @@ class ChangePasswordWindow(tk.Frame):
     def conform_pwd(self):
         self.get_keys()
         DS.write_to_from_keys(" ")
-        pw_data = self.wait_for_response(self.canvas_2, self.pass2_text)
+        pw_data = K.wait_for_response(self.canvas_2, self.pass2_text)
         self.CPWb1.config(state=NORMAL)
         self.CPWb2.config(state=NORMAL)
         self.confirmPassword = pw_data
-
-    def set_password(self, pwd):
-        self.newPassword = pwd
-
-    def set_confirm(self, conf):
-        self.confirmPassword = conf
 
     def get_admin_status(self):
         return self.is_admin.get()
 
     def set_admin_state(self):
-        # set admin status of selected user
-        self.is_admin = DS.getUser(DS.get_reset_password_name()).admin
+        ################################################
+        # Admin selects user to change their password  #
+        # the selected user has an admin status so get #
+        # this status to check is the selected user    #
+        # can be an admin too                          #
+        ################################################
+        self.is_admin.set(DS.getUser(DS.get_reset_password_name()).admin)
 
     def get_keys(self):
         KY.display()
         self.CPWb1.config(state=DISABLED)
         self.CPWb2.config(state=DISABLED)
 
-    def wait_for_response(self, master, label):
-        DS.write_to_from_keys("_")
-        password_blank = "*********************"
-        while 1:
-            pw_data = DS.get_keyboard_data()
-            pw_len = len(pw_data)
-            if pw_len > 0 and pw_data[-1] == "+":
-                pw_data = pw_data[:-1]
-                break
-            master.itemconfig(label, text=password_blank[:pw_len])
-            Tk.update(master)
-        return pw_data
+    # def wait_for_response(self, master, label):
+    #     DS.write_to_from_keys("_")
+    #     password_blank = "*********************"
+    #     while 1:
+    #         pw_data = DS.get_keyboard_data()
+    #         pw_len = len(pw_data)
+    #         if pw_len > 0 and pw_data[-1] == "+":
+    #             pw_data = pw_data[:-1]
+    #             break
+    #         master.itemconfig(label, text=password_blank[:pw_len])
+    #         Tk.update(master)
+    #     return pw_data
 
-    def password_change(self):
-        if self.check_entries():
-            self.return_to_edit_user()
-        else:
-            self.refresh_window()
+    # def password_change(self):
+    #     if self.check_entries():
+    #         self.return_to_edit_user()
+    #     else:
+    #         self.refresh_window()
 
     def check_entries(self):
         change = False
@@ -438,9 +441,9 @@ class EditUserWindow(tk.Frame):
         # set up display to sdit users  #
         #################################
         ttk.Label(self, text="Deltex", background="#FFDAB9", foreground="#003865",
-                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
+                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#FFDAB9", foreground="#A2B5BB",
-                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
+                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
 
         self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
@@ -509,7 +512,6 @@ class EditUserWindow(tk.Frame):
         if sure:
             if delete_user != DS.get_username():
                 delete = SM.delete_user(SM.GetUserObject(delete_user))
-                print(delete)
                 # delete = True
             else:
                 tm.showerror('Error', 'Cannot delete yourself')
@@ -543,17 +545,20 @@ class EditUserWindow(tk.Frame):
 
 
 def check_user_admin(name):
+    global ADMIN_COUNT
     admin = False
     admin_count = 0
     for item in SM.GetUserList():
         if item.admin:
             admin_count += 1
-    if admin_count >= 2:
+    if admin_count >= ADMIN_COUNT:
         tm.showerror(title="Admin User Error",
-                     message=f"{name} cannot be an administrator,\nDefault standard user.")
+                     message=f"({name}) cannot be an administrator,\nDefault standard user.")
     else:
         admin = True
     return admin
+
+
 
 
 class AddUserWindow(tk.Frame):
@@ -576,9 +581,9 @@ class AddUserWindow(tk.Frame):
         self.text_area.place(x=40, y=70)
 
         ttk.Label(self, text="Deltex", background="#FFDAB9", foreground="#003865",
-                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
+                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#FFDAB9", foreground="#A2B5BB",
-                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
+                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
 
         self.confm_btn = ttk.Button(
             self, text="Confirm", command=lambda:
@@ -697,22 +702,22 @@ class AddUserWindow(tk.Frame):
     def name_entry(self):
         self.get_keys()
         self.current_user = ""
-        block = False
-        data = self.wait_for_response(self.canvas_1, block, self.name_text)
+        # block = False
+        data = K.wait_for_response(self.canvas_1, self.name_text)
         self.newusername = data
         self.set_buttons_norm()
 
     def password_entry(self):
         self.get_keys()
         block = True
-        pw_data = self.wait_for_response(self.canvas_2, block, self.pass1_text)
+        pw_data = K.wait_for_response(self.canvas_2, block, self.pass1_text)
         self.newpassword = pw_data
         self.set_buttons_norm()
 
     def conform_pwd(self):
         self.get_keys()
         block = True
-        pw_data = self.wait_for_response(self.canvas_3, block, self.pass2_text)
+        pw_data = K.wait_for_response(self.canvas_3, block, self.pass2_text)
         self.confpassword = pw_data
         self.set_buttons_norm()
 
@@ -734,24 +739,24 @@ class AddUserWindow(tk.Frame):
     def get_confirm_pass(self):
         return self.confpassword
 
-    def wait_for_response(self, master, block, label):
-        DS.write_to_from_keys("_")
-        password_blank = "*********************"
-        while 1:
-            pw_data = DS.get_keyboard_data()
-            pw_len = len(pw_data)
-            if pw_len > 0 and pw_data[-1] == "+":
-                pw_data = pw_data[:-1]
-                break
-            if block:
-                master.itemconfig(label, text=password_blank[:pw_len])
-                ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.62, rely=0.3, width=250,
-                                                                                         anchor=N)
-            else:
-                master.itemconfig(label, text=pw_data)
-                ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.62, rely=0.3, width=250, anchor=N)
-            Tk.update(master)
-        return pw_data
+    # def wait_for_response(self, master, block, label):
+    #     DS.write_to_from_keys("_")
+    #     password_blank = "*********************"
+    #     while 1:
+    #         pw_data = DS.get_keyboard_data()
+    #         pw_len = len(pw_data)
+    #         if pw_len > 0 and pw_data[-1] == "+":
+    #             pw_data = pw_data[:-1]
+    #             break
+    #         if block:
+    #             master.itemconfig(label, text=password_blank[:pw_len])
+    #             ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.62, rely=0.3, width=250,
+    #                                                                                      anchor=N)
+    #         else:
+    #             master.itemconfig(label, text=pw_data)
+    #             ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.62, rely=0.3, width=250, anchor=N)
+    #         Tk.update(master)
+    #     return pw_data
 
     def set_buttons_norm(self):
         self.AUWl1.config(state=NORMAL)

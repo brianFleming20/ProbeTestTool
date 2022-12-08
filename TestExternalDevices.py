@@ -30,11 +30,11 @@ class ConnectionTests(unittest.TestCase):
         self.assertEqual(probe_port, expected)
 
     # accept data from ODM.
-    def test_show_data_ODM(self):
-        print("Test ODM port number")
-        expected = "COM5"
-        odm_port = ODM.check_odm_port()
-        self.assertEqual(odm_port, expected)
+    # def test_show_data_ODM(self):
+    #     print("Test ODM port number")
+    #     expected = "COM5"
+    #     odm_port = ODM.check_odm_port()
+    #     self.assertEqual(odm_port, expected)
 
     # Prove NanoZND device connection
     def test_znd_connection(self):

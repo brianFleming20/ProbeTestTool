@@ -40,7 +40,7 @@ class AdminTests(unittest.TestCase):
         mb.showinfo(title="Probe Test", message="Insert a probe to test")
         data_collected = []
         for item in range(1,10):
-            result = self.FF.get_cable_length()
+            result = self.FF.get_cable_code()
             data_collected.append(result)
         print(data_collected)
 

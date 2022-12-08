@@ -3,7 +3,7 @@ Created on 24 Apr 2017
 @author: Brian F
 '''
 
-import pyvisa as visa
+
 import serial
 
 

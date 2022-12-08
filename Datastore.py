@@ -310,7 +310,6 @@ class Data_Store():
         try:
             with open(filepath, 'rb') as handle:
                 userDict = pickle.load(handle)
-                print(userDict)
         except FileNotFoundError:
             pass
         else:

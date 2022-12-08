@@ -140,7 +140,7 @@ class ProbeTests(unittest.TestCase):
         expected = " Suspended Batch "
         for file in BM.GetAvailableBatches():
             if file[:-4] == self.batch:
-                contents = BM.GetBatchObject(self.batch, False)
+                contents = BM.get_batch_line(self.batch, False)
                 self.assertEqual(contents[0], self.batch)
 
         self.PT.probe_type.set(self.type2)
@@ -148,7 +148,7 @@ class ProbeTests(unittest.TestCase):
         self.PT.probes_passed.set(80)
         self.PT.left_to_test.set(self.qty)
         self.PT.suspnd_btn_clicked()
-        result = BM.GetBatchObject(self.batch, False)[1]
+        result = BM.get_batch_line(self.batch, False)[1]
         self.assertEqual(expected, result)
 
     # Identify a programmed probe from same batch

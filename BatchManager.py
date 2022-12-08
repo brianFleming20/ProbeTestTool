@@ -10,7 +10,6 @@ import os
 from time import gmtime, strftime, sleep
 import Datastore
 import Ports
-from tkinter import messagebox as mb
 
 DS = Datastore.Data_Store()
 P = Ports
@@ -38,7 +37,7 @@ class BatchManager(object):
         # creates a new batch object and adds it to the availableSessions list and #
         # creates a new csv file in  the in progress folder                        #
         #############################################################################
-
+        complete = False
         #####################################################
         # Check the batch quantity is not over 100 probes   #
         #####################################################
@@ -63,11 +62,8 @@ class BatchManager(object):
                     # self.availableBatchs = self.CSVM.GetFileNamesInProgress()  # update the list of available batchs
                     batch_data = P.Probes(batch.probe_type, batch.batchNumber, 0, int(batch.batchQty))
                     DS.write_probe_data(batch_data)
-                    return True
-                else:
-                    return False
-        else:
-            return False
+                    complete = True
+        return complete
 
     def SuspendBatch(self, batch_number):
         ################################################
@@ -112,7 +108,6 @@ class BatchManager(object):
         # move the batch file into the 'complete' folder                     #
         # refresh the current batch list                                     #
         ######################################################################
-        print(batch)
         check = True
         self.current_batch = DS.get_current_batch()
         for file in self.get_completed_batches():
@@ -140,7 +135,7 @@ class BatchManager(object):
     def GetAvailableBatches(self):
         return self.CSVM.GetFileNamesInProgress()
 
-    def GetBatchObject(self, batchNumber, complete):
+    def get_batch_line(self, batchNumber, complete):
         return self.CSVM.ReadLastLine(batchNumber, complete)
 
     def UpdateResults(self, results, batchNumber):
@@ -276,7 +271,6 @@ class CSVManager(object):
         #####################################################
         # get a list of all the files in the in_progress folder
         a_list = os.listdir(self.completePath)
-        print(a_list)
         # strip the '.csv' bit off the end
         newList = []
         for item in a_list:

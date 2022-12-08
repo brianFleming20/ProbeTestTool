@@ -54,9 +54,9 @@ w = 800  # window width
 h = 600  # window height
 LARGE_FONT = ("Verdana", 14)
 BTN_WIDTH = 30
-LOWER_LIMIT = 0.8
-UPPER_LIMIT = 2.8
-KDP_UPPER = 3.0
+LOWER_LIMIT = 162.0
+UPPER_LIMIT = 220.0
+KDP_LOWER = 145.0
 
 warning_text = {
     "overrite on": "Probe serial number re-issue enabled.",
@@ -87,11 +87,11 @@ analyser = False
 def perform_probe_test():
     global analyser
     marker = round(ZND.tdr(), 3)
-    top_limit = UPPER_LIMIT
+    lower_limit = LOWER_LIMIT
     if DS.get_probe_data()['Probe_Type'] == "KDP72":
-        top_limit = KDP_UPPER
+        lower_limit = KDP_LOWER
     if PM.ProbePresent():
-        if LOWER_LIMIT < marker < top_limit:
+        if lower_limit < marker < UPPER_LIMIT:
             # Also check marker data from analyser too
             analyser = True
             # P.AnalyserResult().set_analyser_result(marker, analyser)
@@ -169,10 +169,10 @@ class TestProgramWindow(tk.Frame):
         self.cent_y = hs / 2
         self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=40)
         self.text_area.place(relx=0.07, rely=0.1)
-        ttk.Label(self.canvas_back, text="Deltex", background="#B1D0E0", foreground="#003865",
-                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.05)
-        ttk.Label(self.canvas_back, text="medical", background="#B1D0E0", foreground="#A2B5BB",
-                  font=('Helvetica', 18)).place(relx=0.85, rely=0.1)
+        ttk.Label(self.canvas_back, text="Deltex", background=self.back_colour, foreground="#003865",
+                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
+        ttk.Label(self.canvas_back, text="medical", background=self.back_colour, foreground="#A2B5BB",
+                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
         self.text_area.delete('1.0', 'end')
         ttk.Label(self.canvas_back, text="Probe Test", background=self.back_colour,
                   font=("Courier", 24, "bold")).place(relx=0.45, rely=0.05)
@@ -270,7 +270,7 @@ class TestProgramWindow(tk.Frame):
             BM.SuspendBatch(self.current_batch.get())
             self.canvas_back.destroy()
             if not self.test:
-                self.control.show_frame(SE.SessionSelectWindow)
+                self.to_sessions()
         else:
             self.session_on_going = True
             self.wait_for_probe()
@@ -295,6 +295,10 @@ class TestProgramWindow(tk.Frame):
 
     def set_test(self):
         self.test = True
+
+    def to_sessions(self):
+        self.control.show_frame(SE.SessionSelectWindow)
+
 
     def reset(self):
         self.display_layout()

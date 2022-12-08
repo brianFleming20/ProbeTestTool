@@ -79,10 +79,10 @@ class FaultFindWindow(tk.Frame):
         self.cent_y = hs / 2
         self.canvas_back = Canvas(bg='#B1D0E0', width=ws - 10, height=hs - 10)
         self.canvas_back.place(x=5, y=5)
-        ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
-                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
-        ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
-                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
+        ttk.Label(self.canvas_back, text="Deltex", background="#B1D0E0", foreground="#003865",
+                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
+        ttk.Label(self.canvas_back, text="medical", background="#B1D0E0", foreground="#A2B5BB",
+                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
         self.graph_text.set("Show Graph")
         self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=40)
         self.text_area.place(relx=0.07, rely=0.07)
@@ -236,12 +236,12 @@ class FaultFindWindow(tk.Frame):
         self.update_odm_data()
 
     def test_probe(self):
-        cable = self.get_cable_length()
-        self.cable_code.set(cable)
+        cable = self.get_cable_code()
+        self.cable_code.set(round(cable, 3))
         fault = "Unknown"
         # probe_passed = "No Fault"
-        upper = self.get_lower_limit()
-        lower = self.get_upper_limit()
+        lower = self.get_lower_limit()
+        upper = self.get_upper_limit()
         # self.fault_text = ["No Fault", "Unknown", "Break in Blue/Green wire",
         #                    "Break in Red/Black wires", "Poor pass Red/Black",
         #                    "Poor pass Blue/Green", "Poor pass Red/Black",
@@ -258,11 +258,15 @@ class FaultFindWindow(tk.Frame):
         ############################################################
         fault_fails = [
             {(lower, upper): "No Fault"},
-            {(0.6, 0.8): "Break in Blue / Green wire"},
-            {(2.8, 5.0): "Short circuit in crystal"},
-            {(0.01, 0.1): "Open circuit Black / Blue wire"},
+            {(0.58, 0.65): "Break in Blue / Green wire"},
+            {(-0.95, -0.85): "Break in Red / Black wire"},
             {(0.1, 0.4): "Crystal fault"},
-            {(0.4, 0.5): "S/C  to screen"}
+            {(0.5, 0.6): "Blue wire S/C to Screen"},
+            {(-0.09, -0.04): "Red wire S/C to Screen"},
+            {(570.0, 580.0): "Black wire S/C to Screen"},
+            {(0.99, 1.1): "Green wire S/C to Screen"},
+            {(0.15, 0.19): "Red/Black crystal fault"},
+            {(0.0, 0.0): "Blue/Green crystal fault"}
         ]
         # No Fault
         # if lower < cable < upper:
@@ -284,7 +288,7 @@ class FaultFindWindow(tk.Frame):
     def no_answer(self):
         self.info_canvas = False
 
-    def get_cable_length(self):
+    def get_cable_code(self):
         return ZND.tdr()
 
     def get_upper_limit(self):

@@ -17,7 +17,6 @@ to do:
 #         s = ttk.Separator(self.root, orient=VERTICAL)
 #         s.grid(row=0, column=1, sticky=(N,S))
 '''
-import time
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
@@ -41,6 +40,7 @@ BM = BatchManager.BatchManager()
 SM = SecurityManager.SecurityManager()
 DS = Datastore.Data_Store()
 KY = OnScreenKeys.Keyboard()
+K = OnScreenKeys
 P = Ports
 UL = UserLogin
 CO = Connection
@@ -58,6 +58,16 @@ def ignore():
 BTN_WIDTH = 22
 BTN_HEIGHT = 20
 BATCH_QTY = 100
+
+
+def set_qty(qty):
+    global BATCH_QTY
+    BATCH_QTY = qty
+
+
+def get_qty():
+    global BATCH_QTY
+    return BATCH_QTY
 
 
 class SessionSelectWindow(tk.Frame):
@@ -89,9 +99,9 @@ class SessionSelectWindow(tk.Frame):
         self.cent_x = ws / 2
         self.cent_y = hs / 2
         ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
-                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
+                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
-                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
+                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
         self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
         time_now = strftime("%H:%M:%p", gmtime())
@@ -131,7 +141,7 @@ class SessionSelectWindow(tk.Frame):
                              command=lambda: self.control.show_frame(AU.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(height=50, width=250, relx=0.5, rely=0.65)
 
-        tk.Button(self, text="...", background="#B1D0E0", command=self.blank).place(relx=0.2, rely=0.8)
+        # tk.Button(self, text="...", background="#B1D0E0", command=self.blank).place(relx=0.2, rely=0.8)
 
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
@@ -162,22 +172,28 @@ class SessionSelectWindow(tk.Frame):
         self.text_area.config(state=DISABLED)
 
     def completed_btn_clicked(self):
-        self.complete_canvas = Canvas(bg="#eae9e9", width=220, height=350)
-        self.complete_canvas.place(relx=0.73, rely=0.25)
-        self.complete_canvas.create_text(100, 20, text="Probes Completed", fill="black",
-                                         font=(OnScreenKeys.FONT_NAME, 14, "bold"))
-        ttk.Button(self.complete_canvas, text="Close",
-                   command=self.complete_canvas.destroy).place(x=100, y=300)
-        item = 0
-        for probes in BM.get_completed_batches():
-            position = (item * 20) + 50
-            item += 1
-            self.complete_canvas.create_text(80, position, text=f"{probes}", fill="black",
-                                             font=(OnScreenKeys.FONT_NAME, 14))
+        self.complete_canvas = Canvas(bg="#eae9e9", width=400, height=350)
+        self.complete_canvas.place(relx=0.78, rely=0.28)
+
+        scrollbar = Scrollbar(self.complete_canvas, orient=VERTICAL)
+        complete_list = Listbox(self.complete_canvas, height=12, width=12)
+        complete_list.place(x=0, y=50)
+        scrollbar.pack(side=RIGHT, fill=Y)
+        complete_list.config(font=("Arial", 14))
+        for probe in BM.get_completed_batches():
+            complete_list.insert(END, ' '+probe)
+        scrollbar.config(command=complete_list.yview)
+        complete_list.config(yscrollcommand=scrollbar.set)
+        complete_list.pack(side=LEFT)
+        self.label1 = Label(self, text="Complete batches", background="#B1D0E0", font=("Courier", 16, "bold"))
+        self.label1.place(relx=0.75, rely=0.23)
+        self.cancel_btn = tk.Button(self, text="Close", font=("Courier", 16), command=self.canvas_go)
+        self.cancel_btn.place(relx=0.82, rely=0.65)
+        complete_list.config(state=DISABLED)
 
     def logout(self):
         try:
-            self.complete_canvas.destroy()
+            self.canvas_go()
         except:
             pass
         SM.logOut()
@@ -194,6 +210,11 @@ class SessionSelectWindow(tk.Frame):
         port = P.Ports(probe=probe_port)
         DS.write_device_to_file(port)
         self.control.show_frame(RP.RetestProbe)
+
+    def canvas_go(self):
+        self.complete_canvas.destroy()
+        self.cancel_btn.destroy()
+        self.label1.destroy()
 
 
 class NewSessionWindow(tk.Frame):
@@ -223,10 +244,10 @@ class NewSessionWindow(tk.Frame):
         self.canvas_qty.place(relx=0.5, rely=0.55)
         probe_type_frame = tk.Frame(self.canvas_back, pady=3, padx=50, bg='#E0FFFF')
 
-        ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
-                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
-        ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
-                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
+        ttk.Label(self.canvas_back, text="Deltex", background="#B1D0E0", foreground="#003865",
+                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
+        ttk.Label(self.canvas_back, text="medical", background="#B1D0E0", foreground="#A2B5BB",
+                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
         self.batchNumber = None
         self.probe_type.set("")
         self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=38)
@@ -288,7 +309,7 @@ class NewSessionWindow(tk.Frame):
 
     def batch_entry(self):
         self.get_keys()
-        data = self.wait_for_response(self.canvas_type, self.type_text)
+        data = K.wait_for_response(self.canvas_type, self.type_text)
         self.batchNumber = data
         self.btn_1.config(state=NORMAL)
 
@@ -296,16 +317,16 @@ class NewSessionWindow(tk.Frame):
         global BATCH_QTY
         BATCH_QTY = qty
 
-    def wait_for_response(self, master, label):
-        DS.write_to_from_keys("_")
-        while 1:
-            data = DS.get_keyboard_data()
-            if len(data) > 0 and data[-1] == "+":
-                data = data[:-1]
-                break
-            master.itemconfig(label, text=data, font=("bold", 14))
-            Tk.update(master)
-        return data
+    # def wait_for_response(self, master, label):
+    #     DS.write_to_from_keys("_")
+    #     while 1:
+    #         data = DS.get_keyboard_data()
+    #         if len(data) > 0 and data[-1] == "+":
+    #             data = data[:-1]
+    #             break
+    #         master.itemconfig(label, text=data, font=("bold", 14))
+    #         Tk.update(master)
+    #     return data
 
     def confm_btn_clicked(self):
         ######################
@@ -384,70 +405,94 @@ class NewSessionWindow(tk.Frame):
         self.confm_btn_clicked()
 
 
+def get_available_batches():
+    return BM.GetAvailableBatches()
+
+
 class ContinueSessionWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#B1D0E0')
         self.control = controller
+        self.index = 0
+        self.batch_selected = ""
+        self.test = False
         ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
-                  font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
+                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
-                  font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
-
-        self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
-        self.text_area.place(x=40, y=70)
+                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
 
         ttk.Label(self, text='Choose a session to resume', font=("Courier", 18), background="#B1D0E0").place(relx=0.5,
                                                                                                              rely=0.05,
                                                                                                              anchor=CENTER)
-
         ttk.Label(self, text="Batch number", font=("Courier", 16), background="#B1D0E0").place(relx=0.28, rely=0.32)
         ttk.Label(self, text="Batch type", font=("Courier", 16), background="#B1D0E0").place(relx=0.58, rely=0.32)
 
         self.sessionListBox = Listbox(self)
         self.sessionListBox.place(relx=0.38, rely=0.45, anchor=CENTER)
-        self.sessionListBox.config(height=4, width=20, font=("Courier", 18))
+        self.sessionListBox.config(height=5, width=20, font=("Courier", 18))
 
-        self.probe_typeListBox = Listbox(self, font=("Courier", 12))
+        self.probe_typeListBox = Listbox(self, exportselection=False)
         self.probe_typeListBox.place(relx=0.65, rely=0.45, anchor=CENTER)
-        self.probe_typeListBox.config(height=4, width=15, font=("Courier", 16))
+        self.probe_typeListBox.config(height=5, width=15, font=("Courier", 18))
+        self.sessionListBox.focus_set()
 
         self.continue_btn = tk.Button(
-            self, text='Continue Session', height=2, font=("Courier",14), command=self.continue_btn_clicked)
+            self, text='Continue Session', height=2, font=("Courier", 14), command=self.continue_btn_clicked)
         self.continue_btn.place( relx=0.88, rely=0.82, anchor=E)
 
         self.cancel_btn = ttk.Button(
             self, text='Cancel', command=lambda: self.control.show_frame(SessionSelectWindow))
         self.cancel_btn.place(height=35, width=90, relx=0.62, rely=0.82, anchor=E)
 
+        btn_up = tk.Button(self, text="\u2191", font=("Courier", 30), command=lambda: self.up_arrow())
+        btn_up.place(relx=0.8, rely=0.32)
+
+        btn_down = tk.Button(self, text="\u2193", font=("Courier", 30), command=lambda: self.down_arrow())
+        btn_down.place(relx=0.8, rely=0.52)
+
     def refresh_window(self):
-        # #create a list of the current users using the dictionary of users
-        self.sessionList = []
-        self.probe_typeList = []
-        suspend_dict = {}
+        self.test = False
+        self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
+        self.text_area.place(x=40, y=70)
+        self.text_area.delete(1.0, 'end')
+
+        self.suspend_dict = {item: self.get_batch_type(item) for item in get_available_batches()}
         self.set_display()
 
-        for item in self.get_available_batches():
-            self.sessionList.append(item)
-            obj = self.get_batch_type(item)
-            self.probe_typeList.append(obj)
-            suspend_dict.update({item: obj})
-            self.batch = None
-        # clear the listbox
         self.sessionListBox.delete(0, END)
         self.probe_typeListBox.delete(0, END)
-        for batch, probe in suspend_dict.items():
+        for batch, probe in self.suspend_dict.items():
             self.probe_typeListBox.insert(END, probe)
             self.sessionListBox.insert(END, batch)
-        self.probe_typeListBox.config(state=DISABLED)
+        self.sessionListBox.itemconfig(self.index, {"bg": "#5CB8E4"})
+        self.probe_typeListBox.itemconfig(self.index, {"bg": "#5CB8E4"})
+        self.batch_selected = self.sessionListBox.get(self.index)
+
+    def up_arrow(self):
+        self.index -= 1
+        if self.index < 0:
+            self.index = 0
+        self.sessionListBox.itemconfig(self.index, {"bg": "#5CB8E4"})
+        self.probe_typeListBox.itemconfig(self.index, {"bg": "#5CB8E4"})
+        self.sessionListBox.itemconfig(self.index + 1, {"bg": "#FEFCF3"})
+        self.probe_typeListBox.itemconfig(self.index + 1, {"bg": "#FEFCF3"})
+        self.batch_selected = self.sessionListBox.get(self.index)
+
+    def down_arrow(self):
+        self.index += 1
+        if self.index > 4 or self.index > len(list(self.suspend_dict.keys())) - 1:
+            self.index = 4
+        self.sessionListBox.itemconfig(self.index, {"bg": "#5CB8E4"})
+        self.probe_typeListBox.itemconfig(self.index, {"bg": "#5CB8E4"})
+        self.sessionListBox.itemconfig(self.index - 1, {"bg": "#FEFCF3"})
+        self.probe_typeListBox.itemconfig(self.index - 1, {"bg": "#FEFCF3"})
+        self.batch_selected = self.sessionListBox.get(self.index)
 
     def continue_btn_clicked(self):
-        lstid = self.sessionListBox.curselection()
-        if len(lstid) != 0:
-            lstBatch = self.sessionListBox.get(lstid[0])
-            batch = BM.GetBatchObject(lstBatch, False)
-            probe_data = P.Probes(batch[2], batch[0], 0, int(batch[3]))
-            DS.write_probe_data(probe_data)
-
+        batch = BM.get_batch_line(self.batch_selected, False)
+        probe_data = P.Probes(batch[2], batch[0], 0, int(batch[3]))
+        DS.write_probe_data(probe_data)
+        if not self.test:
             self.control.show_frame(CO.Connection)
 
     def set_display(self):
@@ -456,27 +501,12 @@ class ContinueSessionWindow(tk.Frame):
         self.text_area.insert('3.3', '\n\nPlease select a batch number\nto continue testing.')
         self.text_area.config(state=DISABLED)
 
-    def get_available_batches(self):
-        batches = BM.GetAvailableBatches()
-        return batches
-
-    def set_available_batches(self, batches):
-        self.batches = batches
-
-    def get_session_list_box(self):
-        return self.sessionListBox
-
-    def get_probe_type_list(self):
-        return self.probe_typeList
-
-    def get_batch_type(self, item):
+    def get_batch_type(self, batch_number):
         ########################################
         # get batch type from the batch number #
         # of probe serial number from file     #
         ########################################
-        batch_line = BM.GetBatchObject(item, False)
+        return BM.get_batch_line(batch_number, False)[2]
 
-        return batch_line[2]
-
-    def set_batch_obj(self, batch):
-        self.batch_obj = P.Batch(batch)
+    def set_test(self):
+        self.test = True

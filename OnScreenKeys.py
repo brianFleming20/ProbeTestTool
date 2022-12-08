@@ -17,9 +17,11 @@ to do:
 #         s = ttk.Separator(self.root, orient=VERTICAL)
 #         s.grid(row=0, column=1, sticky=(N,S))
 '''
-
 import Datastore
 from tkinter import *
+from tkinter import Tk
+import tkinter as ttk
+from time import sleep
 
 _TITLE = "This is the title"
 PTT_Version = 'self.canvasboard By Danish'  # title Name
@@ -28,162 +30,102 @@ FONT_NAME = "Courier"
 DS = Datastore.Data_Store()
 
 
+
 # showing all data in display
 
-class Keyboard():
+def convert_key(key):
+    if ord(key) > 64:
+        upp = key.upper()
+    else:
+        upp = key
+    return upp
+
+
+def wait_for_response(master, label, block=False):
+    DS.write_to_from_keys("_")
+    password_blank = "*********************"
+    while 1:
+        pw_data = DS.get_keyboard_data()
+        pw_len = len(pw_data)
+        if pw_len > 0 and pw_data[-1] == "+":
+            pw_data = pw_data[:-1]
+            break
+        if block:
+            master.itemconfig(label, text=password_blank[:pw_len])
+            ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.75, rely=0.3, width=200,
+                                                                                     anchor=N)
+        else:
+            master.itemconfig(label, text=pw_data)
+            ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.75, rely=0.3, width=200, anchor=N)
+        Tk.update(master)
+    return pw_data
+
+
+class Keyboard:
     def __init__(self):
         self.name_text = None
         self.canvas = None
         self.shift_lock = None
         self.keys = ""
+        self.first_row = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
+        self.second_row = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '@']
+        self.third_row = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l']
+        self.forth_row = ['z', 'x', 'c', 'v', 'b', 'n', 'm', '/', '?', '.']
 
     # First Line Button
     def get_keyboard(self):
         # self.keystrokes = StringVar()
         self.shift_lock = False
-        self.canvas = Canvas(width=1100, height=240)
+        self.canvas = Canvas(width=1100, height=280)
 
         # Numbers section
-        self.name_text = self.canvas.create_text(70, 20, text="lower case", fill="black", font=(FONT_NAME, 12, "bold"))
-        one = Button(self.canvas, text='1', width=7, font=("Arial", 12), command=lambda: self.press('1'))
-        one.place(relx=0.08, rely=0.17, anchor=CENTER)
+        self.name_text = self.canvas.create_text(70, 18, text="lower case", fill="black", font=(FONT_NAME, 12, "bold"))
+        locx1 = 0.06
+        locy1 = 0.2
 
-        two = Button(self.canvas, text='2', width=7, font=('Arial', 12), command=lambda: self.press('2'))
-        two.place(relx=0.16, rely=0.17, anchor=CENTER)
+        for key in self.first_row:
+            self.display_keys(key, locx1, locy1)
+            locx1 += 0.082
 
-        three = Button(self.canvas, text='3', width=7, font=('Arial', 12), command=lambda: self.press('3'))
-        three.place(relx=0.25, rely=0.17, anchor=CENTER)
-
-        four = Button(self.canvas, text='4', width=7, font=('Arial', 12), command=lambda: self.press('4'))
-        four.place(relx=0.34, rely=0.17, anchor=CENTER)
-
-        five = Button(self.canvas, text='5', width=7, font=('Arial', 12), command=lambda: self.press('5'))
-        five.place(relx=0.43, rely=0.17, anchor=CENTER)
-
-        six = Button(self.canvas, text='6', width=7, font=('Arial', 12), command=lambda: self.press('6'))
-        six.place(relx=0.52, rely=0.17, anchor=CENTER)
-
-        seven = Button(self.canvas, text='7', width=7, font=('Arial', 12), command=lambda: self.press('7'))
-        seven.place(relx=0.61, rely=0.17, anchor=CENTER)
-
-        eight = Button(self.canvas, text='8', width=7, font=('Arial', 12), command=lambda: self.press('8'))
-        eight.place(relx=0.7, rely=0.17, anchor=CENTER)
-
-        nine = Button(self.canvas, text='9', width=7, font=('Arial', 12), command=lambda: self.press('9'))
-        nine.place(relx=0.78, rely=0.17, anchor=CENTER)
-
-        zero = Button(self.canvas, text='0', width=7, font=('Arial', 12), command=lambda: self.press('0'))
-        zero.place(relx=0.86, rely=0.17, anchor=CENTER)
-
-        clear = Button(self.canvas, text='Clear', width=12, command=self.clear)
-        clear.place(relx=0.95, rely=0.17, anchor=CENTER)
+        locxc = 0.9
+        clear = Button(self.canvas, text='Clear', width=10, font=("Courier", 12), command=self.clear)
+        clear.place(relx=locxc, rely=locy1, anchor=CENTER)
 
         # Frist letter row
-        q = Button(self.canvas, text='Q', width=7, font=('Arial', 12), command=lambda: self.press('q'))
-        q.place(relx=0.1, rely=0.34, anchor=CENTER)
-
-        w = Button(self.canvas, text='W', width=7, font=('Arial', 12), command=lambda: self.press('w'))
-        w.place(relx=0.18, rely=0.34, anchor=CENTER)
-
-        e = Button(self.canvas, text='E', width=7, font=('Arial', 12), command=lambda: self.press('e'))
-        e.place(relx=0.26, rely=0.34, anchor=CENTER)
-
-        R = Button(self.canvas, text='R', width=7, font=('Arial', 12), command=lambda: self.press('r'))
-        R.place(relx=0.34, rely=0.34, anchor=CENTER)
-
-        T = Button(self.canvas, text='T', width=7, font=('Arial', 12), command=lambda: self.press('t'))
-        T.place(relx=0.42, rely=0.34, anchor=CENTER)
-
-        Y = Button(self.canvas, text='Y', width=7, font=('Arial', 12), command=lambda: self.press('y'))
-        Y.place(relx=0.5, rely=0.34, anchor=CENTER)
-
-        U = Button(self.canvas, text='U', width=7, font=('Arial', 12), command=lambda: self.press('u'))
-        U.place(relx=0.58, rely=0.34, anchor=CENTER)
-
-        I = Button(self.canvas, text='I', width=7, font=('Arial', 12), command=lambda: self.press('i'))
-        I.place(relx=0.66, rely=0.34, anchor=CENTER)
-
-        O = Button(self.canvas, text='O', width=7, font=('Arial', 12), command=lambda: self.press('o'))
-        O.place(relx=0.74, rely=0.34, anchor=CENTER)
-
-        P = Button(self.canvas, text='P', width=7, font=('Arial', 12), command=lambda: self.press('p'))
-        P.place(relx=0.82, rely=0.34, anchor=CENTER)
+        locx2 = 0.08
+        locy2 = 0.36
+        for key in self.second_row:
+            self.display_keys(key, locx2, locy2)
+            locx2 += 0.082
 
         # Second Letter Line
+        locx3 = 0.1
+        locy3 = 0.52
+        for key in self.third_row:
+            self.display_keys(key, locx3, locy3)
+            locx3 += 0.082
 
-        A = Button(self.canvas, text='A', width=7, font=("Courier", 14), command=lambda: self.press('a'))
-        A.place(relx=0.12, rely=0.5, anchor=CENTER)
-
-        S = Button(self.canvas, text='S', width=7, font=('Arial', 12), command=lambda: self.press('s'))
-        S.place(relx=0.2, rely=0.5, anchor=CENTER)
-
-        D = Button(self.canvas, text='D', width=7, font=('Arial', 12), command=lambda: self.press('d'))
-        D.place(relx=0.28, rely=0.5, anchor=CENTER)
-
-        F = Button(self.canvas, text='F', width=7, font=('Arial', 12), command=lambda: self.press('f'))
-        F.place(relx=0.355, rely=0.5, anchor=CENTER)
-
-        G = Button(self.canvas, text='G', width=7, font=('Arial', 12), command=lambda: self.press('g'))
-        G.place(relx=0.425, rely=0.5, anchor=CENTER)
-
-        H = Button(self.canvas, text='H', width=7, font=('Arial', 12), command=lambda: self.press('h'))
-        H.place(relx=0.5, rely=0.5, anchor=CENTER)
-
-        J = Button(self.canvas, text='J', width=7, font=('Arial', 12), command=lambda: self.press('J'))
-        J.place(relx=0.575, rely=0.5, anchor=CENTER)
-
-        K = Button(self.canvas, text='K', width=7, font=('Arial', 12), command=lambda: self.press('k'))
-        K.place(relx=0.65, rely=0.5, anchor=CENTER)
-
-        L = Button(self.canvas, text='L', width=7, font=('Arial', 12), command=lambda: self.press('l'))
-        L.place(relx=0.72, rely=0.5, anchor=CENTER)
-
-        semi_co = Button(self.canvas, text='@', width=7, font=('Arial', 12), command=lambda: self.press('@'))
-        semi_co.place(relx=0.8, rely=0.5, anchor=CENTER)
-
-        enter = Button(self.canvas, text='Enter', width=16, font=("Courier", 12),
-                           command=lambda check='+': [self.end_keyboard(check), self.canvas.destroy()])
-        enter.place(relx=0.92, rely=0.5, anchor=CENTER)
+        enter = Button(self.canvas, text='Enter', width=15, font=("Courier", 16, "bold"), background="#68B984",
+                       command=lambda check='+': [self.end_keyboard(check), self.canvas.destroy()])
+        enter.place(relx=0.9, rely=locy3, anchor=CENTER)
 
         # third line Button
+        locx4 = 0.18
+        locy4 = 0.7
+        for key in self.forth_row:
+            self.display_keys(key, locx4, locy4)
+            locx4 += 0.082
 
-        shift = Button(self.canvas, text='Shift Lock', width=10, command=lambda: self.shift())
-        shift.place(relx=0.14, rely=0.65, anchor=CENTER)
-
-        Z = Button(self.canvas, text='Z',width=7, font=('Arial', 12), command=lambda: self.press('z'))
-        Z.place(relx=0.22, rely=0.65, anchor=CENTER)
-
-        X = Button(self.canvas, text='X', width=7, font=('Arial', 12), command=lambda: self.press('x'))
-        X.place(relx=0.3, rely=0.65, anchor=CENTER)
-
-        C = Button(self.canvas, text='C', width=7, font=('Arial', 12), command=lambda: self.press('c'))
-        C.place(relx=0.375, rely=0.65, anchor=CENTER)
-
-        V = Button(self.canvas, text='V', width=7, font=('Arial', 12), command=lambda: self.press('v'))
-        V.place(relx=0.45, rely=0.65, anchor=CENTER)
-
-        B = Button(self.canvas, text='B', width=7, font=('Arial', 12), command=lambda: self.press('b'))
-        B.place(relx=0.525, rely=0.65, anchor=CENTER)
-
-        N = Button(self.canvas, text='N', width=7, font=('Arial', 12), command=lambda: self.press('n'))
-        N.place(relx=0.6, rely=0.65, anchor=CENTER)
-
-        M = Button(self.canvas, text='M', width=7, font=('Arial', 12), command=lambda: self.press('m'))
-        M.place(relx=0.68, rely=0.65, anchor=CENTER)
-
-        slas = Button(self.canvas, text='/', width=7, font=('Arial', 12), command=lambda: self.press('/'))
-        slas.place(relx=0.76, rely=0.65, anchor=CENTER)
-
-        q_mark = Button(self.canvas, text='?', width=7, font=('Arial', 12), command=lambda: self.press('?'))
-        q_mark.place(relx=0.84, rely=0.65, anchor=CENTER)
-
-        coma = Button(self.canvas, text='.', width=7, font=('Arial', 12), command=lambda: self.press('.'))
-        coma.place(relx=0.92, rely=0.65, anchor=CENTER)
+        locx5 = 0.09
+        shift = Button(self.canvas, text='Shift Lock', width=10, font=('Arial', 12), command=lambda: self.shift())
+        shift.place(relx=locx5, rely=locy4, anchor=CENTER)
 
         # Fourth Line Button
-
-        space = Button(self.canvas, text='Space', width=40, font=('Arial', 12), command=lambda: self.press(' '))
-        space.place(relx=0.5, rely=0.88, anchor=CENTER)
+        space_text = " "
+        locy5 = 0.92
+        space = Button(self.canvas, text='Space', width=40, font=('Arial', 12),
+                       command=lambda: [self.press(' '), self.key_press_repeat(space_text, locy3, locy5)])
+        space.place(relx=locy3, rely=locy5, anchor=CENTER)
 
         self.canvas.pack()
 
@@ -215,8 +157,6 @@ class Keyboard():
     def press(self, num):
         if not self.shift_lock:
             self.keys = self.keys + str(num)
-            print(f"{num} : {self.keys}")
-
         else:
             cap = str(num).upper()
             self.keys = self.keys + cap
@@ -224,3 +164,29 @@ class Keyboard():
         DS.write_to_from_keys(self.keys)
         # self.keystrokes.set(self.keys)
         # every keyboard press chould be recoreded in the datastore for use in the system.
+
+    #############################################
+    # Show the key repeat above the pressed key #
+    #############################################
+    def key_press_repeat(self, key, locx, locy):
+        y = locy - 0.12
+        width = 74
+        height = 52
+        if key == " ":
+            width = 300
+        upp = convert_key(key)
+        show = Label(self.canvas, text=upp, font=("Arial", 16, "bold"), background="#FCF9BE", borderwidth=1, relief="solid")
+        show.place(width=width, height=height, relx=locx, rely=y, anchor=CENTER)
+        Tk.update(self.canvas)
+        sleep(0.3)
+        show.destroy()
+
+    #####################################
+    # Display the keys to the canvas    #
+    #####################################
+    def display_keys(self, key, locx, locy):
+        upp = convert_key(key)
+        btn = Button(self.canvas, text=upp, width=7, font=("Arial", 12),
+                     command=lambda: [self.press(key), self.key_press_repeat(key, locx, locy)])
+        btn.place(relx=locx, rely=locy, anchor=CENTER)
+

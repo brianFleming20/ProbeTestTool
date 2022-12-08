@@ -118,7 +118,7 @@ class RetestTests(unittest.TestCase):
         selected = [item[1] for item in read_line if item[1] == serial_num]
         self.assertEqual(selected[0], serial_num)
 
-        last_line = BM.GetBatchObject(self.batch2, False)
+        last_line = BM.get_batch_line(self.batch2, False)
         results = last_line[1]
         self.assertEqual(results, serial_num)
         resultf = last_line[6]

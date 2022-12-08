@@ -32,7 +32,7 @@ class PRI(object):
             self.ser.parity = serial.PARITY_NONE
             self.ser.stopbits = serial.STOPBITS_ONE
             self.ser.bytesize = serial.EIGHTBITS
-            self.ser.timeout = 0.25
+            self.ser.timeout = 0.5
             # self.ser.close()
         except IOError:
             pass
@@ -52,7 +52,7 @@ class PRI(object):
         '''
 
         self.get_serial_port()
-        if not self.ser.isOpen():
+        if self.ser.isOpen() is None:
             self.ser.open()
         bit = self.send_probe_bits()
         self.ser.close()
@@ -117,10 +117,10 @@ class PRI(object):
         #######################
         self.serial_number = self.read_data()
         self.close_port()
-        try:
+        if not self.serial_number[:2] > '5a':
             num = str(codecs.decode(self.serial_number[:32], "hex"), 'utf-8')[:16]
-        except IOError:
-            num = self.serial_number
+        else:
+            num = "No serial number"
         return num
 
     # def get_converted_serial_number(self, num):

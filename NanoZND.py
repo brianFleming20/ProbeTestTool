@@ -154,13 +154,14 @@ class NanoZND():
                 self.ser_ana.open()
             except IOError:
                 pass
-
+        t_axis = 1
         if not self.ser_ana.isOpen():
             mb.showinfo(title="Analyser", message="Ensure the analyser is turned on.")
         marker3 = int(self.get_marker3().split()[2])
         marker1 = int(self.get_marker1().split()[2])
 
         marker_total = marker1 - marker3
+        # print(f"marker total - {marker_total}")
         raw_points = 101
         NFFT = 16384
         PROPAGATION_SPEED = 78.6  # For RG58U
@@ -175,7 +176,13 @@ class NanoZND():
         td = np.abs(np.fft.ifft(s11, NFFT))
 
         # Calculate maximum time axis
-        t_axis = np.linspace(0, 1/step, NFFT)
+        try:
+            t_axis = np.linspace(0, 1/step, NFFT)
+        except ZeroDivisionError:
+            marker3 = 2
+            marker1 = 4
+            marker_total = marker1 - marker3
+            t_axis = np.linspace(0, 1 / marker_total, NFFT)
         d_axis = speed_of_light * _prop_speed * t_axis
         pk = np.max(td)
         # idx_pk = np.where(td == pk)[0]

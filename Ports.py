@@ -78,4 +78,3 @@ class Batch(object):
         self.probe_type = ''
         self.serial_number = ''
 
-
