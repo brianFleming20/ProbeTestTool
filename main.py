@@ -109,9 +109,9 @@ class WindowController(tk.Tk):
             self.frames[F] = frame
 
             frame.grid(row=0, column=0, sticky="nsew")
-            self.attributes('-fullscreen', True)
+            # self.attributes('-fullscreen', True)
             # self.attributes('-toolwindow', True)
-            self.protocol("WM_DELETE_WINDOW", disable_event)
+            # self.protocol("WM_DELETE_WINDOW", disable_event)
 
         self.show_frame(UL.LogInWindow)
 

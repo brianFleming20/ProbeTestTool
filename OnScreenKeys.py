@@ -30,9 +30,7 @@ FONT_NAME = "Courier"
 DS = Datastore.Data_Store()
 
 
-
 # showing all data in display
-
 def convert_key(key):
     if ord(key) > 64:
         upp = key.upper()
@@ -143,9 +141,6 @@ class Keyboard:
         self.keys = self.keys[:-1]
         DS.write_to_from_keys(self.keys)
 
-    def action(self):
-        DS.write_to_from_keys(self.keys)
-
     def shift(self):
         if not self.shift_lock:
             self.shift_lock = True
@@ -154,16 +149,13 @@ class Keyboard:
             self.shift_lock = False
             self.canvas.itemconfig(self.name_text, text="lower case")
 
-    def press(self, num):
+    def press(self, key):
         if not self.shift_lock:
-            self.keys = self.keys + str(num)
+            self.keys = self.keys + str(key)
         else:
-            cap = str(num).upper()
+            cap = str(key).upper()
             self.keys = self.keys + cap
-
         DS.write_to_from_keys(self.keys)
-        # self.keystrokes.set(self.keys)
-        # every keyboard press chould be recoreded in the datastore for use in the system.
 
     #############################################
     # Show the key repeat above the pressed key #

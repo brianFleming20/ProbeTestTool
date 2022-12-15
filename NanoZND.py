@@ -93,6 +93,9 @@ class NanoZND():
                 result = self.ser_ana.port
         if self.ser_ana:
             self.ser_ana.close()
+        if not result:
+            mb.showerror(title="Analyser", message="Turn Analyser on")
+
         return result
 
     def fetch_s11(self):

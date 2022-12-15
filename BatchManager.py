@@ -161,18 +161,10 @@ class CSVManager(object):
     ###############################################
 
     def __init__(self):
-        # default_loc = "/PTT_Results"
         self.inProgressPath = None
         self.completePath = None
         self.path = None
         self.check_file_location()
-        # filepath = DS.get_file_location()
-        # if not filepath:
-        #     self.path = os.path.join("C:\\Users", os.getenv('username'), "Documents\\PTT_Results", "")
-        # else:
-        #     self.path = filepath['File']
-        # self.inProgressPath = os.path.join(self.path, "in_progress", "")
-        # self.completePath = os.path.join(self.path, "complete", "")
 
     def check_directories(self):
         #########################################################
@@ -342,22 +334,6 @@ class CSVManager(object):
 
         return datareader.split(',')
 
-    # def ReadAllLines(self, fileName):
-    #     ################################################################
-    #     # pass in a filename string and a number of lines.             #
-    #     # will return a list of lists with each list being a line      #
-    #     ################################################################
-    #     # originalPath = r"C:\Users\jackw\Dropbox\BSc (Hons) Engineering Studies\TaTT_results\in_progress\\"
-    #
-    #     fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
-    #
-    #     with open(fullPath) as f:
-    #         lis = [line.split() for line in f]  # create a list of lists
-    #         return lis
-
-    #             for i,x in enumerate(lis):              #print the list items
-    #                 print (i,x)
-
     def read_all_lines(self, folder, batch):
         lines = []
         fullPath = os.path.abspath(folder + batch)
@@ -368,3 +344,10 @@ class CSVManager(object):
 
         return lines
 
+    def remove_batch(self, batch):
+        path = self.inProgressPath
+        a_list = os.listdir(path)
+        file = os.path.abspath(path + batch + '.csv')
+        find = f"{batch}.csv"
+        if find in a_list:
+            os.remove(file)

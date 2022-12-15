@@ -33,10 +33,7 @@ class SecurityManager(object):
         self.is_admin_status = False
 
     def logIn(self, user):
-        nuser = False
-
-        if len(user.name) > 0 or len(user.password) > 0:
-            nuser = DS.getUser(user)
+        nuser = DS.getUser(user)
 
         if not nuser:  # is the username a valid username?
             return False
@@ -69,17 +66,20 @@ class SecurityManager(object):
         else:
             return False
 
-    def delete_user(self, user):
+    def delete_user(self, puser):
         '''
         tick
         pass in a user object
         Checks to see if the user exists in the user dict, if so deletes it
         '''
-        if DS.getUser(user.name):
-            DS.removeUser(user)
-            return True
-        else:
-            return False
+        return DS.removeUser(puser)
+        # if DS.getUser(user):
+        #
+        #     DS.removeUser(user)
+        #     return True
+        # else:
+        #     return False
+
 
     def updatePassword(self, password, admin):
         """

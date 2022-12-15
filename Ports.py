@@ -15,7 +15,6 @@ def probe_canvas(self, message, btn):
         btn2.place(x=190, y=120)
         Tk.update(self)
 
-
 def text_destroy(self):
     self.canvas_text.destroy()
 
@@ -78,3 +77,9 @@ class Batch(object):
         self.probe_type = ''
         self.serial_number = ''
 
+
+class DeletedUser:
+
+    def __int__(self, name, date):
+        self.Name = name
+        self.Date = date

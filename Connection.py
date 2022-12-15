@@ -79,6 +79,7 @@ class Connection(tk.Frame):
         self.znd = StringVar()
         self.odm = StringVar()
         self.probe = StringVar()
+        self.test = False
         self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
         self.text_area.place(x=40, y=70)
         ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
@@ -135,9 +136,7 @@ class Connection(tk.Frame):
         # Tests the analyser interface connection
         read1 = check_analyser()
         if not read1:
-            tm.showerror(title="Connection Error", message="Check connected devices are switched on.")
-            sleep(1)
-            self.refresh_window()
+            read1 = check_analyser()
         self.znd.set(read1)
         self.znd_working = True
         return read1
@@ -160,7 +159,8 @@ class Connection(tk.Frame):
 
     def test_connections(self):
         if self.probe_working and self.znd_working:
-            self.control.show_frame(PT.TestProgramWindow)
+            if not self.test:
+                self.control.show_frame(PT.TestProgramWindow)
         else:
             self.to_sessions()
 
@@ -172,3 +172,6 @@ class Connection(tk.Frame):
 
     def no_answer(self):
         self.info_canvas = False
+
+    def set_test(self):
+        self.test = True

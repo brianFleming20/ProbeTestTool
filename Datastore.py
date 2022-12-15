@@ -20,7 +20,7 @@ to do:
 
 import pickle
 import os
-import tkinter.messagebox as tm
+from time import strftime, gmtime
 import json
 import Ports
 
@@ -61,17 +61,6 @@ class Data_Store():
 
     def get_username(self):
         return self.get_user_data()['Username']
-
-    #########################################
-
-    def show_all_data(self):
-        try:
-            print(f"all data = main {self.get_user_data()['Name']}, batch {self.get_probe_data()['Probe_Type']}, "
-                  f"admin {self.get_user_data()['Admin']}")
-            print(f"Probe port {self.get_devices()['Probe']}, Analyser port {self.get_devices()['Analyser']}")
-            print(f"ODM port {self.get_devices()['ODM']} , file location {self.get_file_location()['File']}")
-        except FileNotFoundError:
-            tm.showerror(title="File error", message="There are no files to show.")
 
     #########################################
 
@@ -125,6 +114,15 @@ class Data_Store():
 
     #############################################
 
+    def get_current_use_user(self, username):
+        # search in deleted json file for user, if not found user is not deleted
+        if username in self.get_deleted_users():
+            return True
+        else:
+            return False
+
+    #############################################
+
     def device_locations(self, data):
         devices = {
             "ODM": data.ODM,
@@ -158,7 +156,6 @@ class Data_Store():
         except FileNotFoundError:
             device_data = Ports.Ports()
             self.write_device_to_file(device_data)
-
         else:
             return load_data
 
@@ -177,6 +174,7 @@ class Data_Store():
     def write_user_data(self, user_data):
         filepath = os.path.join(self.file_data, "user.json")
         user_dict = self.user_dict(user_data)
+        result = False
         try:
             with open(filepath, 'r') as user_file:
                 data = json.load(user_file)
@@ -187,7 +185,8 @@ class Data_Store():
             data.update(user_dict)
             with open(filepath, 'w') as user_file:
                 json.dump(data, user_file, indent=4)
-                return True
+                result = True
+        return result
 
     def get_user_data(self):
         filepath = os.path.join(self.file_data, "user.json")
@@ -195,11 +194,47 @@ class Data_Store():
             with open(filepath, 'r') as load_user_file:
                 load_data = json.load(load_user_file)
         except FileNotFoundError:
-            user_data = Ports.Users("",False)
+            user_data = Ports.Users("", False)
             self.write_user_data(user_data)
             return self.user_dict(user_data)
         else:
             return load_data
+
+    def deleted_dict(self, name, date):
+        deleted_user = {
+            name: {
+                "Date_removed": date,
+            },
+        }
+        return deleted_user
+
+    def write_dateted_user(self, user_data):
+        filepath = os.path.join(self.file_data, "deleted.json")
+        date = strftime("%Y-%m-%d", gmtime())
+        result = False
+        delete_dict = self.deleted_dict(user_data.name, date)
+        try:
+            with open(filepath, 'r') as deleted_users:
+                delete_data = json.load(deleted_users)
+        except FileNotFoundError:
+            with open(filepath, 'w') as deleted_users:
+                json.dump(delete_dict, deleted_users, indent=4)
+        else:
+            delete_data.update(delete_dict)
+            with open(filepath, 'w') as update_delete:
+                json.dump(delete_data, update_delete, indent=4)
+                result = True
+        return result
+
+    def get_deleted_users(self):
+        filepath = os.path.join(self.file_data, "deleted.json")
+        try:
+            with open(filepath, 'r') as file:
+                load_deleted = json.load(file)
+        except FileNotFoundError:
+            return False
+        else:
+            return load_deleted
 
     def probe_dict(self, probe_data):
         probe_dict = {
@@ -214,6 +249,7 @@ class Data_Store():
 
     def write_probe_data(self, probe_data):
         filepath = os.path.join(self.file_data, "probes.json")
+        result = False
         probe_dict = self.probe_dict(probe_data)
         try:
             with open(filepath, 'r') as user_file:
@@ -225,7 +261,8 @@ class Data_Store():
             data.update(probe_dict)
             with open(filepath, 'w') as user_file:
                 json.dump(data, user_file, indent=4)
-                return True
+                result = True
+        return result
 
     def get_probe_data(self):
         filepath = os.path.join(self.file_data, "probes.json")
@@ -245,7 +282,7 @@ class Data_Store():
         }
         return file_dict
 
-    def write_file_location(self,file):
+    def write_file_location(self, file):
         filepath = os.path.join(self.file_data, "location.json")
         location = self.file_location(file)
         try:
@@ -290,7 +327,7 @@ class Data_Store():
                 userDict = pickle.load(handle)
 
         except FileExistsError as e:
-            pass
+            print(e)
         else:
             for u in userDict:
                 if u == user.name:
@@ -298,9 +335,10 @@ class Data_Store():
                     password = item[0]
                     admin = item[1]
                     thisUser = P.User(u, password, admin)
+
         return thisUser
 
-    def getUserList(self ):
+    def getUserList(self):
         '''
         tick
         returns a list of all the user objects
@@ -327,6 +365,7 @@ class Data_Store():
         Pass in a user object and update the CSV file with it
         '''
         filepath = os.path.join(self.file_data, "userfile.pickle")
+        added = True
         # create details array
         details = ['', False]
         details[0] = user.password
@@ -336,13 +375,12 @@ class Data_Store():
             with open(filepath, 'rb') as handle:
                 userDict = pickle.load(handle)
         except FileNotFoundError:
-            return False
-
+            added = False
         else:
             userDict[user.name] = details
             with open(filepath, 'wb') as handle:
                 pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-            return True
+        return added
 
     def removeUser(self, user):
         '''
@@ -350,17 +388,38 @@ class Data_Store():
         removes a given user from the user list
         '''
         filepath = os.path.join(self.file_data, "userfile.pickle")
+        deleted = True
+        try:
+            # Loads the user pickle file
+            with open(filepath, 'rb') as handle:
+                userDict = pickle.load(handle)
+        except FileNotFoundError:
+            self.write_dateted_user(user)
+        else:
+            # Check to see if the argument name is registered to the system
+            # if so, the user is added to the delete file
+            if user.name in userDict:
+                if self.get_current_use_user(user.name):
+                    deleted = False
+                else:
+                    self.write_dateted_user(user)
+        return deleted
+
+    def delete_user(self, username):
+        filepath = os.path.join(self.file_data, "userfile.pickle")
         with open(filepath, 'rb') as handle:
             userDict = pickle.load(handle)
-
-        for usr in userDict:
-            user_obj = self.getUser(usr)
-
-        if user.name in userDict:
-            userDict.pop(user.name)
-        else:
-            return False
-
+        userDict.pop(username)
         with open(filepath, 'wb') as handle:
             pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        return True
+
+    def remove_from_delete_file(self, username):
+        filepath = os.path.join(self.file_data, "deleted.json")
+        with open(filepath, 'r') as file:
+            deleted_file = json.load(file)
+        try:
+            del deleted_file[username]
+        except FileNotFoundError:
+            pass
+        with open(filepath, 'w') as file:
+            json.dump(deleted_file, file, indent=4)
