@@ -74,10 +74,10 @@ class TestDatastore:
         result_password = read['Change_password']
         assert result_password == change_password
 
-    def test_write_dateted_user(self):
+    def test_write_deleted_user(self):
         name = "Richard"
         user = P.User(name, False)
-        result = DS.write_dateted_user(user)
+        result = DS.write_deleted_use(user)
         assert result is True
 
         read = read_from_file("deleted.json").keys()
@@ -156,22 +156,79 @@ class TestDatastore:
         assert result == file
 
     def test_get_user(self):
-        assert False
+        username = "Jack"
+        user = P.Users(username, False)
+        DS.write_user_data(user)
+        result = DS.get_username()
+        assert result == username
 
     def test_get_user_list(self):
-        assert False
+        results = DS.getUserList()
+        print("\n")
+        for usr in results:
+            print(f"{usr.name} - {usr.admin}")
+            assert len(results) > 0
 
     def test_put_user(self):
-        assert False
+        username1 = "Jack"
+        result = ""
+        user = P.User(username1, "1234", False)
+        for usr in DS.getUserList():
+            if usr.name == username1:
+                assert False
 
-    def test_remove_user(self):
-        assert False
+        DS.putUser(user)
+
+        for usr in DS.getUserList():
+            if usr.name == username1:
+                result = usr.name
+
+        assert result == username1
+        # DS.delete_user(username1)
 
     def test_delete_user(self):
-        assert False
+        username = "Jack"
+        for usr in DS.getUserList():
+            if usr.name == username:
+                assert True
+                DS.delete_user(username)
 
-    def test_get_keyboard_data(self):
-        assert False
+        for usr in DS.getUserList():
+            if username == usr.name:
+                assert False
+            else:
+                assert True
+
+    def test_remove_user(self):
+        username = "Richard"
+        result1 = False
+        result2 = False
+        # print(DS.get_deleted_users().keys())
+        if username in DS.get_deleted_users().keys():
+            result1 = True
+
+        assert result1 is True
+
+        DS.remove_from_delete_file(username)
+
+        if username in DS.get_deleted_users().keys():
+            result2 = True
+
+        assert result2 is False
 
     def test_write_to_from_keys(self):
-        assert False
+        key = "t"
+        DS.write_to_from_keys(key)
+        key += "h"
+        DS.write_to_from_keys(key)
+        key += "e"
+        DS.write_to_from_keys(key)
+        expected = "the"
+
+        result = DS.get_keyboard_data()
+        assert result == expected
+
+    def test_get_keyboard_data(self):
+        expected = "the"
+        result = DS.get_keyboard_data()
+        assert result == expected

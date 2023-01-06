@@ -97,7 +97,7 @@ class BatchManager(object):
         data_list = []
         data_list.extend(data)
         time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-        data_list.append(time_now)
+        data_list.append(f"On {time_now}")
         return self.CSVM.WriteListOfListsCSV(data_list, batch)
 
     def CompleteBatch(self, batch):
@@ -120,17 +120,7 @@ class BatchManager(object):
             P.probe_canvas(self, f"Complete file contains {batch}", False)
             sleep(2)
             P.text_destroy(self)
-            # move the batch file to the complete folder
-        #     try:
-        #         self.availableBatchs = self.CSVM.GetFileNamesInProgress()
-        #         # update the availableBaths list
-        #     except FileExistsError:
-        #         if not os.path.isdir(self.inProgressPath):
-        #             self.CSVM.check_directories()
-        #     else:
-        #         self.availableBatchs = self.CSVM.GetFileNamesInProgress()
-        #         check = True
-        # return check
+
 
     def GetAvailableBatches(self):
         return self.CSVM.GetFileNamesInProgress()
@@ -150,7 +140,7 @@ class BatchManager(object):
     def competed_text(self, user, probe_type, batch_number, failures, passed):
         time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         Stime_now = str(time_now)
-        batch_info = [batch_number, " Completed by - ", user, " of ", probe_type, " On ", Stime_now,
+        batch_info = [batch_number, " Completed by  ", user, " of ", probe_type, "-", f"On {Stime_now}",
                       f" Failed = {failures}", f"Passed = {passed}"]
         self.CSVM.WriteListOfListsCSV(batch_info, batch_number)
 

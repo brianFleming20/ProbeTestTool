@@ -33,8 +33,10 @@ class Data_Store():
     ########################
     # Main data file read  #
     ########################
-    #######################################
 
+    #########################################################
+    # Reads the user input data from the on-screen keyboard #
+    #########################################################
     def get_keyboard_data(self):
         filepath = os.path.join(self.file_data, "file.keys")
         try:
@@ -45,75 +47,90 @@ class Data_Store():
         else:
             return keys_data
 
-    ########################################
-
+    ##########################################################################
+    # The key inputs from the user are saved to a JSON file for access later #
+    # from the on-screen keyboard.                                           #
+    ##########################################################################
     def write_to_from_keys(self, keys):
         filepath = os.path.join(self.file_data, "file.keys")
         with open(filepath, 'wb') as key_input:
             pickle.dump(keys, key_input)
 
-    #########################################
-
+    ####################################################################
+    # Returns the administrator status of the currently logged-in user #
+    ####################################################################
     def user_admin_status(self):
         return self.get_user_data()['Admin']
 
-    #########################################
-
+    ########################################################
+    # Returns the username of the currently logged-in user #
+    ########################################################
     def get_username(self):
         return self.get_user_data()['Username']
 
-    #########################################
-
+    ##############################################################
+    # Returns the number of probes remaining in the batch number #
+    ##############################################################
     def get_probes_left_to_test(self):
         return self.get_probe_data()['Left_to_test']
 
-    ###########################################
-
+    ###################################################
+    # Return the current batch number being worked on #
+    ###################################################
     def get_current_batch(self):
         return self.get_probe_data()['Batch']
 
-    ############################################
-
+    ########################################################
+    # Returns the current batch probe type being worked on #
+    ########################################################
     def get_current_probe_type(self):
         return self.get_probe_data()['Probe_Type']
 
-    ############################################
-
+    ##################################################################################
+    # Returns the current status of the plot graph from within the fault find screen #
+    ##################################################################################
     def get_plot_status(self):
         return self.get_user_data()['Plot']
 
-    ############################################
-
+    #############################################################################
+    # This method is not used, as an administrator can preform the same actions #
+    #############################################################################
     def get_reset_password(self):
         return self.get_user_data()['reset_password']
 
-    ############################################
-
+    ##############################################################################
+    # This method is not used, as the administrator can perform the same actions #
+    ##############################################################################
     def get_reset_password_name(self):
         return self.get_user_data()['Change_password']
 
-    ############################################
-
+    #################################################################################
+    # Returns the number of failed probes from the currently worked on batch number #
+    #################################################################################
     def get_probes_failed(self):
         return self.get_probe_data()['Failures']
 
-    #############################################
-
+    ###################################################
+    # Returns the ODM external monitor working status #
+    ###################################################
     def get_monitor_setting(self):
         return self.get_devices()['odm_active']
 
-    #############################################
-
+    ######################################################################
+    # Returns the setting for providing a probe with a new serial number #
+    ######################################################################
     def get_overwrite_setting(self):
         return self.get_user_data()['Over_rite']
 
-    #############################################
-
+    ##########################################################
+    # Returns the setting for a nun-human probe being tested #
+    ##########################################################
     def get_animal_probe(self):
         return self.get_user_data()['Non_Human']
 
-    #############################################
-
+    ###################################################################
+    # Returns true when a username is found in the removed users file #
+    ###################################################################
     def get_current_use_user(self, username):
         # search in deleted json file for user, if not found user is not deleted
         if username in self.get_deleted_users():
@@ -121,8 +138,9 @@ class Data_Store():
         else:
             return False
 
-    #############################################
-
+    ############################################################
+    # Creates a JSON object for the connected external devices #
+    ############################################################
     def device_locations(self, data):
         devices = {
             "ODM": data.ODM,
@@ -133,6 +151,9 @@ class Data_Store():
         }
         return devices
 
+    ###########################################################
+    # Updates the external connected devices settings to file #
+    ###########################################################
     def write_device_to_file(self, ports):
         filepath = os.path.join(self.file_data, "ports.json")
         port_data = self.device_locations(ports)
@@ -148,6 +169,9 @@ class Data_Store():
                 json.dump(data, user_file, indent=4)
                 return True
 
+    ########################################################
+    # Returns a list of connected external device settings #
+    ########################################################
     def get_devices(self):
         filepath = os.path.join(self.file_data, "ports.json")
         try:
@@ -159,6 +183,9 @@ class Data_Store():
         else:
             return load_data
 
+    ###################################################################
+    # Creates a JSON object for the currently logged-in user settings #
+    ###################################################################
     def user_dict(self, user_data):
         user_dict = {
             "Username": user_data.Name,
@@ -171,6 +198,9 @@ class Data_Store():
         }
         return user_dict
 
+    #################################################
+    # Updates the currently logged-in user settings #
+    #################################################
     def write_user_data(self, user_data):
         filepath = os.path.join(self.file_data, "user.json")
         user_dict = self.user_dict(user_data)
@@ -188,6 +218,9 @@ class Data_Store():
                 result = True
         return result
 
+    ###########################################################
+    # Returns a list of the currently logged-in user settings #
+    ###########################################################
     def get_user_data(self):
         filepath = os.path.join(self.file_data, "user.json")
         try:
@@ -200,6 +233,10 @@ class Data_Store():
         else:
             return load_data
 
+    ############################################################################
+    # Creates a JSON object for users that are not used within the system, but #
+    # have been used in the past.                                              #
+    ############################################################################
     def deleted_dict(self, name, date):
         deleted_user = {
             name: {
@@ -208,7 +245,11 @@ class Data_Store():
         }
         return deleted_user
 
-    def write_dateted_user(self, user_data):
+    ##############################################################################
+    # Updates the deleted users to file. When a user is removed from the system, #
+    # it is not deleted but put into a file of previous users.                   #
+    ##############################################################################
+    def write_deleted_use(self, user_data):
         filepath = os.path.join(self.file_data, "deleted.json")
         date = strftime("%Y-%m-%d", gmtime())
         result = False
@@ -226,6 +267,9 @@ class Data_Store():
                 result = True
         return result
 
+    #################################################################
+    # Returns a list of users that are no longer used in the system #
+    #################################################################
     def get_deleted_users(self):
         filepath = os.path.join(self.file_data, "deleted.json")
         try:
@@ -236,6 +280,9 @@ class Data_Store():
         else:
             return load_deleted
 
+    ###############################################################
+    # Creates a JSON object for the batch and probe type settings #
+    ###############################################################
     def probe_dict(self, probe_data):
         probe_dict = {
             "Probe_Type": probe_data.Probe_Type,
@@ -247,6 +294,9 @@ class Data_Store():
         }
         return probe_dict
 
+    ################################################
+    # Updates the batch and probe settings to file #
+    ################################################
     def write_probe_data(self, probe_data):
         filepath = os.path.join(self.file_data, "probes.json")
         result = False
@@ -264,6 +314,9 @@ class Data_Store():
                 result = True
         return result
 
+    ##################################################################
+    # Returns a list of currently worked on batch and probe settings #
+    ##################################################################
     def get_probe_data(self):
         filepath = os.path.join(self.file_data, "probes.json")
         try:
@@ -276,12 +329,18 @@ class Data_Store():
         else:
             return load_data
 
+    ##################################################################################
+    # Creates a JSON object for the location of the in-progress and complete batches #
+    ##################################################################################
     def file_location(self, file):
         file_dict = {
             "File": file.File,
         }
         return file_dict
 
+    ###################################################################
+    # Updates the file location for the in-progress and complete data #
+    ###################################################################
     def write_file_location(self, file):
         filepath = os.path.join(self.file_data, "location.json")
         location = self.file_location(file)
@@ -297,6 +356,9 @@ class Data_Store():
                 json.dump(data, user_file, indent=4)
                 return True
 
+    ###############################################################################
+    # Returns a single item list of location of the in-progress and complete file #
+    ###############################################################################
     def get_file_location(self):
         filepath = os.path.join(self.file_data, "location.json")
         try:
@@ -309,6 +371,9 @@ class Data_Store():
         else:
             return load_data
 
+    ###############################################################
+    # Returns the user object of either a username or user object #
+    ###############################################################
     def getUser(self, user):
         '''
         tick
@@ -338,6 +403,9 @@ class Data_Store():
 
         return thisUser
 
+    #################################################################
+    # Returns a list of the currently registered user to the system #
+    #################################################################
     def getUserList(self):
         '''
         tick
@@ -359,6 +427,9 @@ class Data_Store():
 
         return userList
 
+    #########################################
+    # Registers a user object to the system #
+    #########################################
     def putUser(self, user):
         '''
         tick
@@ -382,6 +453,12 @@ class Data_Store():
                 pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
         return added
 
+    ###########################################################
+    # Registers a user to the removed users list.             #
+    # Any user in this list cannot work on a batch number     #
+    # If the user is held in the removed file and the system, #
+    # the system is unable to see the user.                   #
+    ###########################################################
     def removeUser(self, user):
         '''
         pass in a user object
@@ -394,17 +471,20 @@ class Data_Store():
             with open(filepath, 'rb') as handle:
                 userDict = pickle.load(handle)
         except FileNotFoundError:
-            self.write_dateted_user(user)
+            self.write_deleted_use(user)
         else:
-            # Check to see if the argument name is registered to the system
+            # Check if the user is held within the system
             # if so, the user is added to the delete file
             if user.name in userDict:
                 if self.get_current_use_user(user.name):
                     deleted = False
                 else:
-                    self.write_dateted_user(user)
+                    self.write_deleted_use(user)
         return deleted
 
+    ##################################
+    # Removes a user from the system #
+    ##################################
     def delete_user(self, username):
         filepath = os.path.join(self.file_data, "userfile.pickle")
         with open(filepath, 'rb') as handle:
@@ -413,6 +493,12 @@ class Data_Store():
         with open(filepath, 'wb') as handle:
             pickle.dump(userDict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+    #####################################################
+    # Removes a user from the deleted file is that user #
+    # is re-admitted to the system.                     #
+    # When the user is removed from the deleted file,   #
+    # the system is able to see the user again.         #
+    #####################################################
     def remove_from_delete_file(self, username):
         filepath = os.path.join(self.file_data, "deleted.json")
         with open(filepath, 'r') as file:

@@ -103,20 +103,29 @@ def probe_programmed():
 
 
 def detect_recorded_probe():
-    found = False
+    found = None
+    fail = "Fail"
+    not_found = "Not Found"
     filepath = DS.get_file_location()
     path = filepath['File']
     inProgressPath = os.path.join(path, "in_progress", "")
     completePath = os.path.join(path, "complete", "")
     serial_number = PM.read_serial_number()
-    found_in_progress = RT.check_data(inProgressPath, serial_number[8:])
-    if found_in_progress:
+    if fail in serial_number:
+        search = serial_number[8:]
+    else:
+        search = serial_number[6:]
+    found_in_progress = RT.check_data(inProgressPath, search)[0]
+
+    if found_in_progress == not_found:
+        found_complete = RT.check_data(completePath, search)[0]
+        if found_complete == not_found:
+            found = not_found
+        else:
+            found = found_complete[0]
+    else:
         found = found_in_progress[0]
-    found_complete = RT.check_data(completePath, serial_number[8:])
-    if found_complete:
-        found = found_complete[0]
-    # if found_in_progress or found_complete:
-    #     found = found_in_progress[0]
+
     return found, serial_number
 
 
@@ -299,7 +308,6 @@ class TestProgramWindow(tk.Frame):
     def to_sessions(self):
         self.control.show_frame(SE.SessionSelectWindow)
 
-
     def reset(self):
         self.display_layout()
         self.session_on_going = True
@@ -412,6 +420,8 @@ class TestProgramWindow(tk.Frame):
                     if self.over_write_probe(self.current_batch.get(), self.probe_type.get()):
                         self.remove_probe()
                     self.set_reprogram_status()
+                    if self.test:
+                        return True
             ##############################
             # Go to fault finding window #
             ##############################
@@ -424,16 +434,16 @@ class TestProgramWindow(tk.Frame):
 
     def do_test_and_programme(self, current_batch, probe_type):
         self.info_canvas = None
-        found, sn = detect_recorded_probe() # Detect if probe has serial number and where from
-        if not sn:
-            pass
-        elif current_batch != found and not self.check_overwrite():
-            P.probe_canvas(self, f"Batch number {found} error\n\ndoes not match current\n\nbatch number {current_batch}",
-                           True)
+        found, sn = detect_recorded_probe()
+        if not found and not self.check_overwrite():
+            self.show_serial_number.set(sn)
+            P.probe_canvas(self, f"Probe not recognised\nCurrent batch {current_batch}", True)
             return False
+        if current_batch != found and not self.check_overwrite():
+            P.probe_canvas(self, f"Batch number {found} - error\n\ndoes not match current {current_batch}", True)
+            if not self.test:
+                return False
         failure = False
-        programmed = False
-        serial_num = "Not tested"
         ##############################################
         # Perform test and programing probe, if the  #
         # testing from the analyser fails the serial #
@@ -441,58 +451,56 @@ class TestProgramWindow(tk.Frame):
         # programming of the probe fails, the probe  #
         # is not given a serial number.              #
         ##############################################
+        self.show_blue_meaasge()
         self.show_amber_image()
         Tk.update(self)
         ##############################################
         # Get number of failures so far during this  #
         # batch number.                              #
         ##############################################
-        failed = DS.get_probes_failed()
         non_human = DS.get_animal_probe()
-        overwrite = DS.get_overwrite_setting()
         ##############################################
         # Do the analyser testing of the probe.      #
         ##############################################
-        result, marker, odm_data = self.test_probe() # Test probe
-        if result:
-            #################################################
-            # If the analyser passes the probe, the probe   #
-            # is given a serial number, or a fault text.    #
-            #################################################
-            if not non_human: # Check for non-human probe selected
-                serial_num = self.program_probe(probe_type, True) # Gives the probe a serial number
-            else:
-                serial_num = "Animal Probe" # Probe serial number is given elsewhere
-            if not serial_num: # If probe serial number process fails
-                pass
-            else:
-                programmed = True # Sets flag for passed probe
-            self.show_serial_number.set(serial_num)
-            if not overwrite:
-                probes_passed = self.probes_passed.get() + 1
-                self.probes_passed.set(probes_passed)
-            Tk.update(self)
-            #################################################
-            # If the probe fails the analyser test, the     #
-            # probe is failed and may be re-worked.         #
-            #################################################
-        elif not result:
+        result, marker, odm_data = self.test_probe()
+        #################################################
+        # If the analyser passes the probe, the probe   #
+        # is given a serial number, or a fault text.    #
+        # Check to see if the probe type is non-human   #
+        #################################################
+
+        if not non_human:
+            serial_num = self.program_probe(probe_type, result)
+        else:
+            serial_num = "Animal Probe"
+        ################################################
+        # If the probe cannot be given a serial number #
+        ################################################
+        if not serial_num or not result:
             failure = True
-            #################################################
-            # Failed probe is given a fail message to the   #
-            # probe's chip to show a failed probe. The probe#
-            # is given a short serial number that can be    #
-            # adjusted into a full serial number later.     #
-            #################################################
-            serial_num = self.program_probe(probe_type, False)  # Gives the probe a fail serial number
-            if non_human: # Check for non-human probe selected
-                serial_num = f"Animal-{serial_num[4:]}" # Records the non-human serial number as a failure
-            if not overwrite:
-                failed += 1
-            ##################################################
-            # Notify the user that a probe has failed.       #
-            ##################################################
-            self.show_serial_number.set(serial_num)
+            serial_num = "PCB failure"
+        ########################################
+        # Show serial number to screen         #
+        ########################################
+        self.show_serial_number.set(serial_num)
+        ###########################################
+        # Update number of probes being processed #
+        ###########################################
+        # if not self.check_overwrite():
+        probes_passed = self.probes_passed.get() + 1
+        self.probes_passed.set(probes_passed)
+        probes_left = self.left_to_test.get() - 1
+        if probes_left < 0:
+            self.left_to_test.set(0)
+        self.left_to_test.set(probes_left)
+
+        Tk.update(self)
+        #################################################
+        # If the probe fails the analyser test, the     #
+        # probe is failed and may be re-worked.         #
+        #################################################
+        if not result:
+            failure = True
             ##################################################
             # Ask user if they want to fault find the failed #
             # probe. If not record probe results.            #
@@ -505,30 +513,19 @@ class TestProgramWindow(tk.Frame):
             if not self.info_canvas:
                 self.session_on_going = True
                 P.text_destroy(self)
-        if result and programmed:
+        if result and not failure:
             self.show_green_image()
-            Tk.update(self)
         else:
-            if not self.test:
-                self.show_red_light()
-            Tk.update(self)
+            self.show_red_light()
+        Tk.update(self)
         #########################################################
         # Whatever the probe test outcome, the results are sent #
         # to the batch number file in-progress.                 #
         #########################################################
-        if not overwrite:
-            probes_left = self.left_to_test.get() - 1
-            self.left_to_test.set(probes_left)
-            if probes_left < 0:
-                self.left_to_test.set(0)
-            if self.update_results(result, serial_num, odm_data, current_batch, marker):
-                probe_data = P.Probes(probe_type,
-                                      current_batch, int(self.probes_passed.get()), int(self.left_to_test.get()),
-                                      failed=failed)
-                DS.write_probe_data(probe_data)
+        if self.update_results(result, serial_num, odm_data, current_batch, marker):
+            self.save_probe_data(current_batch, failure)
         self.remove_probe()
-        if not self.test:
-            self.show_gray_light() # Reset light show
+        self.show_gray_light()
         return failure
 
     def save_probe_data(self, batch, failure):
@@ -547,8 +544,7 @@ class TestProgramWindow(tk.Frame):
         self.show_serial_number.set("      ---")
 
     def non_human_probe(self):
-        animal_probe = DS.get_user_data()['Non_Human']
-        return animal_probe
+        return DS.get_user_data()['Non_Human']
 
     def program_blank_probe(self):
         ###############################################################
@@ -580,8 +576,8 @@ class TestProgramWindow(tk.Frame):
         programmed = True
         fail_message = "Chip fault"
         self.action.set(warning_text["9"])
-        self.serial_number = PM.ProgramProbe(probe_type, test)
-        if not self.serial_number:
+        serial_number = PM.ProgramProbe(probe_type, test)
+        if not serial_number:
             ttk.Label(self.canvas_back, textvariable=self.action, background='orange',
                       relief=GROOVE, font=("Courier", 16)).place(relx=0.25, rely=0.83)
             self.action.set(warning_text["13"])
@@ -594,7 +590,7 @@ class TestProgramWindow(tk.Frame):
         if programmed:
             self.action.set(warning_text['15'])
             Tk.update(self)
-            return self.serial_number
+            return serial_number
         else:
             return fail_message
 
@@ -605,14 +601,13 @@ class TestProgramWindow(tk.Frame):
     def over_write_probe(self, current_batch, probe_type):
         self.info_canvas = None
         over_write = False
-        if probe_programmed() and PM.ProbePresent():
-            self.action.set(warning_text["2"])
-            Tk.update(self)
         found, serial_number = detect_recorded_probe()
         probe_type_ = RT.get_probe_type(serial_number[:3])
         self.show_serial_number.set(serial_number)
-        if not found:
-            P.probe_canvas(self, f"Location of {probe_type_} not found.", True)
+        if found == "Not Found":
+            P.probe_canvas(self, f"Location of {probe_type_} not found.", False)
+            time.sleep(2)
+            P.text_destroy(self)
         else:
             P.probe_canvas(self, f"This probe is from {probe_type_}\n \nbatch number {found}", False)
             time.sleep(2)
@@ -623,21 +618,21 @@ class TestProgramWindow(tk.Frame):
             # ask for user input to reprogramme the probe #
             ###############################################
             if tm.askyesno(title=warning_text["2"], message=warning_text['3']):
-                if self.do_test_and_programme(current_batch, probe_type):
-                    pass
-                else:
+                over_write = True
+                if not self.do_test_and_programme(current_batch, probe_type):
                     self.action.set(warning_text["15"])
-                    over_write = True
-                reset_rewrite = P.Users(self.current_user.get(), self.user_admin, over_right=False)
-                DS.write_user_data(reset_rewrite)
-            else:
-                self.remove_probe()
+                else:
+                    self.action.set(warning_text["13"])
+            reset_rewrite = P.Users(self.current_user.get(), self.user_admin, over_right=False)
+            DS.write_user_data(reset_rewrite)
+            self.remove_probe()
         else:
             P.probe_canvas(self, warning_text["14"], True)
             if self.info_canvas:
                 self.session_on_going = False
                 P.text_destroy(self)
-                self.ff_window()
+                if not self.test:
+                    self.ff_window()
             else:
                 self.session_on_going = True
                 P.text_destroy(self)

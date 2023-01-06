@@ -68,6 +68,12 @@ class ProbeManager(object):
         # '0' to the probe and then confining them by  #
         # reading the '0' back.                        #
         ################################################
+        blank_data = self.PD.GenerateDataString("ones", True)
+        PF.probe_write(blank_data)
+        result1 = str(PF.read_all_bytes())
+        for num in result1:
+            if not num == '1':
+                check = False
         blank_data = self.PD.GenerateDataString("blank", True)
         PF.probe_write(blank_data)
         result0 = str(PF.read_all_bytes())
@@ -75,12 +81,6 @@ class ProbeManager(object):
             check = False
         for num in result0:
             if not num == '0':
-                check = False
-        blank_data = self.PD.GenerateDataString("ones", True)
-        PF.probe_write(blank_data)
-        result1 = str(PF.read_all_bytes())
-        for num in result1:
-            if not num == '1':
                 check = False
         return check
 
@@ -101,7 +101,11 @@ class ProbeManager(object):
         return PF.read_first_bytes()
 
     def read_serial_number(self):
-        return PF.read_serial_number()
+        if PF.probe_present():
+            return PF.read_serial_number()
+        else:
+            return PF.reset_port()
+
 
     # def get_serial_number(self):
     #     # sn = self.read_serial_number()

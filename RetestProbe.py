@@ -58,7 +58,7 @@ def minutes_in_range(file_time, probe_time):
     result = False
     lower = file_time - 15
     upper = file_time + 15
-    for tu in range(file_time,upper):
+    for tu in range(file_time, upper):
         if tu == probe_time:
             result = True
     for tl in range(lower, file_time):
@@ -70,6 +70,7 @@ def minutes_in_range(file_time, probe_time):
 def check_data(folder, probe_date):
     hrs = 0
     probe_hrs = 0
+    result = None
     batch_list = []
     fail_text = "Fail"
     for file_loc in os.listdir(folder):
@@ -94,7 +95,11 @@ def check_data(folder, probe_date):
                     if day == probe_day:
                         if minutes_in_range(hrs, probe_hrs):
                             batch_list.append(batch_line)
-    return batch_list
+                result = [item for item in batch_list if len(item[2]) != 0]
+
+    if len(batch_list) is 0:
+        result = ["Not Found"]
+    return result
 
 
 class RetestProbe(tk.Frame):
@@ -102,6 +107,8 @@ class RetestProbe(tk.Frame):
         tk.Frame.__init__(self, Parent)
         self.results = StringVar()
         self.scrapped = None
+        self.control = Controller
+        self.parent = Parent
         self.qty_passed = None
         self.failed_probe = None
         self.found = False
@@ -126,6 +133,7 @@ class RetestProbe(tk.Frame):
         self.cent_y = self.hs / 2
         self.action = StringVar()
         self.timeout = IntVar()
+        self.test = False
 
     def screen_layout(self):
         #################################################################
@@ -133,6 +141,7 @@ class RetestProbe(tk.Frame):
         #################################################################
         self.canvas_back = Canvas(bg=self.back_colour, width=self.ws - 10, height=self.hs - 10)
         self.canvas_back.place(x=5, y=5)
+
         Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
                   font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
@@ -211,6 +220,7 @@ class RetestProbe(tk.Frame):
         port = P.Ports(probe=probe_port, analyer=analyser, active=False)
         DS.write_device_to_file(port)
         ports = DS.get_devices()
+        set_display = False
         if not ports['Analyser']:
             mb.showerror(title="Connection Error", message="Please connect all devices.")
             self.canvas_back.destroy()
@@ -218,17 +228,21 @@ class RetestProbe(tk.Frame):
         else:
             if len(ports['Analyser']) == 4:
                 self.znd.config(background="#7FB77E")
+                set_display = True
             else:
                 self.znd.config(background="#EB1D36")
             if len(ports['ODM']) == 4:
                 self.odm.config(background="#7FB77E")
+                set_display = True
             else:
                 self.odm.config(background="#EB1D36")
+
             if len(ports['Probe']) == 4:
                 self.probe.config(background="#7FB77E")
+                set_display = True
             else:
                 self.probe.config(background="#EB1D36")
-            return True
+            return set_display
 
     def yes_answer(self):
         self.info_canvas = True
@@ -245,10 +259,12 @@ class RetestProbe(tk.Frame):
             P.probe_canvas(self, "Probe has not been \nregistered with the system", True)
         self.canvas_back.destroy()
         if not from_test:
-            self.control.show_frame(SE.SessionSelectWindow)
+            if not self.test:
+                self.control.show_frame(SE.SessionSelectWindow)
         else:
             from_test = False
-            self.control.show_frame(PT.TestProgramWindow)
+            if not self.test:
+                self.control.show_frame(PT.TestProgramWindow)
 
     def remove_probe(self):
         P.probe_canvas(self, "\n\nPlease remove the probe.", False)
@@ -260,7 +276,7 @@ class RetestProbe(tk.Frame):
     def check_for_probe(self):
         probe_type = self.check_for_failed_probe()
         if self.failed_probe:
-            P.text_destroy(self)
+            # P.text_destroy(self)
             filepath = DS.get_file_location()
             path = filepath['File']
             inProgressPath = os.path.join(path, "in_progress", "")
@@ -279,8 +295,8 @@ class RetestProbe(tk.Frame):
 
     def check_folder(self, folder, probe_date, probe_type):
         found = False
-        last_line = check_data(folder, probe_date)
-        if last_line is None:
+        last_line = check_data(folder, probe_date)[-1]
+        if "Not Found" in last_line:
             last_line = False
         if last_line is not False:
             found = True
@@ -332,7 +348,7 @@ class RetestProbe(tk.Frame):
                     P.probe_canvas(self, f" ({self.batch_from_file}) \n{self.probe_type} - Probe Passed", False)
                     self.passed_probe()
                     P.text_destroy(self)
-                    self.remove_probe()
+                    # self.remove_probe()
                 else:
                     self.failed_a_probe()
                     serial_number = self.serial_number.get()
@@ -369,31 +385,60 @@ class RetestProbe(tk.Frame):
                 return BM.CSVM.ReadLastLine(self.batch_from_file, False)
 
     def passed_probe(self):
+        ####################################
+        # Probe has been repaired and is   #
+        # retested as passed.              #
+        # Reconstructs probe data to give  #
+        # full passed serial number        #
+        ####################################
         construct = False
         SN_seperated = []
         limit = 16
         start = 0
+        ##############################
+        # Start hex for probe data   #
+        ##############################
         dec_start = '53A00900'
+        ##############################
+        # End hex for probe data     #
+        ##############################
         end = '50'
+        ##############################
+        # Get all probe bytes        #
+        ##############################
         SN_bytes = PI.read_all_bytes()
         if len(SN_bytes) == 0:
             return construct
         else:
             while limit <= len(SN_bytes):
+                ################################################
+                # Reconstrusts original probe data             #
+                # seperating each data set into 26 bytes       #
+                ################################################
                 makeup = dec_start + SN_bytes[start:limit] + end
                 SN_seperated.append(makeup)
                 limit += 16
                 start += 16
             probe_type = SN_seperated[0][8:16]
             probe_sn = SN_seperated[1][8:-2]
+            #####################################
+            # Formats todays date into the data #
+            # format for reconstructed probe    #
+            #####################################
             year_hex = [format(ord(item), "x") for item in strftime("%Y", gmtime())[2:]]
             year = year_hex[0] + year_hex[1]
-            seconds = [format(ord(item), "x") for item in strftime("%S", gmtime())[2:]]
-            new_probe_sn = probe_type + year + probe_sn + str(seconds)
+            secs = [format(ord(item), "x") for item in strftime("%S", gmtime())]
+            seconds = secs[0] + secs[1]
+            new_probe_sn = probe_type + year + probe_sn + seconds
+            #####################################
+            # Converts to hex                   #
+            #####################################
             new_probe_bin = codecs.decode(new_probe_sn, 'hex')
             new_probe = new_probe_bin.decode('utf-8')
-            construct = PM.construct_new_serial_number(new_probe)
-            return construct
+            ######################################
+            # write new probe data               #
+            ######################################
+            PM.construct_new_serial_number(new_probe)
 
     def failed_a_probe(self):
         left_to_test = 0
@@ -414,3 +459,6 @@ class RetestProbe(tk.Frame):
                               self.qty_passed, left_to_test, failed=failed, scrap=scraped)
         DS.write_probe_data(probe_data)
         P.text_destroy(self)
+
+    def set_test_flag(self):
+        self.test = True

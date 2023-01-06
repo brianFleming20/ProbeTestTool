@@ -46,6 +46,11 @@ class PRI(object):
     def open_port(self):
         self.ser.open()
 
+    def reset_port(self):
+        self.send_data(b'52540A')
+        time.sleep(0.1)
+        return self.read_data()
+
     def probe_present(self):
         '''
         Returns True if a probe is present, False if not
@@ -66,6 +71,9 @@ class PRI(object):
         ################################
         # send data to probe interface #
         ################################
+        self.get_serial_port()
+        if self.ser.isOpen() is None:
+            self.ser.open()
         self.send_data(b'4950')
         time.sleep(0.1)  # allow time for the data to be received
         IOByte = self.read_data()
@@ -94,7 +102,7 @@ class PRI(object):
         ###############################
         # Probe type codes in decimal #
         ###############################
-        if first_byte in ['32', '36', '35']:
+        if first_byte in ['32', '36', '35', '11']:
             return True
         else:
             return False
@@ -103,7 +111,6 @@ class PRI(object):
         '''
         returns a single byte as a 2 character string
         '''
-        self.serial_number = False
         self.get_serial_port()
         if not self.ser.isOpen():
             self.ser.open()
@@ -115,10 +122,11 @@ class PRI(object):
         #######################
         # read the probe data #
         #######################
-        self.serial_number = self.read_data()
+        serial_number = self.read_data()
         self.close_port()
-        if not self.serial_number[:2] > '5a':
-            num = str(codecs.decode(self.serial_number[:32], "hex"), 'utf-8')[:16]
+
+        if not serial_number[:2] > '5a':
+            num = str(codecs.decode(serial_number[:32], "hex"), 'utf-8')[:16]
         else:
             num = "No serial number"
         return num
@@ -155,7 +163,7 @@ class PRI(object):
         self.get_serial_port()
         if not self.ser.isOpen():
             self.ser.open()
-        serialData = []
+        serialData = None
 
         self.send_data(b'53A0010053A11e50')
         time.sleep(0.05)  # allow time for the data to be received
@@ -173,25 +181,25 @@ class PRI(object):
         time.sleep(0.05)
         serialData = serialData + self.read_data()
 
-        self.send_data(b'53A0017853A11e50')  # read 0's
-        time.sleep(0.05)
-        serialData = serialData + self.read_data()
+        # self.send_data(b'53A0017853A11e50')  # read 0's
+        # time.sleep(0.05)
+        # serialData = serialData + self.read_data()
 
-        self.send_data(b'53A0019653A11e50')
-        time.sleep(0.05)
-        serialData = serialData + self.read_data()
+        # self.send_data(b'53A0019653A11e50')
+        # time.sleep(0.05)
+        # serialData = serialData + self.read_data()
 
-        self.send_data(b'53A001B453A11e50')
-        time.sleep(0.05)
-        serialData = serialData + self.read_data()
+        # self.send_data(b'53A001B453A11e50')
+        # time.sleep(0.05)
+        # serialData = serialData + self.read_data()
 
-        self.send_data(b'53A001D253A11e50')
-        time.sleep(0.05)
-        serialData = serialData + self.read_data()
+        # self.send_data(b'53A001D253A11e50')
+        # time.sleep(0.05)
+        # serialData = serialData + self.read_data()
 
-        self.send_data(b'53A001F053A11050')  # read 0's
-        time.sleep(0.05)
-        serialData = serialData + self.read_data()
+        # self.send_data(b'53A001F053A11050')  # read 0's
+        # time.sleep(0.05)
+        # serialData = serialData + self.read_data()
 
         self.ser.close()
         return serialData
@@ -225,12 +233,13 @@ class PRI(object):
         # convert the input to ASCII characters and send it
         return self.ser.write(codecs.decode(data, "hex_codec"))
 
-
     def read_data(self):
         '''
         reads the contents of the serial buffer and returns it as a string
         of hex bytes
         '''
+        if not self.ser.isOpen():
+            self.ser.open()
         serialData = ''
         self.ser.flush()
         while self.ser.inWaiting() > 0:
