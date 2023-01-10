@@ -97,7 +97,7 @@ def check_data(folder, probe_date):
                             batch_list.append(batch_line)
                 result = [item for item in batch_list if len(item[2]) != 0]
 
-    if len(batch_list) is 0:
+    if len(batch_list) == 0:
         result = ["Not Found"]
     return result
 

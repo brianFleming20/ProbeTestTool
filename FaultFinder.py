@@ -208,18 +208,16 @@ class FaultFindWindow(tk.Frame):
         return PM.read_serial_number()
 
     def update_odm_data(self):
+        serial_results = False
         if DS.get_devices()['odm_active']:
-            try:
-                serial_results = ODM.ReadSerialODM()
-            except IOError:
-                pass
-            else:
-                if not serial_results:
-                    serial_results = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                self.SD_data.set(serial_results[5])
-                self.FTc_data.set(serial_results[6])
-                self.PV_data.set(serial_results[9])
-                Tk.update(self)
+            serial_results = ODM.ReadSerialODM()
+
+        if not serial_results:
+            serial_results = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.SD_data.set(serial_results[5])
+        self.FTc_data.set(serial_results[6])
+        self.PV_data.set(serial_results[9])
+        Tk.update(self)
 
     def fault_find_probe(self):
         if not PM.ProbeIsProgrammed():
@@ -236,18 +234,18 @@ class FaultFindWindow(tk.Frame):
         self.update_odm_data()
 
     def test_probe(self):
+        result = None
         cable = self.get_cable_code()
-        self.cable_code.set(round(cable, 3))
+        if not cable:
+            result = 0.0
+        else:
+            result = round(cable, 3)
+
+        self.cable_code.set(result)
         fault = "Unknown"
-        # probe_passed = "No Fault"
         lower = self.get_lower_limit()
         upper = self.get_upper_limit()
-        # self.fault_text = ["No Fault", "Unknown", "Break in Blue/Green wire",
-        #                    "Break in Red/Black wires", "Poor pass Red/Black",
-        #                    "Poor pass Blue/Green", "Poor pass Red/Black",
-        #                    "Signal wires connected", "S/C Screen to Blue wire",
-        #                    "Break in Red wire", "Crystal Fault",
-        #                    "S/C Screen to Red wires"]
+
         ############################################################
         # Adjusting the limits for each of the failure types could #
         # be achieved by using the lower and upper limits with a   #
@@ -259,27 +257,25 @@ class FaultFindWindow(tk.Frame):
         fault_fails = [
             {(lower, upper): "No Fault"},
             {(0.58, 0.65): "Break in Blue / Green wire"},
-            {(-0.95, -0.85): "Break in Red / Black wire"},
+            {(-0.95, -0.85): "Blue wire S/C to Screen"},
             {(0.1, 0.4): "Crystal fault"},
-            {(0.5, 0.6): "Blue wire S/C to Screen"},
+            {(0.1, 0.9): "Break in Red / Black wire"},
             {(-0.09, -0.04): "Red wire S/C to Screen"},
             {(570.0, 580.0): "Black wire S/C to Screen"},
             {(0.99, 1.1): "Green wire S/C to Screen"},
             {(0.15, 0.19): "Red/Black crystal fault"},
             {(0.0, 0.0): "Blue/Green crystal fault"}
         ]
-        # No Fault
-        # if lower < cable < upper:
-        #     fault = probe_passed
+        # Blue wire S/C to Screen
         for items in fault_fails:
             data = list(items.keys())[0]
             lower_data = float(data[0])
             upper_data = float(data[1])
             val = list(items.values())[0]
-            if lower_data < cable < upper_data:
+            if lower_data <= result <= upper_data:
                 fault = val
             if self.test:
-                print(f" {lower_data} - {upper_data} : {val} cable = {cable}")
+                print(f" {lower_data} - {upper_data} : {val} cable = {result}")
         return fault
 
     def yes_answer(self):
@@ -289,7 +285,10 @@ class FaultFindWindow(tk.Frame):
         self.info_canvas = False
 
     def get_cable_code(self):
-        return ZND.tdr()
+        if not ZND.get_vna_check():
+            return False
+        else:
+            return ZND.tdr()
 
     def get_upper_limit(self):
         return PT.UPPER_LIMIT

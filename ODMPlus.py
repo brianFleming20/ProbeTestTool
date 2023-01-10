@@ -51,10 +51,10 @@ class ODMData(object):
         temp = ""
         parameters = ''
         # Set up port connection
-        if self.check_port_open():
-            self.odm_port.open()
-        else:
+        if not self.check_port_open():
             return False
+        else:
+            self.odm_port.open()
         parameters = self.odm_port.readline()  # read line of ODM
         while sec:
             parameters = self.odm_port.readline()

@@ -347,7 +347,7 @@ class NewSessionWindow(tk.Frame):
         self.canvas_qty.place(relx=0.5, rely=0.55)
         Label(self.canvas_qty, text="Batch Qty:", font=("bold", 14)).place(relx=0.18, rely=0.3, anchor=N)
         Label(self.canvas_qty, text="-->").place(x=180, y=18)
-        ttk.Label(self.canvas_qty, text=batch_qty, font=("bold", 14)).place(relx=0.75, rely=0.3, width=140, anchor=N)
+        ttk.Label(self.canvas_qty, text=get_qty(), font=("bold", 14)).place(relx=0.75, rely=0.3, width=140, anchor=N)
 
     def confm_btn_clicked(self):
         ######################

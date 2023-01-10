@@ -311,23 +311,23 @@ class TestProgramWindow(tk.Frame):
     def reset(self):
         self.display_layout()
         self.session_on_going = True
-        current_user = DS.get_username().title()
+        current_user = DS.get_username()
+        self.user_admin = DS.user_admin_status()
         # self.user_admin = DS.get_user_data()['Over_rite']
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
-        current_batch = DS.get_current_batch()
-        if current_batch == "000":
-            self.text_area.insert('1.0', current_user)
-            self.text_area.insert('2.0', '\nPlease continue testing batch ')
+        if DS.get_current_batch() == "000":
+            self.text_area.insert('1.0', current_user.title())
+            self.text_area.insert('3.0', '\nPlease continue testing batch ')
         else:
-            self.text_area.insert('1.0', current_user)
+            self.text_area.insert('1.0', current_user.title())
             self.text_area.insert('2.0', '\nPlease continue testing batch ')
-            self.text_area.insert('2.30', current_batch)
+            self.text_area.insert('2.30', DS.get_current_batch())
         self.left_to_test.set(DS.get_probes_left_to_test())
         self.probes_passed.set(DS.get_probe_data()['Passed'])
         self.probe_type.set(DS.get_current_probe_type())
-        self.current_batch.set(current_batch)
-        self.current_user.set(current_user)
+        self.current_batch.set(DS.get_current_batch())
+        self.current_user.set(DS.get_username())
         # self.RLLimit = -1
         self.canvas_back.pack()
         self.reflection.set("--->")
@@ -417,7 +417,7 @@ class TestProgramWindow(tk.Frame):
                     # ask if admin is true, is so   #
                     # reprogram and test probe      #
                     #################################
-                    if self.over_write_probe(self.current_batch.get(), self.probe_type.get()):
+                    if self.over_write_probe(DS.get_current_batch(), DS.get_current_probe_type()):
                         self.remove_probe()
                     self.set_reprogram_status()
                     if self.test:
@@ -599,6 +599,7 @@ class TestProgramWindow(tk.Frame):
         ##########################################################
 
     def over_write_probe(self, current_batch, probe_type):
+        # print(f"Before current user {self.current_user.get()} - user admin {self.user_admin} - {self.check_overwrite()}")
         self.info_canvas = None
         over_write = False
         found, serial_number = detect_recorded_probe()
@@ -625,7 +626,8 @@ class TestProgramWindow(tk.Frame):
                     self.action.set(warning_text["13"])
             reset_rewrite = P.Users(self.current_user.get(), self.user_admin, over_right=False)
             DS.write_user_data(reset_rewrite)
-            self.remove_probe()
+            # print(f"After current user {self.current_user.get()} - user admin {self.user_admin} - {self.check_overwrite()}")
+            # self.remove_probe()
         else:
             P.probe_canvas(self, warning_text["14"], True)
             if self.info_canvas:

@@ -152,6 +152,8 @@ class AdminWindow(tk.Frame):
 
         self.admin_state.get()
         self.checkbutton.place(relx=0.6, rely=0.4)
+        self.canvas = Canvas(bg="#eae9e9", width=320, height=300)
+        self.canvas.place(relx=0.11, rely=0.32)
         self.show_user_options()
 
         self.odm_button = Checkbutton(text=" Set Monitor In-active Running",
@@ -169,8 +171,8 @@ class AdminWindow(tk.Frame):
         ####################
         # Show user input  #
         ####################
-        self.canvas = Canvas(bg="#eae9e9", width=320, height=300)
-        self.canvas.place(relx=0.11, rely=0.32)
+        # self.canvas = Canvas(bg="#eae9e9", width=320, height=300)
+        # self.canvas.place(relx=0.11, rely=0.32)
         self.btn1 = Button(self.canvas, text='Add a new user', command=self.to_new_user, font=("Courier", 12))
         self.btn1.place(relx=0.1, rely=0.14, height=50, anchor=W)
 
@@ -180,7 +182,7 @@ class AdminWindow(tk.Frame):
         #        command=self.to_devices, font=("Courier", 12)).place(relx=0.1, rely=0.62, height=50, anchor=W)
         Button(self.canvas, text="Change Batch Qty", command=self.change_qty,
                font=("Courier", 12)).place(relx=0.1, rely=0.65, height=50, anchor=W)
-        Label(self.canvas, text=f"Current Qty\n{SE.BATCH_QTY}", font=('Arial', 12)).place(relx=0.62, rely=0.78)
+        Label(self.canvas, text=f"Current Qty\n{SE.get_qty()}", font=('Arial', 12)).place(relx=0.62, rely=0.78)
 
         Button(self.canvas_back, text='Exit', width=40, command=self.canvas_gone).place(height=40,
                                                                                         width=180, relx=0.88, rely=0.82,
@@ -194,6 +196,7 @@ class AdminWindow(tk.Frame):
         title.place(relx=0.1, rely=0.7)
         ttk.Label(self.canvas_back, textvariable=self.location, font=("Courier", 14)).place(relx=0.1, rely=0.75,
                                                                                             width=520)
+        Tk.update(self)
 
     def get_browse_file(self):
         default_loc = "/PTT_Results"
@@ -222,8 +225,9 @@ class AdminWindow(tk.Frame):
 
         SE.set_qty(batchQty)
         qty_canvas.destroy()
-        Label(self.canvas, text=f"Current Qty\n{SE.get_qty()}", font=('Arial', 12)).place(relx=0.62, rely=0.38)
-        Tk.update(self)
+        self.show_user_options()
+        # Label(self.canvas, text=f"Current Qty\n{SE.get_qty()}", font=('Arial', 12)).place(relx=0.62, rely=0.78)
+        # Tk.update(self)
 
     # def wait_for_response(self, master, label):
     #     DS.write_to_from_keys(">")

@@ -177,7 +177,7 @@ class NanoZND():
         window = np.blackman(raw_points)
         s11 = window * s11
         td = np.abs(np.fft.ifft(s11, NFFT))
-
+        self.ser_ana.close()
         # Calculate maximum time axis
         try:
             t_axis = np.linspace(0, 1/step, NFFT)
