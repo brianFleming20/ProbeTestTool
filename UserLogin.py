@@ -163,8 +163,8 @@ class LogInWindow(tk.Frame):
         ########################################
         # Get user inputs from the keyboard    #
         ########################################
-        username = self.get_username()
-        password = self.get_password()
+        username = self.current_user
+        password = self.password
         if len(username) > 0 and len(password) > 0 and not DS.get_current_use_user(username):
             #######################################
             # Create user object with admin false #

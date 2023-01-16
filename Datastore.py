@@ -272,11 +272,13 @@ class Data_Store():
     #################################################################
     def get_deleted_users(self):
         filepath = os.path.join(self.file_data, "deleted.json")
+        load_deleted = None
         try:
             with open(filepath, 'r') as file:
                 load_deleted = json.load(file)
         except FileNotFoundError:
-            return False
+            date = strftime("%Y-%m-%d", gmtime())
+            load_deleted = self.deleted_dict("Error", date)
         else:
             return load_deleted
 
