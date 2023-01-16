@@ -49,11 +49,7 @@ def ignore():
 
 def sort_probe_interface(self):
     # Tests the probe interface connection
-
     probe = PF.check_probe_connection()
-    # if not probe:
-    #     return probe
-    # else:
     if probe:
         self.probe_working = True
     else:
@@ -70,8 +66,6 @@ def check_analyser():
 class Connection(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#B1D0E0')
-
-        # self.is_admin = ""
         self.znd_working = False
         self.probe_working = False
         self.monitor_working = False
@@ -90,21 +84,16 @@ class Connection(tk.Frame):
         self.label_9 = ttk.Label(self, text=" Press 'Continue' and wait to connect sensors... ", background="#B1D0E0")
         self.label_9.config(font=("Courier", 16))
         self.label_9.place(relx=0.5, rely=0.4, anchor=CENTER)
-
         ttk.Label(self, text="NanoZND", background="#B1D0E0", font=("Courier",14)).place(relx=0.25, rely=0.6)
         ttk.Label(self, textvariable=self.znd, relief=SUNKEN, font=("Courier",14)).place(relx=0.33, rely=0.6)
-
         ttk.Label(self, text=" Probe ", background="#B1D0E0", font=("Courier",14)).place(relx=0.38, rely=0.6)
         ttk.Label(self, textvariable=self.probe, relief=SUNKEN, font=("Courier",14)).place(relx=0.45, rely=0.6)
-
         ttk.Label(self, text=" Monitor ", background="#B1D0E0", font=("Courier",14)).place(relx=0.57, rely=0.6)
         ttk.Label(self, textvariable=self.odm, relief=SUNKEN, font=("Courier",14)).place(relx=0.65, rely=0.6)
-
         self.confm_btn = tk.Button(self, text='Continue', font=("Courier", 18),
                                    width=25, command= self.test_connections)
         self.confm_btn.place(relx=0.7, rely=0.8, anchor=CENTER)
         self.confm_btn.config(state=NORMAL)
-
         tk.Button(self, text='Cancel', font=("Courier", 12), width=20,command=self.to_sessions).place(relx=0.3,
                                                                                          rely=0.8, anchor=CENTER)
         self.bind('<Return>', self.test_connections)
@@ -114,22 +103,16 @@ class Connection(tk.Frame):
         self.probe.set("---")
         self.odm.set("---")
         self.znd.set("---")
-
         analyser_port = self.sort_znd_interface()
-
         probe_port = sort_probe_interface(self)
-
         odm_port = self.sort_odm_interface()
-
         if not odm_port:
             odm_active = False
         else:
             odm_active = True
-
         ports = Ports.Ports(odm=odm_port, probe=probe_port, analyer=analyser_port, active=odm_active)
         DS.write_device_to_file(ports)
         Tk.update(self)
-
         self.test_connections()
 
     def sort_znd_interface(self):

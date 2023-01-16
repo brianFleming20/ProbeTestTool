@@ -24,7 +24,7 @@ import tkinter.messagebox as tm
 from tkinter import filedialog
 import SecurityManager
 import BatchManager
-from time import gmtime, strftime, sleep
+from time import gmtime, strftime
 import Sessions
 import AdminPortControl
 import Datastore
@@ -105,7 +105,6 @@ class AdminWindow(tk.Frame):
         self.userListBox = Listbox(self.canvas_back, height=11, width=18)
         self.userListBox.place(relx=0.38, rely=0.35)
         self.userListBox.config(font=("Courier", 16))
-
         ttk.Label(self.canvas_back, text="Deltex", background="#FFDAB9", foreground="#003865",
                   font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self.canvas_back, text="medical", background="#FFDAB9", foreground="#A2B5BB",
@@ -113,55 +112,30 @@ class AdminWindow(tk.Frame):
 
         self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=38)
         self.text_area.place(relx=0.18, rely=0.1, anchor=CENTER)
-        # time_now = strftime("%H:%M:%p", gmtime())
-
-        # if "AM" in time_now:
-        #     self.text_area.insert('1.0', 'Good Morning ')
-        # else:
-        #     self.text_area.insert('1.0', 'Good Afternoon ')
         userList = []
-        # self.text_area.config(state=NORMAL)
-        # self.text_area.delete('1.0', 'end')
-        # self.text_area.insert('1.0', DS.get_username().title())
-        # self.text_area.insert('2.0', '\n\nPlease choose an option.')
         for item in SM.GetUserList():
             if not DS.get_current_use_user(item.name):
-                # print(f"user list = {item.name}")
                 if item.admin:
-                    # username = item.name
                     item.name = item.name + "--> Admin"
                 userList.append(item.name)
-
         self.userListBox.delete(0, END)
         # fill the listbox with the list of users
-
         for item in userList:
             self.userListBox.insert(END, ' ' + item)
         self.userListBox.config(state=DISABLED)
         self.set_overwrite_state()
-        # Read admin state of the check box
-        # if self.admin_state.get():
-        #     self.text_area.insert('4.0', '\nProbe serial number re-issue enabled.')
-        # else:
-        #     self.text_area.insert('4.0', '\nProbe serial number re-issue disabled.')
-        # self.userListBox.config(state=DISABLED)
-        # self.text_area.config(state=DISABLED)
-
         self.checkbutton = Checkbutton(text=" Serial number Replace ",
                                        variable=self.admin_state, command=lambda: self.set_admin_state(),
                                        font=("Courier", 12))
-
         self.admin_state.get()
         self.checkbutton.place(relx=0.6, rely=0.4)
         self.canvas = Canvas(bg="#eae9e9", width=320, height=300)
         self.canvas.place(relx=0.11, rely=0.32)
         self.show_user_options()
-
         self.odm_button = Checkbutton(text=" Set Monitor In-active Running",
                                       variable=self.odm_active, command=self.set_odm_state, font=("Courier", 12))
         self.odm_button.place(relx=0.6, rely=0.5)
         self.odm_active.get()
-
         self.nhp_button = Checkbutton(text=" Test Non-Human Probe",
                                       variable=self.non_human, command=self.set_non_human_probe, font=("Courier", 12))
         self.nhp_button.place(relx=0.6, rely=0.6)
@@ -172,31 +146,23 @@ class AdminWindow(tk.Frame):
         ####################
         # Show user input  #
         ####################
-        # self.canvas = Canvas(bg="#eae9e9", width=320, height=300)
-        # self.canvas.place(relx=0.11, rely=0.32)
         self.btn1 = Button(self.canvas, text='Add a new user', command=self.to_new_user, font=("Courier", 12))
         self.btn1.place(relx=0.1, rely=0.14, height=50, anchor=W)
 
         Button(self.canvas, text='Edit a current user', command=self.to_edit_user,
                font=("Courier", 12)).place(relx=0.1, rely=0.38, height=50, anchor=W)
-        # Button(self.canvas, text='Edit a device port number',
-        #        command=self.to_devices, font=("Courier", 12)).place(relx=0.1, rely=0.62, height=50, anchor=W)
         Button(self.canvas, text="Change Batch Qty", command=self.change_qty,
                font=("Courier", 12)).place(relx=0.1, rely=0.65, height=50, anchor=W)
         Label(self.canvas, text=f"Current Qty\n{SE.get_qty()}", font=('Arial', 12)).place(relx=0.62, rely=0.78)
-
         Button(self.canvas_back, text='Exit', width=40, command=self.canvas_gone).place(height=40,
                                                                                         width=180, relx=0.88, rely=0.82,
                                                                                         anchor=E)
-
         ttk.Button(self.canvas_back, text="Browse", command=lambda: self.get_browse_file()).place(relx=0.52, rely=0.74,
                                                                                                   height=50, width=110)
-
         self.location.set(DS.get_file_location()['File'])
         title = ttk.Label(self.canvas_back, text="File storage location", font=("Courier", 14), background='#FFDAB9')
         title.place(relx=0.1, rely=0.7)
-        ttk.Label(self.canvas_back, textvariable=self.location, font=("Courier", 14)).place(relx=0.1, rely=0.75,
-                                                                                            width=520)
+        ttk.Label(self.canvas_back, textvariable=self.location, font=("Courier", 14)).place(relx=0.1, rely=0.75,                                                                       width=520)
         Tk.update(self)
 
     def get_browse_file(self):
@@ -213,17 +179,14 @@ class AdminWindow(tk.Frame):
     def change_qty(self):
         qty_canvas = Canvas(bg="#FFDAB9", width=500, height=120)
         qty_canvas.place(relx=0.3, rely=0.45)
-        # qty_text = None
         qty_text = qty_canvas.create_text(200, 45, text=" ", fill="black",
                                           font=(K.FONT_NAME, 8, "bold"))
         Label(qty_canvas, text="Enter a new batch quantity.", font=('Arial', 12)).place(x=75, y=42)
         KY.get_keyboard()
-
         data = K.wait_for_response(qty_canvas, qty_text)
         if not data:
             data = 100
         batchQty = int(data)
-
         SE.set_qty(batchQty)
         qty_canvas.destroy()
         self.show_user_options()
@@ -242,7 +205,6 @@ class AdminWindow(tk.Frame):
             self.text_area.insert('4.0', '\nProbe serial number re-issue enabled.')
         else:
             self.text_area.insert('4.0', '\nProbe serial number re-issue disabled.')
-        # self.userListBox.config(state=DISABLED)
         self.text_area.config(state=DISABLED)
 
     #############################################
@@ -273,10 +235,6 @@ class AdminWindow(tk.Frame):
         self.canvas_gone()
         self.control.show_frame(EditUserWindow)
 
-    # def to_devices(self):
-    #     self.canvas_gone()
-    #     self.control.show_frame(AP.AdminPorts)
-
 
 class ChangePasswordWindow(tk.Frame):
     def __init__(self, parent, controller):
@@ -306,7 +264,6 @@ class ChangePasswordWindow(tk.Frame):
     def confirm(self):
         self.canvas_1.destroy()
         self.canvas_2.destroy()
-        # self.password_change()
 
     def confirm_change(self):
         self.canvas_1.destroy()
@@ -336,10 +293,8 @@ class ChangePasswordWindow(tk.Frame):
                                                     font=(OnScreenKeys.FONT_NAME, 16, "bold"))
         self.reset_pass = DS.get_reset_password()
         self.CPWb1 = Button(self.canvas_1, text='Enter new password', font=('Courier', 12), command=self.password_entry)
-        # Set keyboard icon to show button is used to show the keyboard
         Label(self.canvas_1, text="-->").place(x=230, y=12)
         self.CPWb1.place(x=15, y=15)
-
         self.CPWb2 = Button(self.canvas_2, text='Confirm new password', font=('Courier', 12), command=self.conform_pwd)
         Label(self.canvas_2, text="-->").place(x=230, y=12)
         self.CPWb2.place(x=15, y=15)
@@ -357,7 +312,6 @@ class ChangePasswordWindow(tk.Frame):
         self.back_btn = Button(
             self, text='Back', command=self.back, font=('Courier', 14))
         self.back_btn.place(height=35, width=80, relx=0.625, rely=0.83, anchor=E)
-
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
         self.text_area.insert('1.0', DS.get_username().title())
@@ -396,31 +350,11 @@ class ChangePasswordWindow(tk.Frame):
         self.CPWb1.config(state=DISABLED)
         self.CPWb2.config(state=DISABLED)
 
-    # def wait_for_response(self, master, label):
-    #     DS.write_to_from_keys("_")
-    #     password_blank = "*********************"
-    #     while 1:
-    #         pw_data = DS.get_keyboard_data()
-    #         pw_len = len(pw_data)
-    #         if pw_len > 0 and pw_data[-1] == "+":
-    #             pw_data = pw_data[:-1]
-    #             break
-    #         master.itemconfig(label, text=password_blank[:pw_len])
-    #         Tk.update(master)
-    #     return pw_data
-
-    # def password_change(self):
-    #     if self.check_entries():
-    #         self.return_to_edit_user()
-    #     else:
-    #         self.refresh_window()
-
     def check_entries(self):
         change = False
         name = DS.get_reset_password_name()
         user_admin = DS.getUser(name).admin
         if not user_admin and not check_user_admin(name):
-            # if not check_user_admin(name):
             get_admin = False
         if len(self.newPassword) > 0 and len(self.confirmPassword) > 0:
             if self.newPassword == self.confirmPassword:
@@ -489,11 +423,8 @@ class EditUserWindow(tk.Frame):
         self.finished_btn.place(height=40, width=180, relx=0.75, rely=0.78)
 
     def _getSelectedUser(self):
-        # set up user list box to first selected item
-        # selectedId = self.userListBox.curselection()
-        # selectedUser = self.userListBox.get(selectedId[0])
+
         if test:
-            # self.userListBox.selection_set(1)
             self.selectedUser = self.userListBox.get(self.index)
         else:
             selectedId = self.userListBox.curselection()
@@ -608,24 +539,19 @@ class AddUserWindow(tk.Frame):
         self.canvas_3 = None
         self.canvas_2 = None
         self.canvas_1 = None
-        # self.allow_add_admin = True
         self.is_admin = BooleanVar()
         self._setDefaults()
         self.control = controller
-
         self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
-
         ttk.Label(self, text="Deltex", background="#FFDAB9", foreground="#003865",
                   font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#FFDAB9", foreground="#A2B5BB",
                   font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
-
         self.confm_btn = ttk.Button(
             self, text="Confirm", command=lambda:
             [self.remove_canvas(), self._confm_btn_clicked])
         self.confm_btn.place(height=40, width=180, relx=0.880, rely=0.78, anchor=E)
-
         self.cancl_btn = ttk.Button(
             self, text="Cancel", command=lambda:
             [self.remove_canvas(), controller.show_frame(AdminWindow)])
@@ -712,11 +638,9 @@ class AddUserWindow(tk.Frame):
         self.AUWl1.place(x=10, y=12)
         self.AUWl2.place(x=10, y=12)
         self.AUWl3.place(x=10, y=12)
-
         Checkbutton(
             self, text=' Administrator', variable=self.is_admin, font=('Courier', 14)).place(relx=0.25, rely=0.75,
                                                                                              anchor=CENTER)
-
         self.get_admin_status()
         self.is_admin.set(False)
         self._setDefaults()
@@ -725,16 +649,9 @@ class AddUserWindow(tk.Frame):
         self.text_area.insert('2.0', '\nPlease complete the form.')
         self.text_area.config(state=DISABLED)
         Tk.update(self)
-        # self.check_admin_state()
 
     def get_admin_status(self):
         self.admin = self.is_admin.get()
-
-    # def check_admin_state(self):
-    #     for num in range(1, 10):
-    #         print(self.is_admin.get())
-    #         sleep(2)
-    #         self.refresh_window()
 
     def _setDefaults(self):
         self.admin = False
@@ -761,25 +678,6 @@ class AddUserWindow(tk.Frame):
         pw_data = K.wait_for_response(self.canvas_3, block, self.pass2_text)
         self.confpassword = pw_data
         self.set_buttons_norm()
-
-    # def wait_for_response(self, master, block, label):
-    #     DS.write_to_from_keys("_")
-    #     password_blank = "*********************"
-    #     while 1:
-    #         pw_data = DS.get_keyboard_data()
-    #         pw_len = len(pw_data)
-    #         if pw_len > 0 and pw_data[-1] == "+":
-    #             pw_data = pw_data[:-1]
-    #             break
-    #         if block:
-    #             master.itemconfig(label, text=password_blank[:pw_len])
-    #             ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.62, rely=0.3, width=250,
-    #                                                                                      anchor=N)
-    #         else:
-    #             master.itemconfig(label, text=pw_data)
-    #             ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.62, rely=0.3, width=250, anchor=N)
-    #         Tk.update(master)
-    #     return pw_data
 
     def set_buttons_norm(self):
         self.AUWl1.config(state=NORMAL)

@@ -18,7 +18,6 @@ PD = PI.ProbeData()
 
 
 class PRI(object):
-
     def __init__(self):
         self.loggedInUser = False
         self.ser = None
@@ -33,7 +32,6 @@ class PRI(object):
             self.ser.stopbits = serial.STOPBITS_ONE
             self.ser.bytesize = serial.EIGHTBITS
             self.ser.timeout = 0.5
-            # self.ser.close()
         except IOError:
             pass
 
@@ -55,7 +53,6 @@ class PRI(object):
         '''
         Returns True if a probe is present, False if not
         '''
-
         self.get_serial_port()
         if self.ser.isOpen() is None:
             self.ser.open()
@@ -131,12 +128,6 @@ class PRI(object):
             num = "No serial number"
         return num
 
-    # def get_converted_serial_number(self, num):
-    #     # binary_str = codecs.decode(num, "hex")
-    #     return str(codecs.decode(num, "hex"))[2:18]
-    # 53A00900323043444661696c50
-    # 53A00900324630443232313050
-
     def probe_write(self, data):
         '''
         pass in a list of bytes, writes a byte at a time to the probe
@@ -164,23 +155,18 @@ class PRI(object):
         if not self.ser.isOpen():
             self.ser.open()
         serialData = None
-
         self.send_data(b'53A0010053A11e50')
         time.sleep(0.05)  # allow time for the data to be received
         serialData = self.read_data()
-
         self.send_data(b'53A0011e53A11e50')
         time.sleep(0.05)
         serialData = serialData + self.read_data()
-
         self.send_data(b'53A0013c53A11e50')
         time.sleep(0.05)
         serialData = serialData + self.read_data()
-
         self.send_data(b'53A0015A53A11e50')  # read 0's
         time.sleep(0.05)
         serialData = serialData + self.read_data()
-
         # self.send_data(b'53A0017853A11e50')  # read 0's
         # time.sleep(0.05)
         # serialData = serialData + self.read_data()
@@ -200,21 +186,17 @@ class PRI(object):
         # self.send_data(b'53A001F053A11050')  # read 0's
         # time.sleep(0.05)
         # serialData = serialData + self.read_data()
-
         self.ser.close()
         return serialData
 
     def check_probe_connection(self):
         result = False
-
         ports = serial.tools.list_ports.comports()
         for port, desc, hwid in sorted(ports):
-
             self.ser = serial.Serial(port=port, baudrate=9600, parity=serial.PARITY_NONE,
                                      stopbits=serial.STOPBITS_ONE,
                                      bytesize=serial.EIGHTBITS,
                                      timeout=0.5)
-
             if '0403' in hwid:
                 result = self.ser.port
         if self.ser:
@@ -245,6 +227,5 @@ class PRI(object):
         while self.ser.inWaiting() > 0:
             b = binascii.hexlify(self.ser.readline())
             serialData += codecs.decode(b)
-
         return serialData
 

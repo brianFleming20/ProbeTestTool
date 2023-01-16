@@ -65,11 +65,8 @@ def disable_event():
 
 
 class WindowController(tk.Tk):
-
     def __init__(self, *args, **kwargs):
-
         tk.Tk.__init__(self, *args, **kwargs)
-
         self.title(PTT_Version)
         # get window width and height
         ws = self.winfo_screenwidth()
@@ -79,14 +76,10 @@ class WindowController(tk.Tk):
         y = (hs / 2) - (h / 2)
         # set the dimensions of the screen and where it is placed
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
-
         container = tk.Frame(self)
-
         container.pack(side="top", fill="both", expand=True)
-
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
-
         self.frames = {}
 
         for F in (UL.LogInWindow,
@@ -107,12 +100,10 @@ class WindowController(tk.Tk):
             frame = F(container, self)
 
             self.frames[F] = frame
-
             frame.grid(row=0, column=0, sticky="nsew")
-            # self.attributes('-fullscreen', True)
+            self.attributes('-fullscreen', True)
             # self.attributes('-toolwindow', True)
             # self.protocol("WM_DELETE_WINDOW", disable_event)
-
         self.show_frame(UL.LogInWindow)
 
         try:
@@ -123,11 +114,8 @@ class WindowController(tk.Tk):
             pass
 
     def show_frame(self, newFrame):
-
         frame = self.frames[newFrame]
-
         frame.tkraise()
-
         # Does the frame have a refresh method, if so call it.
         if hasattr(newFrame, 'refresh_window') and callable(getattr(newFrame, 'refresh_window')):
             self.frames[newFrame].refresh_window()

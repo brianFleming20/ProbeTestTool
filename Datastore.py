@@ -33,7 +33,6 @@ class Data_Store():
     ########################
     # Main data file read  #
     ########################
-
     #########################################################
     # Reads the user input data from the on-screen keyboard #
     #########################################################
@@ -385,14 +384,12 @@ class Data_Store():
         '''
         filepath = os.path.join(self.file_data, "userfile.pickle")
         thisUser = False
-
         if type(user) == str:
             name = user
             user = P.User(name, "*")
         try:
             with open(filepath, 'rb') as handle:
                 userDict = pickle.load(handle)
-
         except FileExistsError as e:
             print(e)
         else:
@@ -402,7 +399,6 @@ class Data_Store():
                     password = item[0]
                     admin = item[1]
                     thisUser = P.User(u, password, admin)
-
         return thisUser
 
     #################################################################
@@ -426,7 +422,6 @@ class Data_Store():
                 admin = userDict[user][1]
                 thisUser = P.User(user, password, admin)
                 userList.append(thisUser)
-
         return userList
 
     #########################################
@@ -443,7 +438,6 @@ class Data_Store():
         details = ['', False]
         details[0] = user.password
         details[1] = user.admin
-
         try:
             with open(filepath, 'rb') as handle:
                 userDict = pickle.load(handle)

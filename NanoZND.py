@@ -52,11 +52,6 @@ class NanoZND():
     def check_port_open(self):
         if self.ser_ana is None:
             self.get_serial_port()
-            # print(self.ser_ana)
-            # if not self.get_serial_port():
-            #     P.probe_canvas(self, "Ensure the analyser is turned on.", False)
-            #     time.sleep(2)
-            #     P.text_destroy(self)
 
     def close(self):
         self.ser_ana.close()
@@ -79,33 +74,26 @@ class NanoZND():
             if line.endswith('ch>'):
                 # stop on prompt
                 break
-
         return result
 
     def get_vna_check(self):
         result = False
         ports = serial.tools.list_ports.comports()
-
         for port, desc, hwid in sorted(ports):
             self.ser_ana = serial.Serial(port=port, baudrate='115200', bytesize=8, timeout=0.05)
-
             if "400" in hwid:
                 result = self.ser_ana.port
         if self.ser_ana:
             self.ser_ana.close()
         if not result:
             mb.showerror(title="Analyser", message="Turn Analyser on")
-
         return result
 
     def fetch_s11(self):
-        # self.get_serial_port()
         if not self.ser_ana.isOpen():
             self.ser_ana.open()
         self.send_data(f"data s11\r")
         data = self.ReadAnalyserData()
-        # self.ser_ana.close()
-
         x = []
         for line in data.split('\n'):
             if line:
@@ -162,17 +150,13 @@ class NanoZND():
             mb.showinfo(title="Analyser", message="Ensure the analyser is turned on.")
         marker3 = int(self.get_marker3().split()[2])
         marker1 = int(self.get_marker1().split()[2])
-
         marker_total = marker1 - marker3
-        # print(f"marker total - {marker_total}")
         raw_points = 101
         NFFT = 16384
         PROPAGATION_SPEED = 78.6  # For RG58U
-
         _prop_speed = PROPAGATION_SPEED / 100
         s11 = self.fetch_s11()
         # Read skrf docs
-        # step = abs(s11[2] - s11[1])
         step = marker_total
         window = np.blackman(raw_points)
         s11 = window * s11
@@ -188,8 +172,6 @@ class NanoZND():
             t_axis = np.linspace(0, 1 / marker_total, NFFT)
         d_axis = speed_of_light * _prop_speed * t_axis
         pk = np.max(td)
-        # idx_pk = np.where(td == pk)[0]
-        # cable_len = d_axis[1:][idx_pk[0]] / 2
         #################################################
         # Probe value code calculated from length       #
         # divided by a blank probe value reading        #

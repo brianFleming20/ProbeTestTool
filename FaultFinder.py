@@ -42,8 +42,6 @@ RT = RetestProbe
 
 BTN_WIDTH = 25
 
-# REF_LEVEL = (1 << 9)
-
 
 class FaultFindWindow(tk.Frame):
     def __init__(self, parent, controller):
@@ -87,34 +85,28 @@ class FaultFindWindow(tk.Frame):
         self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=40)
         self.text_area.place(relx=0.07, rely=0.07)
         self.text_area.delete('1.0', 'end')
-
         ttk.Label(self.canvas_back, text='Batch number: ', background='#B1D0E0', font=("Courier", 14)).place(
             relx=0.1, rely=0.3, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.current_batch, font=("Courier", 14), relief=SUNKEN,
                   width=15).place(relx=0.25, rely=0.3, anchor='w')
-
         ttk.Label(self.canvas_back, text='Probe type: ', background='#B1D0E0', font=("Courier", 14)).place(
             relx=0.1, rely=0.38, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.probe_type, relief=SUNKEN, font=("Courier", 14),
                   width=10).place(relx=0.25, rely=0.38, anchor='w')
-
         ttk.Label(self.canvas_back, text='Connected to: ', background='#B1D0E0', font=("Courier", 14)).place(
             relx=0.1, rely=0.44, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.device_details, font=("Courier", 14), relief=SUNKEN,
                   width=30).place(relx=0.25, rely=0.44, anchor='w')
-
         ttk.Label(self.canvas_back, text="cable code. ",
                   background='#B1D0E0', font=("Courier", 14)).place(relx=0.1, rely=0.53, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.cable_code, relief=SUNKEN,
                   width=14, font=("Courier", 14)).place(relx=0.25, rely=0.53, anchor='w')
-
         ttk.Label(self.canvas_back, text='Serial Number: ', background='#B1D0E0', font=("Courier", 16)).place(
             relx=0.68, rely=0.18, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.read_probe_number,
                   relief=SUNKEN, width=20, font=("Courier", 20)).place(relx=0.68, rely=0.25, anchor='w')
         ttk.Label(self.canvas_back, text='From Probe:', background='#B1D0E0', font=("Courier", 16)).place(
             relx=0.56, rely=0.25, anchor='w')
-
         ttk.Label(self.canvas_back, text="Probe parameter data", background='#B1D0E0', font=("Courier", 14)).place(
             relx=0.7, rely=0.42, anchor="w")
         ttk.Label(self.canvas_back, text="SD", background='#B1D0E0', font=("Courier", 14)).place(relx=0.70, rely=0.46,
@@ -129,13 +121,11 @@ class FaultFindWindow(tk.Frame):
                   width=5).place(relx=0.76, rely=0.51, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.PV_data, relief=SUNKEN, font="bold",
                   width=5).place(relx=0.84, rely=0.51, anchor='w')
-
         ttk.Label(self.canvas_back, text='Action: ', background='#B1D0E0', font=("Courier", 14)).place(relx=0.1,
                                                                                                        rely=0.65,
                                                                                                        anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.action, background='#99c2ff',
                   width=28, relief=GROOVE, font=("Courier", 16)).place(relx=0.25, rely=0.65, anchor='w')
-
         Button(self.canvas_back, textvariable=self.graph_text, font=('Arial', 14),
                command=self.show_plot).place(relx=0.78, rely=0.58, anchor=CENTER)
         ttk.Label(self.canvas_back, text='Faults found: ', background='#B1D0E0', font=("Courier", 14)).place(
@@ -245,7 +235,6 @@ class FaultFindWindow(tk.Frame):
         fault = "Unknown"
         lower = self.get_lower_limit()
         upper = self.get_upper_limit()
-
         ############################################################
         # Adjusting the limits for each of the failure types could #
         # be achieved by using the lower and upper limits with a   #

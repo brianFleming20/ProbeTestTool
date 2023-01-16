@@ -72,13 +72,10 @@ class BatchManager(object):
         # makes the current_batch False                #
         ################################################
         self.blank_data = " "
-
         batch_num = DS.get_probe_data()['Batch']
         probe_type = DS.get_probe_data()['Probe_Type']
         probes_left = DS.get_probe_data()['Left_to_test']
-
         user = DS.get_username()
-
         if batch_number == batch_num:
             time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             Stime_now = str(time_now)
@@ -113,7 +110,6 @@ class BatchManager(object):
         for file in self.get_completed_batches():
             if file[:-4] == batch:
                 check = False
-
         if self.current_batch == batch and check:
             self.CSVM.MoveToCompleted(batch)
         else:
@@ -165,13 +161,11 @@ class CSVManager(object):
                 os.makedirs(self.path, 0o777)
             except OSError:
                 pass
-
         if not os.path.isdir(self.inProgressPath):
             try:
                 os.makedirs(self.inProgressPath, 0o777)
             except OSError:
                 pass
-
         if not os.path.isdir(self.completePath):
             try:
                 os.makedirs(self.completePath, 0o777)
@@ -199,9 +193,7 @@ class CSVManager(object):
             self.check_directories()
         else:
             for item in a_list:
-                # newItem = item[:-4]
                 batches.append(item[:-4])
-
         return batches
 
     def get_file_names_completed(self):
@@ -210,7 +202,6 @@ class CSVManager(object):
         ########################
         self.check_file_location()
         batches = []
-
         try:
             a_list = os.listdir(self.completePath)
         except FileNotFoundError:
@@ -218,9 +209,7 @@ class CSVManager(object):
         else:
             for item in a_list:
                 newItem = item[:-4]
-
                 batches.append(str(newItem))
-
         return batches
 
     def get_file_names(self, file_type):
@@ -233,7 +222,6 @@ class CSVManager(object):
             type_ = self.inProgressPath
         elif file_type == "complete":
             type_ = self.completePath
-
         batches = []
         try:
             a_list = os.listdir(type_)
@@ -243,7 +231,6 @@ class CSVManager(object):
             for item in a_list:
                 newItem = item[:-4]
                 batches.append(newItem)
-
         return batches
 
     def GetFileNamesComplete(self):
@@ -257,8 +244,6 @@ class CSVManager(object):
         newList = []
         for item in a_list:
             newList.append(item[2])
-        # newList = [item[2] for item in a_list]
-
         return newList
 
     def WriteListOfListsCSV(self, inputList, fileName):
@@ -266,10 +251,8 @@ class CSVManager(object):
         # tick                                                                                                      #
         # pass in a list, save each item in the list as a new row in the csv file. Can also handle a list of lists  #
         #############################################################################################################
-
         # create the full path
         fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
-
         try:
             with open(fullPath, 'a+', newline='') as file:
                 data_writer = csv.writer(file)
@@ -283,7 +266,6 @@ class CSVManager(object):
         # tick                                                                                                      #
         # pass in a list, save each item in the list as a new row in the csv file. Can also handle a list of lists  #
         #############################################################################################################
-
         header = ['Batch No', 'Serial Number', 'Batch Type', 'Batch Qty', 'Username', 'Probe length (tdr)',
                   'NanoVNA marker3', ' ODM PV', 'Date and Time Tested']
         # write the list to the CSV file
@@ -296,7 +278,6 @@ class CSVManager(object):
         #################################################################################################
         originalPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
         destinationPath = os.path.abspath(self.completePath + fileName + '.csv')
-
         os.renames(originalPath, destinationPath)
 
     def ReadFirstLine(self, fileName):
@@ -305,9 +286,7 @@ class CSVManager(object):
         # will return a list of lists with each list being a line      #
         ################################################################
         # originalPath = r"C:\Users\jackw\Dropbox\BSc (Hons) Engineering Studies\TaTT_results\in_progress\\"
-
         fullPath = os.path.abspath(self.inProgressPath + fileName + '.csv')
-
         with open(fullPath) as f:
             lis = [line.split() for line in f]
         return lis[0]
@@ -317,11 +296,9 @@ class CSVManager(object):
             path = self.completePath
         else:
             path = self.inProgressPath
-
         fullPath = os.path.abspath(path + fileName + '.csv')
         with open(fullPath,  "r", encoding="utf-8", errors="ignore") as csvfile:
             datareader = csvfile.readlines()[-1]
-
         return datareader.split(',')
 
     def read_all_lines(self, folder, batch):
@@ -331,7 +308,6 @@ class CSVManager(object):
             data_reader = csv.reader(file)
             for line in data_reader:
                 lines.append(line)
-
         return lines
 
     def remove_batch(self, batch):

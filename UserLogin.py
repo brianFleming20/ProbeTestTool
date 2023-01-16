@@ -43,7 +43,6 @@ import OnScreenKeys
 import Ports
 import ProbeTest
 import AdminUser
-
 from time import gmtime, strftime, sleep
 
 SM = SecurityManager.SecurityManager()
@@ -102,7 +101,6 @@ class LogInWindow(tk.Frame):
         self.logbtn = Button(self, text="Log In", font=("Courier", 18), width=18, background="#3AB4F2",
                              highlightthickness=0, command=self._login_btn_clicked)
         self.logbtn.place(relx=0.65, rely=0.64)
-        # Button(self, text="Forgot Password.", font=("Courier", 12), command=self.forgot_login).place(relx=0.35, rely=0.5)
         ttk.Button(self, text="Exit", width=20, command=self.quit_).place(relx=0.88, rely=0.8, anchor=CENTER)
         self.bind('<Return>', lambda event: self._login_btn_clicked)
         if "AM" in time_now:
@@ -121,16 +119,10 @@ class LogInWindow(tk.Frame):
         probe_data = P.Probes("", "", 0, 0, failed=0, scrap=0)
         DS.write_probe_data(probe_data)
         self.entry()
-
         self.btn_1 = Button(self.canvas_name, text='Username ',font=("Courier", 14), command=self.name_entry, width=20)
         Label(self.canvas_name, text="-->", font=("Courier", 14)).place(x=248, y=14)
         self.btn_2 = Button(self.canvas_pass, text='Password',font=("Courier", 14), command=self.password_entry, width=20)
         Label(self.canvas_pass, text="-->", font=("Courier", 14)).place(x=248, y=14)
-        # self.name_text = self.canvas_name.create_text(350, 20, text=" ", fill="black",
-        #                                               font=(OnScreenKeys.FONT_NAME, 16, "bold"))
-        # self.pass_text = self.canvas_pass.create_text(350, 20, text=" ", fill="black",
-        #                                               font=(OnScreenKeys.FONT_NAME, 14, "bold"))
-
         self.btn_1.place(x=18, y=14)
         self.btn_2.place(x=18, y=14)
         self.control.attributes('-topmost', True)
@@ -214,24 +206,6 @@ class LogInWindow(tk.Frame):
     def activate_login_button(self):
         if not self.test:
             self.logbtn.config(command=lambda: self.control.show_frame(SE.SessionSelectWindow))
-      
-    # def wait_for_response(self, master, pass_block, location):
-    #     block = pass_block
-    #     DS.write_to_from_keys("_")
-    #     password_blank = "*********************"
-    #     while 1:
-    #         pw_data = DS.get_keyboard_data()
-    #         pw_len = len(pw_data)
-    #         if pw_len > 0 and pw_data[-1] == "+":
-    #             pw_data = pw_data[:-1]
-    #             break
-    #
-    #         if block:
-    #             master.itemconfig(location, text=password_blank[:pw_len])
-    #         else:
-    #             master.itemconfig(location, text=pw_data)
-    #         Tk.update(master)
-    #     return pw_data
 
     def get_keys(self):
         KY.display()
@@ -257,28 +231,6 @@ class LogInWindow(tk.Frame):
     def sessions(self):
         if not self.test:
             self.control.show_frame(SE.SessionSelectWindow)
-
-    # def forgot_login(self):
-    #     user_list = SM.GetUserList()
-    #     found = False
-    #     if not self.current_user:
-    #         PT.P.probe_canvas(self, "Enter your name to \nreset your password", False)
-    #         sleep(3)
-    #         PT.P.text_destroy(self)
-    #         self.name_entry()
-    #     for name in user_list:
-    #         if name.name == self.current_user:
-    #             login_user = P.Users(name=name.name, admin=False, reset_password=True)
-    #             DS.write_user_data(login_user)
-    #             found = True
-    #
-    #     if found:
-    #         self.canvas_go()
-    #         self.control.show_frame(AU.ChangePasswordWindow)
-    #     else:
-    #         PT.P.probe_canvas(self, "Your name is not registered.", False)
-    #         sleep(3)
-    #         PT.P.text_destroy(self)
 
     def yes_answer(self):
         pass

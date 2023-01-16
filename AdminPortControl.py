@@ -38,7 +38,6 @@ def ignore():
 class AdminPorts(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
-
         self.analyser_usb = "COM4"
         self.com_port = "COM3"
         self.monitor = "COM5"
@@ -46,21 +45,16 @@ class AdminPorts(tk.Frame):
         self.control = controller
         connection_data = Ports.Ports(odm=self.monitor,probe=self.com_port,analyer=self.analyser_usb,move=self.move_probe)
         DS.write_device_to_file(connection_data)
-
         ttk.Label(self, text="Deltex", background="#FFDAB9", foreground="#003865",
                   font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#FFDAB9", foreground="#A2B5BB",
                   font=('Helvetica', 18)).place(relx=0.85, rely=0.15)
-
         self.connectBtn = Button(
             self, text="Continue", command=self.forward, font=('Courier', 16))
         self.connectBtn.place(height=35, width=150, relx=0.85, rely=0.82, anchor=CENTER)
-        # self.bind('<Return>', self._connect_btn_clicked)
-
         self.cancelBtn = Button(
             self, text="Cancel", command=self.cancel, font=('Courier', 14))
         self.cancelBtn.place(relx=0.7, rely=0.82, anchor=CENTER)
-
         self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
         self.text_area.place(x=40, y=70)
 
@@ -110,7 +104,6 @@ class AdminPorts(tk.Frame):
     def _connect_btn_clicked(self, controller):
         connection_data = Ports.Ports(odm=self.monitor,probe=self.com_port,analyer=self.analyser_usb,move=self.move_probe)
         DS.write_device_to_file(connection_data)
-
         controller.show_frame(AU.AdminWindow)
 
     def destroy_canvas(self):

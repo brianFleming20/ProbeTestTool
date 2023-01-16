@@ -50,7 +50,6 @@ def get_probe_type(probe_data):
         probe_type = "I2S"
     elif probe_data == "548":
         probe_type = "KDP72"
-
     return probe_type
 
 
@@ -90,7 +89,6 @@ def check_data(folder, probe_date):
                     hrs = int(SN_date[4:6])
                 if probe_date[4:6].isnumeric():
                     probe_hrs = int(probe_date[4:6])
-
                 if mon == probe_mon:
                     if day == probe_day:
                         if minutes_in_range(hrs, probe_hrs):
@@ -141,7 +139,6 @@ class RetestProbe(tk.Frame):
         #################################################################
         self.canvas_back = Canvas(bg=self.back_colour, width=self.ws - 10, height=self.hs - 10)
         self.canvas_back.place(x=5, y=5)
-
         Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
                   font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
@@ -176,7 +173,6 @@ class RetestProbe(tk.Frame):
               font=("Courier", 14, "bold")).place(relx=0.1, rely=0.65)
         Label(self.canvas_back, textvariable=self.results, width=18,
               font=('Arial', 18), borderwidth=1, relief="solid").place(relx=0.22, rely=0.65)
-
         Label(self.canvas_back, text="ZND Analyser", background=self.back_colour).place(relx=0.15, rely=0.45)
         Label(self.canvas_back, text="Probe Interface", background=self.back_colour).place(relx=0.25, rely=0.45)
         Label(self.canvas_back, text="Monitor     ", background=self.back_colour).place(relx=0.35, rely=0.45)
@@ -281,7 +277,6 @@ class RetestProbe(tk.Frame):
             path = filepath['File']
             inProgressPath = os.path.join(path, "in_progress", "")
             completePath = os.path.join(path, "complete", "")
-
             if self.check_folder(inProgressPath, self.probe_date, probe_type):
                 self.found_failed_probe()
                 self.found = True
@@ -327,7 +322,6 @@ class RetestProbe(tk.Frame):
                 self.date_finished.set(date.split()[0])
 
     def found_failed_probe(self):
-        # left_to_test = 0
         if self.scrapped == "<-Scrapped":
             P.probe_canvas(self, "This probe has already \nbeen scrapped off.", False)
             sleep(3)
@@ -348,7 +342,6 @@ class RetestProbe(tk.Frame):
                     P.probe_canvas(self, f" ({self.batch_from_file}) \n{self.probe_type} - Probe Passed", False)
                     self.passed_probe()
                     P.text_destroy(self)
-                    # self.remove_probe()
                 else:
                     self.failed_a_probe()
                     serial_number = self.serial_number.get()

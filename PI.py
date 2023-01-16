@@ -6,25 +6,6 @@ Created on 28 Apr 2017
 from time import gmtime, strftime
 
 
-# class PI(object):
-#     """
-#     SC18IM700 commands
-
-#     S 53 I2C start
-#     P 50 I2C stop
-#     R 52 read SC18IM internal register
-#     W 57 write to SC18IM internal register
-#     I 49 read IO port
-#     O 4F write to GPIO port
-#     Z 5A power down
-
-#     A0 write address
-#     A1 read address
-
-#     """
-#     transfered all code to ProbeInterface module
-
-
 class ProbeData(object):
     '''
     Responsible for creating the full 256 bytes of EEPROM data.
@@ -35,8 +16,6 @@ class ProbeData(object):
         '''
         self.probeData = False
         self.timeStamp = ''
-        # self.typeBytes = ''
-
         self.DP240TypeBytes = ['32', '46', '30', '44']
         self.DP12TypeBytes = ['32', '30', '43', '44']
         self.DP6TypeBytes = ['32', '30', '36', '44']
@@ -97,7 +76,6 @@ class ProbeData(object):
             return probezeros
         if probe_type == 'ones':
             return probeones
-
         # set the correct probe type bytes
         if 'DP240' in probe_type:
             typeBytes = self.DP240TypeBytes
@@ -113,13 +91,8 @@ class ProbeData(object):
             typeBytes = self.I2PTypeBytes
         elif 'KDP' in probe_type:
             typeBytes = self.KDP72TypeBytes
-
         else:
             return False
-
-        # elif probe_type == 'SDP30':
-        #     typeBytes = self.SDP30TypeBytes
-
         # create a 12 byte timestamp of the format
         timeStamp = strftime("%Y%m%d%H%M%S", gmtime())
         timeStampFormatted = timeStamp[2:]
@@ -164,10 +137,3 @@ class ProbeData(object):
             x = (ord(item))
             timeStampASCII.append(format(x, "x"))
         return timeStampASCII
-
-# PI = PI()
-# PD = ProbeData()
-# PI.Connect('COM3')
-# sn = PI.ProbeReadAllBytes()
-#
-# print(sn)

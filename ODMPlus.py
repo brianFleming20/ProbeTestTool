@@ -15,9 +15,6 @@ class ODMData(object):
 
     def __init__(self):
         self.connectedinstrument = False
-        # # self.port_read = ""
-        # self.port_control = ""
-        # self.monitor_port = ""
         self.odm_port = None
         self.ser = None
 
@@ -63,21 +60,17 @@ class ODMData(object):
                 sec -= 1
             if len(parameters) > 5:
                 break
-
         for data in parameters:
             temp += chr(data)
             if data == ignor_bit:
                 odm_result.append(temp[:-1])
                 temp = ""
-
         self.close_port()
-
         return odm_result
 
     def get_monitor_port(self):
         read = [0, 0, 0, "not_connected"]
         read = self.ReadSerialODM()
-
         if read == []:
             return False
         else:
@@ -194,11 +187,9 @@ class ODMData(object):
         ports = serial.tools.list_ports.comports()
         for port, desc, hwid in sorted(ports):
             self.odm_port = serial.Serial(port=port, baudrate='9600', bytesize=8, stopbits=1, timeout=0.5)
-            # self.odm_port.flushInput()
             self.odm_port.close()
             if "04D8" in hwid:
                 result = self.odm_port.port
         return result
-
     def read_data(self):
         return self.odm_port.read().decode('ascii')

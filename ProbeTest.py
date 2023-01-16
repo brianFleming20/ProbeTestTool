@@ -47,7 +47,6 @@ SE = Sessions
 FF = FaultFinder
 PR = PRI()
 RT = RetestProbe
-
 # define global variables
 PTT_Version = 'Deltex Medical : XXXX-XXXX Probe Test Tool V1'
 w = 800  # window width
@@ -94,7 +93,6 @@ def perform_probe_test():
         if lower_limit < marker < UPPER_LIMIT:
             # Also check marker data from analyser too
             analyser = True
-            # P.AnalyserResult().set_analyser_result(marker, analyser)
     return marker
 
 
@@ -125,7 +123,6 @@ def detect_recorded_probe():
             found = found_complete[0]
     else:
         found = found_in_progress[0]
-
     return found, serial_number
 
 
@@ -156,7 +153,6 @@ class TestProgramWindow(tk.Frame):
         self.serial_number = None
         self.reset_ana = None
         self.file_data = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
-
         ###############################################################
         # import and set up images for the screen                     #
         ###############################################################
@@ -239,7 +235,6 @@ class TestProgramWindow(tk.Frame):
                   width=8).place(relx=0.85, rely=0.75, anchor='w')
         ttk.Label(self.canvas_back, text='Action: ', background=self.back_colour,
                   font=("Courier", 14)).place(relx=0.1, rely=0.83)
-
         #################################################################
         # Show interaction buttons                                      #
         #################################################################
@@ -250,11 +245,9 @@ class TestProgramWindow(tk.Frame):
         self.retest = Button(self.canvas_back, text=" Re-test Failed Probe", font=("Courier", 15, "bold"),
                              background="#A8E890", command=self.retest_probe)
         self.retest.place(relx=0.5, rely=0.825)
-
         self.session_on_going = True
         self.analyser_serial = None
         self.probes_passed.set(0)
-
         #########################################################
         # Complete button detected pressed                      #
         #########################################################
@@ -313,7 +306,6 @@ class TestProgramWindow(tk.Frame):
         self.session_on_going = True
         current_user = DS.get_username()
         self.user_admin = DS.user_admin_status()
-        # self.user_admin = DS.get_user_data()['Over_rite']
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
         if DS.get_current_batch() == "000":
@@ -328,7 +320,6 @@ class TestProgramWindow(tk.Frame):
         self.probe_type.set(DS.get_current_probe_type())
         self.current_batch.set(DS.get_current_batch())
         self.current_user.set(DS.get_username())
-        # self.RLLimit = -1
         self.canvas_back.pack()
         self.reflection.set("--->")
         self.show_serial_number.set("      ---")
@@ -400,14 +391,10 @@ class TestProgramWindow(tk.Frame):
         #                     Main loop                                #
         ################################################################
     def wait_for_probe(self):
-        # self.test = False
         if self.get_probes_left():
             self.session_on_going = False
             self.session_complete = True
         while self.session_on_going:
-            # if self.get_probes_left():
-            #     self.session_on_going = False
-            #     self.session_complete = True
             self.show_gray_light()
             Tk.update(self)
             if self.check_probe_present():
@@ -493,7 +480,6 @@ class TestProgramWindow(tk.Frame):
         if probes_left < 0:
             self.left_to_test.set(0)
         self.left_to_test.set(probes_left)
-
         Tk.update(self)
         #################################################
         # If the probe fails the analyser test, the     #
@@ -599,7 +585,6 @@ class TestProgramWindow(tk.Frame):
         ##########################################################
 
     def over_write_probe(self, current_batch, probe_type):
-        # print(f"Before current user {self.current_user.get()} - user admin {self.user_admin} - {self.check_overwrite()}")
         self.info_canvas = None
         over_write = False
         found, serial_number = detect_recorded_probe()
@@ -613,7 +598,6 @@ class TestProgramWindow(tk.Frame):
             P.probe_canvas(self, f"This probe is from {probe_type_}\n \nbatch number {found}", False)
             time.sleep(2)
             P.text_destroy(self)
-
         if self.check_overwrite():
             ###############################################
             # ask for user input to reprogramme the probe #
@@ -626,8 +610,6 @@ class TestProgramWindow(tk.Frame):
                     self.action.set(warning_text["13"])
             reset_rewrite = P.Users(self.current_user.get(), self.user_admin, over_right=False)
             DS.write_user_data(reset_rewrite)
-            # print(f"After current user {self.current_user.get()} - user admin {self.user_admin} - {self.check_overwrite()}")
-            # self.remove_probe()
         else:
             P.probe_canvas(self, warning_text["14"], True)
             if self.info_canvas:
@@ -740,11 +722,9 @@ class TestProgramWindow(tk.Frame):
             serial_results = ODM.ReadSerialODM()
             if not serial_results:
                 serial_results = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
             self.SD_data.set(serial_results[5])
             self.FTc_data.set(serial_results[6])
             self.PV_data.set(serial_results[9])
-
             return serial_results
         else:
             return "Not used"

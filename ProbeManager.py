@@ -4,7 +4,6 @@ Created on 28 Apr 2017
 '''
 import PI
 import InstrumentManager
-# import NanoZND
 import Datastore
 import ProbeInterface
 import codecs
@@ -18,22 +17,13 @@ class ProbeManager(object):
     '''
     classdocs
     '''
-
     def __init__(self):
         '''
         Constructor
         '''
         self.PD = PI.ProbeData()
-        # self.NanoZND = NanoZND.NanoZND()
-        # self.ZND = IM.ZND()
-        # self.testResults = []
-        # self.debugResults = [[1, 1, 1, ], [2, 2, 2], [3, 3, 3]]
-        # self.serial = None
-
-        # self.show = False
 
     def TestProbe(self):
-
         return True
 
     def ProgramProbe(self, probe_type, test):
@@ -105,13 +95,6 @@ class ProbeManager(object):
             return PF.read_serial_number()
         else:
             return PF.reset_port()
-
-
-    # def get_serial_number(self):
-    #     # sn = self.read_serial_number()
-    #     return self.get_converted_serial_number(self.read_serial_number())
-    # 53A00900324630443232313050
-    # 53A00900323043444661696c50
 
     def get_converted_serial_number(self, num):
         if not num:

@@ -110,7 +110,6 @@ class SessionSelectWindow(tk.Frame):
         self.NSWL1.place(relx=0.5, rely=0.05, anchor=CENTER)
         ports = P.Ports()
         DS.write_device_to_file(ports)
-
         ################################
         # Start a new batch session    #
         ################################
@@ -121,14 +120,12 @@ class SessionSelectWindow(tk.Frame):
         ################################
         self.SSW_b2 = tk.Button(self, text='Continue a previous session', background="#FFCB42",
                              command=lambda: self.control.show_frame(ContinueSessionWindow), width=BTN_WIDTH)
-
         self.SSW_b2.place(height=50, width=250, relx=0.5, rely=0.35)
         ################################
         # Retest failed probe          #
         ################################
         self.failed = tk.Button(self, text='Re-test Failed Probe.', background="#A8E890", command=self.failed_probe)
         self.failed.place(height=30, width=200, relx=0.52, rely=0.45)
-
         ################################
         # Display completed batches    #
         ################################
@@ -140,9 +137,6 @@ class SessionSelectWindow(tk.Frame):
         self.SSW_b4 = tk.Button(self, text='Admin area', background="#FFDAB9",
                              command=lambda: self.control.show_frame(AU.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(height=50, width=250, relx=0.5, rely=0.65)
-
-        # tk.Button(self, text="...", background="#B1D0E0", command=self.blank).place(relx=0.2, rely=0.8)
-
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
         ################################
@@ -156,7 +150,6 @@ class SessionSelectWindow(tk.Frame):
         self.SSW_b3 = tk.Button(self, text='Log Out', background="#F37878", command=self.logout, width=BTN_WIDTH)
         self.SSW_b3.place(height=40, width=180, relx=0.85, rely=0.8, anchor=E)
         user_info = DS.user_admin_status()
-
         if not user_info:
             self.SSW_b4.config(state=DISABLED)
         else:
@@ -174,7 +167,6 @@ class SessionSelectWindow(tk.Frame):
     def completed_btn_clicked(self):
         self.complete_canvas = Canvas(bg="#eae9e9", width=400, height=350)
         self.complete_canvas.place(relx=0.78, rely=0.28)
-
         scrollbar = Scrollbar(self.complete_canvas, orient=VERTICAL)
         complete_list = Listbox(self.complete_canvas, height=12, width=12)
         complete_list.place(x=0, y=50)
@@ -240,10 +232,6 @@ class NewSessionWindow(tk.Frame):
         self.canvas_back.place(x=5, y=5)
         self.canvas_type = Canvas(width=400, height=50)
         self.canvas_type.place(relx=0.5, rely=0.4)
-        # self.canvas_qty = Canvas(width=400, height=50)
-        # self.canvas_qty.place(relx=0.5, rely=0.55)
-        # probe_type_frame = tk.Frame(self.canvas_back, pady=3, padx=50, bg='#E0FFFF')
-
         ttk.Label(self.canvas_back, text="Deltex", background="#B1D0E0", foreground="#003865",
                   font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self.canvas_back, text="medical", background="#B1D0E0", foreground="#A2B5BB",
@@ -252,52 +240,20 @@ class NewSessionWindow(tk.Frame):
         self.probe_type.set("")
         self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
-
-        # probe_type_frame.place(relx=0.20, rely=0.5, anchor=CENTER)
-
         ttk.Label(self.canvas_back, text='Probe selection window. ',
                   justify=RIGHT, font=("Courier", 20, "bold"), background="#B1D0E0").place(relx=0.5, rely=0.05,
                                                                                            anchor=CENTER)
-
         ttk.Label(self.canvas_back, text='Select Probe Type: ',
                   justify=RIGHT, font=("Courier", 18, "bold"), background="#B1D0E0").place(relx=0.12, rely=0.3)
-
-        # self.probe_type = StringVar(probe_type_frame, "DP240")
-        # # Dictionary to create multiple buttons
-        # values = {"DP240 [9070-7005]": 'DP240',
-        #           "DP12 [9070-7003]  ": 'DP12 ',
-        #           "DP6 [9070-7001]    ": 'DP6  ',
-        #           "I2C [9090-7014]     ": 'I2C  ',
-        #           "I2P [9090-7013]     ": 'I2P  ',
-        #           "I2S [9090-7012]      ": 'I2S  ',
-        #           "KDP72 [9081-7001]": 'KDP  '}
-        #
-        # for (text, value) in values.items():
-        #     style = Style(probe_type_frame)
-        #     style.configure("TRadiobutton", font=("arial", 14, "bold"))
-        #     rbn = Radiobutton(probe_type_frame, text=text, variable=self.probe_type,
-        #                       value=value)
-        #     rbn.pack(side=TOP, ipady=5)
-
         tk.Button(self.canvas_back, text='Continue', font=("Courier", 16), width=20, height=2,
                   command=self.to_devices).place(relx=0.82, rely=0.8, anchor=CENTER)
-
         self.cancel = tk.Button(self.canvas_back, text='Cancel', font=("Courier", 14), command=self.back)
         self.cancel.place(relx=0.56, rely=0.8, anchor=CENTER)
-
         self.type_text = self.canvas_type.create_text(250, 20, text=" ", fill="black",
                                                       font=(OnScreenKeys.FONT_NAME, 8, "bold"))
-
         self.btn_1 = Button(self.canvas_type, text='Batch number: ', command=self.batch_entry)
         self.btn_1.place(relx=0.21, rely=0.3, anchor=N)
         Label(self.canvas_type, text="-->").place(x=180, y=18)
-
-        # Label(self.canvas_qty, text="Batch Qty:", font=("bold", 14)).place(relx=0.18, rely=0.3, anchor=N)
-        # Label(self.canvas_qty, text="-->").place(x=180, y=18)
-        # style = Style(probe_type_frame)
-        # style.configure("TButton", font=("arial", 14))
-
-        # ttk.Label(self.canvas_qty, text=batch_qty, font=("bold", 14)).place(relx=0.75, rely=0.3, width=140, anchor=N)
         self.text_area.config(state=NORMAL)
         self.text_area.insert('1.0', DS.get_username().title())
         self.text_area.insert('3.3', '\n\nPlease enter the batch number\nselect the probe type\nand batch quantity.')
@@ -317,10 +273,6 @@ class NewSessionWindow(tk.Frame):
         if not self.test:
             self.btn_1.config(state=NORMAL)
 
-    # def change_batch_qty(self, qty):
-    #     global BATCH_QTY
-    #     BATCH_QTY = qty
-
     def fill_probe_types(self):
         probe_type_frame = tk.Frame(self.canvas_back, pady=3, padx=50, bg='#E0FFFF')
         self.probe_type = StringVar(probe_type_frame, "DP240")
@@ -339,10 +291,8 @@ class NewSessionWindow(tk.Frame):
             rbn = Radiobutton(probe_type_frame, text=text, variable=self.probe_type,
                               value=value)
             rbn.pack(side=TOP, ipady=5)
-
         style = Style(probe_type_frame)
         style.configure("TButton", font=("arial", 14))
-
         self.canvas_qty = Canvas(width=400, height=50)
         self.canvas_qty.place(relx=0.5, rely=0.55)
         Label(self.canvas_qty, text="Batch Qty:", font=("bold", 14)).place(relx=0.18, rely=0.3, anchor=N)
@@ -401,7 +351,6 @@ class NewSessionWindow(tk.Frame):
         if len(batch) == 0:
             tm.showerror(title="error", message="Enter a batch number")
             return check
-        # check = [True for element in batch if element.isalpha()]
         end = batch[-1]
         start = batch[:-1]
         if end.isalpha() and start.isnumeric():
@@ -444,33 +393,26 @@ class ContinueSessionWindow(tk.Frame):
                   font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
                   font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
-
         ttk.Label(self, text='Choose a session to resume', font=("Courier", 18), background="#B1D0E0").place(relx=0.5,
                                                                                                              rely=0.05,
                                                                                                              anchor=CENTER)
         ttk.Label(self, text="Batch number", font=("Courier", 16), background="#B1D0E0").place(relx=0.28, rely=0.32)
         ttk.Label(self, text="Batch type", font=("Courier", 16), background="#B1D0E0").place(relx=0.58, rely=0.32)
-
         self.sessionListBox = Listbox(self)
         self.sessionListBox.place(relx=0.38, rely=0.45, anchor=CENTER)
         self.sessionListBox.config(height=5, width=20, font=("Courier", 18))
-
         self.probe_typeListBox = Listbox(self, exportselection=False)
         self.probe_typeListBox.place(relx=0.65, rely=0.45, anchor=CENTER)
         self.probe_typeListBox.config(height=5, width=15, font=("Courier", 18))
         self.sessionListBox.focus_set()
-
         self.continue_btn = tk.Button(
             self, text='Continue Session', height=2, font=("Courier", 14), command=self.continue_btn_clicked)
         self.continue_btn.place( relx=0.88, rely=0.82, anchor=E)
-
         self.cancel_btn = ttk.Button(
             self, text='Cancel', command=lambda: self.control.show_frame(SessionSelectWindow))
         self.cancel_btn.place(height=35, width=90, relx=0.62, rely=0.82, anchor=E)
-
         btn_up = tk.Button(self, text="\u2191", font=("Courier", 30), command=lambda: self.up_arrow())
         btn_up.place(relx=0.8, rely=0.32)
-
         btn_down = tk.Button(self, text="\u2193", font=("Courier", 30), command=lambda: self.down_arrow())
         btn_down.place(relx=0.8, rely=0.52)
 
@@ -479,10 +421,8 @@ class ContinueSessionWindow(tk.Frame):
         self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
         self.text_area.delete(1.0, 'end')
-
         self.suspend_dict = {item: self.get_batch_type(item) for item in get_available_batches()}
         self.set_display()
-
         self.sessionListBox.delete(0, END)
         self.probe_typeListBox.delete(0, END)
         for batch, probe in self.suspend_dict.items():

@@ -13,8 +13,6 @@ class InstrumentationManager(object):
     """
     Not sure why I gave this it's own class, fix it. give ZND 'isConnected' bool
     """
-    # rm = visa.ResourceManager()
-    # rm.list_resources()
 
     def __init__(self):
         self.connectedinstrument = False
@@ -69,42 +67,42 @@ class ZND(object):
         Window 2: S11, S22 Smith
         Window 3: S11, S22 dBmag
         '''
-        self.znd = self.rm.open_resource(self.HISLIPAddress)
+        # self.znd = self.rm.open_resource(self.HISLIPAddress)
         # initial instrument configuration
-        self.znd.write("*RST")  # resets the instrument
-        self.znd.write("*CLS")  # clears the error queue
-        self.znd.write("INITiate:CONTinuous:ALL OFF")  # put it in single sweep mode
-        self.znd.write("CALC1:PAR:DEL:ALL")  # clear the default trace
-        self.znd.write("FREQ:STAR 3MHz")  # set start frequency value
-        self.znd.write("FREQ:STOP 5MHz")  # set stop frequency value
-
-        # configure each window
-        # config window1 as S12, S21 dBmag
-        self.znd.write("DISP:WIND1:STAT ON")  # create a window area no.1
-        self.znd.write("CALC1:PAR:SDEF 'Ch1Tr1', 'S21'")  # create an S21 trace on channel 1
-        self.znd.write("DISP:WIND1:TRAC1:FEED 'CH1TR1'")  # place the trace in the window
-        self.znd.write("CALC1:PAR:SDEF 'Ch1Tr2', 'S12'")  # create an S12 trace on channel 1
-        self.znd.write("DISP:WIND1:TRAC2:FEED 'CH1TR2'")  # place the trace in the window
-
-        # config window2 as S22, S11 smith
-        self.znd.write("DISP:WIND2:STAT ON")  # create a window area no.2
-        self.znd.write("CALC2:PAR:SDEF 'Ch2Tr1', 'S22'")  # create an S22 trace on channel 2
-        self.znd.write("CALCulate2:FORMat SMITh")
-        self.znd.write("DISP:WIND2:TRAC3:FEED 'CH2Tr1'")  # display the trace in window 2
-        self.znd.write("CALC3:PAR:SDEF 'Ch2Tr2', 'S11'")  # create an S11 trace on channel 2
-        self.znd.write("CALCulate3:FORMat SMITh")
-        self.znd.write("DISP:WIND2:TRAC4:FEED 'CH2Tr2'")  # display the trace in window 2
-
-        # config window3 as S11, S22 dBmag
-        self.znd.write("CALC4:PAR:SDEF 'Ch3Tr1', 'S22'")  # create an S22 trace on channel 3
-        self.znd.write("CALC4:PAR:SDEF 'Ch3Tr2', 'S11'")  # create an S11 trace on channel 3
-        self.znd.write("DISP:WIND3:STAT ON")  # create a window area no.3
-        self.znd.write("DISP:WIND3:TRAC5:FEED 'CH3TR1'")  # display the trace in the window
-        self.znd.write("DISP:WIND3:TRAC6:FEED 'CH3TR2'")  # display the trace in the window
-        self.znd.write("DISP:WIND3:TRAC5:Y:PDIV 2")  # change scale to 2db per div
-        self.znd.write("DISP:WIND3:TRAC6:Y:PDIV 2")  # change scale to 2db per div
-
-        self.znd.close()
+        # self.znd.write("*RST")  # resets the instrument
+        # self.znd.write("*CLS")  # clears the error queue
+        # self.znd.write("INITiate:CONTinuous:ALL OFF")  # put it in single sweep mode
+        # self.znd.write("CALC1:PAR:DEL:ALL")  # clear the default trace
+        # self.znd.write("FREQ:STAR 3MHz")  # set start frequency value
+        # self.znd.write("FREQ:STOP 5MHz")  # set stop frequency value
+        #
+        # # configure each window
+        # # config window1 as S12, S21 dBmag
+        # self.znd.write("DISP:WIND1:STAT ON")  # create a window area no.1
+        # self.znd.write("CALC1:PAR:SDEF 'Ch1Tr1', 'S21'")  # create an S21 trace on channel 1
+        # self.znd.write("DISP:WIND1:TRAC1:FEED 'CH1TR1'")  # place the trace in the window
+        # self.znd.write("CALC1:PAR:SDEF 'Ch1Tr2', 'S12'")  # create an S12 trace on channel 1
+        # self.znd.write("DISP:WIND1:TRAC2:FEED 'CH1TR2'")  # place the trace in the window
+        #
+        # # config window2 as S22, S11 smith
+        # self.znd.write("DISP:WIND2:STAT ON")  # create a window area no.2
+        # self.znd.write("CALC2:PAR:SDEF 'Ch2Tr1', 'S22'")  # create an S22 trace on channel 2
+        # self.znd.write("CALCulate2:FORMat SMITh")
+        # self.znd.write("DISP:WIND2:TRAC3:FEED 'CH2Tr1'")  # display the trace in window 2
+        # self.znd.write("CALC3:PAR:SDEF 'Ch2Tr2', 'S11'")  # create an S11 trace on channel 2
+        # self.znd.write("CALCulate3:FORMat SMITh")
+        # self.znd.write("DISP:WIND2:TRAC4:FEED 'CH2Tr2'")  # display the trace in window 2
+        #
+        # # config window3 as S11, S22 dBmag
+        # self.znd.write("CALC4:PAR:SDEF 'Ch3Tr1', 'S22'")  # create an S22 trace on channel 3
+        # self.znd.write("CALC4:PAR:SDEF 'Ch3Tr2', 'S11'")  # create an S11 trace on channel 3
+        # self.znd.write("DISP:WIND3:STAT ON")  # create a window area no.3
+        # self.znd.write("DISP:WIND3:TRAC5:FEED 'CH3TR1'")  # display the trace in the window
+        # self.znd.write("DISP:WIND3:TRAC6:FEED 'CH3TR2'")  # display the trace in the window
+        # self.znd.write("DISP:WIND3:TRAC5:Y:PDIV 2")  # change scale to 2db per div
+        # self.znd.write("DISP:WIND3:TRAC6:Y:PDIV 2")  # change scale to 2db per div
+        #
+        # self.znd.close()
 
     # def refresh_traces(self):
     #     self.znd = self.rm.open_resource(self.HISLIPAddress)

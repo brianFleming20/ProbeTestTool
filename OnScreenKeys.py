@@ -75,56 +75,46 @@ class Keyboard:
         # self.keystrokes = StringVar()
         self.shift_lock = False
         self.canvas = Canvas(width=1100, height=280)
-
         # Numbers section
         self.name_text = self.canvas.create_text(70, 18, text="lower case", fill="black", font=(FONT_NAME, 12, "bold"))
         locx1 = 0.06
         locy1 = 0.2
-
         for key in self.first_row:
             self.display_keys(key, locx1, locy1)
             locx1 += 0.082
-
         locxc = 0.9
         clear = Button(self.canvas, text='Clear', width=10, font=("Courier", 12), command=self.clear)
         clear.place(relx=locxc, rely=locy1, anchor=CENTER)
-
         # Frist letter row
         locx2 = 0.08
         locy2 = 0.36
         for key in self.second_row:
             self.display_keys(key, locx2, locy2)
             locx2 += 0.082
-
         # Second Letter Line
         locx3 = 0.1
         locy3 = 0.52
         for key in self.third_row:
             self.display_keys(key, locx3, locy3)
             locx3 += 0.082
-
         enter = Button(self.canvas, text='Enter', width=15, font=("Courier", 16, "bold"), background="#68B984",
                        command=lambda check='+': [self.end_keyboard(check), self.canvas.destroy()])
         enter.place(relx=0.9, rely=locy3, anchor=CENTER)
-
         # third line Button
         locx4 = 0.18
         locy4 = 0.7
         for key in self.forth_row:
             self.display_keys(key, locx4, locy4)
             locx4 += 0.082
-
         locx5 = 0.09
         shift = Button(self.canvas, text='Shift Lock', width=10, font=('Arial', 12), command=lambda: self.shift())
         shift.place(relx=locx5, rely=locy4, anchor=CENTER)
-
         # Fourth Line Button
         space_text = " "
         locy5 = 0.92
         space = Button(self.canvas, text='Space', width=40, font=('Arial', 12),
                        command=lambda: [self.press(' '), self.key_press_repeat(space_text, locy3, locy5)])
         space.place(relx=locy3, rely=locy5, anchor=CENTER)
-
         self.canvas.pack()
 
     def end_keyboard(self, end):

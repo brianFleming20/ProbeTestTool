@@ -27,21 +27,17 @@ class SecurityManager(object):
     Such as: log in/out, add or delete user. Makes use of SecManDB to interact with the pickle file where user data is stored
     As this is now a seperate module, the state needs to stay the same.
     """
-
     def __init__(self):
         self.editingUser = False
         self.is_admin_status = False
 
     def logIn(self, user):
         nuser = DS.getUser(user)
-
         if not nuser:  # is the username a valid username?
             return False
-
         if nuser.password == user.password:  # is the password correct?
             login_user = P.Users(name=nuser.name, admin=nuser.admin)
             DS.write_user_data(login_user)
-
             return True
         else:
             return False
@@ -53,7 +49,6 @@ class SecurityManager(object):
         '''
         login_user = P.Users("", False)
         DS.write_user_data(login_user)
-        # self.loggedInUser = False
 
     def addUser(self, user):
         '''
@@ -73,13 +68,6 @@ class SecurityManager(object):
         Checks to see if the user exists in the user dict, if so deletes it
         '''
         return DS.removeUser(puser)
-        # if DS.getUser(user):
-        #
-        #     DS.removeUser(user)
-        #     return True
-        # else:
-        #     return False
-
 
     def updatePassword(self, password, admin):
         """
@@ -87,7 +75,6 @@ class SecurityManager(object):
         pass in a new user object
         checks to see if the user is in the user dict and the logged in user has admin privelages. if so, changes the password accordingly
         """
-
         name = DS.get_user_data()['Change_password']
         user = self.GetUserObject(name)
         user.password = password
