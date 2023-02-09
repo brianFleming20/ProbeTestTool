@@ -172,3 +172,6 @@ class Keyboard:
                      command=lambda: [self.press(key), self.key_press_repeat(key, locx, locy)])
         btn.place(relx=locx, rely=locy, anchor=CENTER)
 
+    def remove_keyboard(self):
+        self.canvas.destroy()
+

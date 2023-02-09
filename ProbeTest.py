@@ -222,17 +222,17 @@ class TestProgramWindow(tk.Frame):
         ttk.Label(self.canvas_back, text='Program/Test Status: ',
                   background=self.back_colour, font=("Courier", 14)).place(relx=0.45, rely=0.32)
         ttk.Label(self.canvas_back, text='Probes Passed: ', background=self.back_colour, font=("Courier", 14)).place(
-            relx=0.1, rely=0.6, anchor='w')
+            relx=0.1, rely=0.56, anchor='w')
         ttk.Label(self.canvas_back, text="Reflection Test", font="bold",
                   background=self.back_colour).place(relx=0.1, rely=0.72)
         ttk.Label(self.canvas_back, textvariable=self.reflection, font=("Courier", 14), relief=SUNKEN,
                   width=20).place(relx=0.25, rely=0.72)
         ttk.Label(self.canvas_back, textvariable=self.probes_passed, relief=SUNKEN, font=('Arial', 18, 'bold'),
-                  width=10).place(relx=0.25, rely=0.6, anchor='w')
+                  width=10).place(relx=0.25, rely=0.56, anchor='w')
         ttk.Label(self.canvas_back, text='Probes to test: ', background=self.back_colour, font=("Courier", 14)).place(
-            relx=0.7, rely=0.75, anchor='w')
+            relx=0.1, rely=0.65, anchor='w')
         ttk.Label(self.canvas_back, textvariable=self.left_to_test, relief=SUNKEN, font=('Arial', 18, 'bold'),
-                  width=8).place(relx=0.85, rely=0.75, anchor='w')
+                  width=8).place(relx=0.25, rely=0.65, anchor='w')
         ttk.Label(self.canvas_back, text='Action: ', background=self.back_colour,
                   font=("Courier", 14)).place(relx=0.1, rely=0.83)
         #################################################################
@@ -244,7 +244,10 @@ class TestProgramWindow(tk.Frame):
         self.ssp_btn.place(relx=0.85, rely=0.9, anchor=CENTER)
         self.retest = Button(self.canvas_back, text=" Re-test Failed Probe", font=("Courier", 15, "bold"),
                              background="#A8E890", command=self.retest_probe)
-        self.retest.place(relx=0.5, rely=0.825)
+        self.retest.place(relx=0.5, rely=0.8)
+        self.new_sn = Button(self.canvas_back, text=" New PCB ",
+                             font=("Courier", 14, "bold"), background="#EF5B0C", command=self.new_serial_number)
+        self.new_sn.place(relx=0.81, rely=0.8)
         self.session_on_going = True
         self.analyser_serial = None
         self.probes_passed.set(0)
@@ -288,6 +291,9 @@ class TestProgramWindow(tk.Frame):
         ###########################################################
         # Set the number rof probes left to test to the display   #
         ###########################################################
+
+    def new_serial_number(self):
+        pass
 
     def set_probes_left(self, qty):
         self.left_to_test.set(qty)
