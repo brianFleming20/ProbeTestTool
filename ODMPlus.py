@@ -191,5 +191,6 @@ class ODMData(object):
             if "04D8" in hwid:
                 result = self.odm_port.port
         return result
+
     def read_data(self):
         return self.odm_port.read().decode('ascii')
