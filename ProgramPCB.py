@@ -26,6 +26,7 @@ class ProgramPCB():
         self.batch_number = None
         self.clicked = False
         self.auth = None
+        self.count = 0
         self.back_colour = "#FCFFE7"
 
     def show_screen(self):
@@ -50,8 +51,6 @@ class ProgramPCB():
         cancel.place(relx=0.55, rely=0.8)
 
     def program_pcb(self):
-        print("check auth")
-
         if self.auth:
             print("Program PCB")
         else:
@@ -72,7 +71,7 @@ class ProgramPCB():
         if DS.user_admin_status():
             self.auth = True
             self.program_pcb()
-        if not GetAuth.get_authorise():
+        elif not GetAuth.get_authorise():
             GA.show_screen()
             self.check()
 
@@ -130,14 +129,13 @@ class ProgramPCB():
             self.setup()
 
     def check(self):
-        print("check clicked")
         if not self.clicked:
             self.clicked = GA.get_clicked()
-            print(f"search {self.clicked}")
             self.canvas_prog.after(300, self.check)
 
-        if self.clicked:
-            print("*******")
+        if self.clicked and self.count < 1:
+            self.count += 1
+            print("*********")
             self.auth = GA.authenticate_user()
             self.program_pcb()
 

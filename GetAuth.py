@@ -43,19 +43,19 @@ class GetAuth():
         self.auth_squ1 = self.auth_canvas.create_rectangle(50, y, 50 + width, y + height, fill="#C2B6BF")
         self.lab1 = self.auth_canvas.create_text(90, 85)
         self.auth_canvas.itemconfig(self.lab1, text="Username", font=(K.FONT_NAME, 10, 'bold'))
-        # KY.get_keyboard()
-        # data_username = K.wait_for_response(self.auth_canvas, self.username, False, 0.45, 0.27)
+        KY.get_keyboard()
+        data_username = K.wait_for_response(self.auth_canvas, self.username, False, 0.45, 0.27)
 
         self.auth_squ2 = self.auth_canvas.create_rectangle(50, y + 80, 50 + width, y + 80 + height, fill="#C2B6BF")
         self.lab2 = self.auth_canvas.create_text(90, 158)
         self.auth_canvas.itemconfig(self.lab2, text="Password", font=(K.FONT_NAME, 10, 'bold'))
-        # KY.get_keyboard()
-        # data_password = K.wait_for_response(self.auth_canvas, self.password, True, 0.45, 0.55)
+        KY.get_keyboard()
+        data_password = K.wait_for_response(self.auth_canvas, self.password, True, 0.45, 0.55)
 
-        # self.username = data_username
-        # self.password = data_password
-        self.username = "brian"
-        self.password = "pass"
+        self.username = data_username
+        self.password = data_password
+        # self.username = "brian"
+        # self.password = "pass"
         cancel = Button(self.auth_canvas, text="Cancel", width=12, font=(K.FONT_NAME, 10, 'bold'), command=self.end)
         cancel.place(relx=0.4, rely=0.8)
         btn1 = Button(self.auth_canvas, text="Authenticate", width=14, background="#A6D1E6", font=(K.FONT_NAME, 10, 'bold'),
