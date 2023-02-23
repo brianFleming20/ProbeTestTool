@@ -34,6 +34,8 @@ import Datastore
 import Ports
 import time
 import RetestProbe
+import ProgramPCB
+import OnScreenKeys
 import os
 
 # create instances
@@ -47,6 +49,9 @@ SE = Sessions
 FF = FaultFinder
 PR = PRI()
 RT = RetestProbe
+PCB = ProgramPCB.ProgramPCB()
+KY = OnScreenKeys.Keyboard()
+K = OnScreenKeys
 # define global variables
 PTT_Version = 'Deltex Medical : XXXX-XXXX Probe Test Tool V1'
 w = 800  # window width
@@ -166,12 +171,12 @@ class TestProgramWindow(tk.Frame):
         #################################################################
         # Display main screen layout                                    #
         #################################################################
-        ws = self.winfo_screenwidth()
-        hs = self.winfo_screenheight()
-        self.canvas_back = Canvas(bg=self.back_colour, width=ws - 10, height=hs - 10)
-        self.canvas_back.place(x=5, y=5)
-        self.cent_x = ws / 2
-        self.cent_y = hs / 2
+        # ws = self.winfo_screenwidth()
+        # hs = self.winfo_screenheight()
+        # self.canvas_back = Canvas(bg=self.back_colour, width=ws - 10, height=hs - 10)
+        # self.canvas_back.place(x=5, y=5)
+        # self.cent_x = ws / 2
+        # self.cent_y = hs / 2
         self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=40)
         self.text_area.place(relx=0.07, rely=0.1)
         ttk.Label(self.canvas_back, text="Deltex", background=self.back_colour, foreground="#003865",
@@ -251,6 +256,10 @@ class TestProgramWindow(tk.Frame):
         self.session_on_going = True
         self.analyser_serial = None
         self.probes_passed.set(0)
+        self.reset()
+        self.set_display()
+        self.set_reprogram_status()
+        self.show_gray_light()
         #########################################################
         # Complete button detected pressed                      #
         #########################################################
@@ -293,7 +302,10 @@ class TestProgramWindow(tk.Frame):
         ###########################################################
 
     def new_serial_number(self):
-        pass
+        self.session_on_going = False
+        PCB.show_screen()
+        self.session_on_going = True
+        self.wait_for_probe()
 
     def set_probes_left(self, qty):
         self.left_to_test.set(qty)
@@ -308,7 +320,6 @@ class TestProgramWindow(tk.Frame):
         self.control.show_frame(SE.SessionSelectWindow)
 
     def reset(self):
-        self.display_layout()
         self.session_on_going = True
         current_user = DS.get_username()
         self.user_admin = DS.user_admin_status()
@@ -326,7 +337,7 @@ class TestProgramWindow(tk.Frame):
         self.probe_type.set(DS.get_current_probe_type())
         self.current_batch.set(DS.get_current_batch())
         self.current_user.set(DS.get_username())
-        self.canvas_back.pack()
+        # self.canvas_back.pack()
         self.reflection.set("--->")
         self.show_serial_number.set("      ---")
 
@@ -386,10 +397,13 @@ class TestProgramWindow(tk.Frame):
         # Start off mai testing sequence                              #
         ###############################################################
     def refresh_window(self):
-        self.reset()
-        self.set_display()
-        self.info_canvas = None
-        self.set_reprogram_status()
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        self.canvas_back = Canvas(bg=self.back_colour, width=ws - 10, height=hs - 10)
+        self.canvas_back.place(x=5, y=5)
+        self.cent_x = ws / 2
+        self.cent_y = hs / 2
+        self.display_layout()
         self.show_gray_light()
         self.wait_for_probe()
 
@@ -397,12 +411,11 @@ class TestProgramWindow(tk.Frame):
         #                     Main loop                                #
         ################################################################
     def wait_for_probe(self):
+        PCB.set_admin_auth()
         if self.get_probes_left():
             self.session_on_going = False
             self.session_complete = True
         while self.session_on_going:
-            self.show_gray_light()
-            Tk.update(self)
             if self.check_probe_present():
                 if not self.program_blank_probe():
                     #################################
@@ -415,6 +428,8 @@ class TestProgramWindow(tk.Frame):
                     self.set_reprogram_status()
                     if self.test:
                         return True
+            Tk.update(self)
+
             ##############################
             # Go to fault finding window #
             ##############################

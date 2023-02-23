@@ -84,14 +84,21 @@ class AdminWindow(tk.Frame):
         self.canvas_back.destroy()
         self.control.show_frame(SE.SessionSelectWindow)
 
-    def refresh_window(self):
-        ##############################
-        # Set up admin user options  #
-        ##############################
+    def layout(self):
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
         self.canvas_back = Canvas(bg='#FFDAB9', width=ws - 10, height=hs - 10)
         self.canvas_back.place(x=5, y=5)
+
+    def refresh_window(self):
+        ##############################
+        # Set up admin user options  #
+        ##############################
+        # ws = self.winfo_screenwidth()
+        # hs = self.winfo_screenheight()
+        # self.canvas_back = Canvas(bg='#FFDAB9', width=ws - 10, height=hs - 10)
+        # self.canvas_back.place(x=5, y=5)
+        self.layout()
         Label(self.canvas_back, text="Choose an option", font=("Courier", 16), background='#FFDAB9').place(relx=0.12,
                                                                                                            rely=0.25)
         Label(self.canvas_back, text="Users", font=("Courier", 16), background='#FFDAB9').place(relx=0.4, rely=0.25)
@@ -189,6 +196,7 @@ class AdminWindow(tk.Frame):
         batchQty = int(data)
         SE.set_qty(batchQty)
         qty_canvas.destroy()
+        Tk.update(self)
         self.show_user_options()
 
     def set_overwrite_state(self):

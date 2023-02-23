@@ -39,8 +39,8 @@ def convert_key(key):
     return upp
 
 
-def wait_for_response(master, label, block=False):
-    DS.write_to_from_keys("_")
+def wait_for_response(master, label, block=False, x=0.75, y=0.3):
+    DS.write_to_from_keys(" ")
     password_blank = "*********************"
     while 1:
         pw_data = DS.get_keyboard_data()
@@ -50,11 +50,11 @@ def wait_for_response(master, label, block=False):
             break
         if block:
             master.itemconfig(label, text=password_blank[:pw_len])
-            ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=0.75, rely=0.3, width=200,
+            ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=x, rely=y, width=120,
                                                                                      anchor=N)
         else:
             master.itemconfig(label, text=pw_data)
-            ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=0.75, rely=0.3, width=200, anchor=N)
+            ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=x, rely=y, width=100, anchor=N)
         Tk.update(master)
     return pw_data
 
@@ -64,6 +64,7 @@ class Keyboard:
         self.name_text = None
         self.canvas = None
         self.shift_lock = None
+        # self.canvas = Canvas(width=1100, height=280)
         self.keys = ""
         self.first_row = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
         self.second_row = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '@']
@@ -72,9 +73,9 @@ class Keyboard:
 
     # First Line Button
     def get_keyboard(self):
-        # self.keystrokes = StringVar()
         self.shift_lock = False
-        self.canvas = Canvas(width=1100, height=280)
+        self.canvas = Canvas(width=1100, height=275)
+        self.canvas.place(x=120, y=550)
         # Numbers section
         self.name_text = self.canvas.create_text(70, 18, text="lower case", fill="black", font=(FONT_NAME, 12, "bold"))
         locx1 = 0.06
@@ -98,7 +99,7 @@ class Keyboard:
             self.display_keys(key, locx3, locy3)
             locx3 += 0.082
         enter = Button(self.canvas, text='Enter', width=15, font=("Courier", 16, "bold"), background="#68B984",
-                       command=lambda check='+': [self.end_keyboard(check), self.canvas.destroy()])
+                       command=lambda check='+': self.end_keyboard(check))
         enter.place(relx=0.9, rely=locy3, anchor=CENTER)
         # third line Button
         locx4 = 0.18
@@ -115,12 +116,12 @@ class Keyboard:
         space = Button(self.canvas, text='Space', width=40, font=('Arial', 12),
                        command=lambda: [self.press(' '), self.key_press_repeat(space_text, locy3, locy5)])
         space.place(relx=locy3, rely=locy5, anchor=CENTER)
-        self.canvas.pack()
 
     def end_keyboard(self, end):
         self.keys = self.keys + str(end)
         DS.write_to_from_keys(self.keys)
         self.keys = ""
+        self.canvas.destroy()
 
     def display(self):
         self.get_keyboard()
