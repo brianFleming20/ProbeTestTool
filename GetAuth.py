@@ -13,11 +13,6 @@ def get_authorise():
     return Authorise
 
 
-def set_authorise(val):
-    global Authorise
-    Authorise = val
-
-
 class GetAuth():
     def __init__(self):
         self.lab2 = None
@@ -26,7 +21,7 @@ class GetAuth():
         self.auth_squ2 = None
         self.auth_squ1 = None
         self.auth_canvas = None
-        self.clicked = None
+        self.clicked = False
         self.username = None
         self.password = None
         self.all_users = None
@@ -48,17 +43,19 @@ class GetAuth():
         self.auth_squ1 = self.auth_canvas.create_rectangle(50, y, 50 + width, y + height, fill="#C2B6BF")
         self.lab1 = self.auth_canvas.create_text(90, 85)
         self.auth_canvas.itemconfig(self.lab1, text="Username", font=(K.FONT_NAME, 10, 'bold'))
-        KY.get_keyboard()
-        data_username = K.wait_for_response(self.auth_canvas, self.username, False, 0.45, 0.27)
+        # KY.get_keyboard()
+        # data_username = K.wait_for_response(self.auth_canvas, self.username, False, 0.45, 0.27)
 
         self.auth_squ2 = self.auth_canvas.create_rectangle(50, y + 80, 50 + width, y + 80 + height, fill="#C2B6BF")
         self.lab2 = self.auth_canvas.create_text(90, 158)
         self.auth_canvas.itemconfig(self.lab2, text="Password", font=(K.FONT_NAME, 10, 'bold'))
-        KY.get_keyboard()
-        data_password = K.wait_for_response(self.auth_canvas, self.password, True, 0.45, 0.55)
+        # KY.get_keyboard()
+        # data_password = K.wait_for_response(self.auth_canvas, self.password, True, 0.45, 0.55)
 
-        self.username = data_username
-        self.password = data_password
+        # self.username = data_username
+        # self.password = data_password
+        self.username = "brian"
+        self.password = "password"
         cancel = Button(self.auth_canvas, text="Cancel", width=12, font=(K.FONT_NAME, 10, 'bold'), command=self.end)
         cancel.place(relx=0.4, rely=0.8)
         btn1 = Button(self.auth_canvas, text="Authenticate", width=14, background="#A6D1E6", font=(K.FONT_NAME, 10, 'bold'),
@@ -75,19 +72,25 @@ class GetAuth():
         return Authorise
 
     def task(self, event):
+        self.auth_canvas.itemconfig(self.error, text="Authenticating", font=(K.FONT_NAME, 14, 'bold'))
         users = [(item.name, item.password) for item in self.all_users]
         for name, password in users:
             if self.username == name:
                 print(f"name {name} : Password {password}")
                 if self.password == password:
-                    set_authorise(True)
+                    self.set_auth(True)
         self.clicked = True
+        print(f"Authorised - {self.authenticate_user()}")
         self.auth_canvas.delete(self.auth_squ1)
         self.auth_canvas.delete(self.auth_squ2)
         self.auth_canvas.delete(self.lab1)
         self.auth_canvas.delete(self.lab2)
-        self.auth_canvas.itemconfig(self.error, text="Authenticating", font=(K.FONT_NAME, 14, 'bold'))
 
     def get_clicked(self):
         return self.clicked
+
+    def set_auth(self, val):
+        global Authorise
+        Authorise = val
+
 
