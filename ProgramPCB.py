@@ -56,6 +56,7 @@ class ProgramPCB():
             print("Program PCB")
         else:
             self.canvas_prog.itemconfig(self.error, text="Not Authorised", font=(K.FONT_NAME, 14, 'bold'))
+        self.canvas_prog.after(1000, self.end)
 
     def end(self):
         self.canvas_prog.destroy()
@@ -68,6 +69,9 @@ class ProgramPCB():
             return PM.read_serial_number()
     
     def get_auth(self):
+        if DS.user_admin_status():
+            self.auth = True
+            self.program_pcb()
         if not GetAuth.get_authorise():
             GA.show_screen()
             self.check()

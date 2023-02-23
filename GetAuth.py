@@ -55,7 +55,7 @@ class GetAuth():
         # self.username = data_username
         # self.password = data_password
         self.username = "brian"
-        self.password = "password"
+        self.password = "pass"
         cancel = Button(self.auth_canvas, text="Cancel", width=12, font=(K.FONT_NAME, 10, 'bold'), command=self.end)
         cancel.place(relx=0.4, rely=0.8)
         btn1 = Button(self.auth_canvas, text="Authenticate", width=14, background="#A6D1E6", font=(K.FONT_NAME, 10, 'bold'),
@@ -76,11 +76,9 @@ class GetAuth():
         users = [(item.name, item.password) for item in self.all_users]
         for name, password in users:
             if self.username == name:
-                print(f"name {name} : Password {password}")
                 if self.password == password:
                     self.set_auth(True)
         self.clicked = True
-        print(f"Authorised - {self.authenticate_user()}")
         self.auth_canvas.delete(self.auth_squ1)
         self.auth_canvas.delete(self.auth_squ2)
         self.auth_canvas.delete(self.lab1)
