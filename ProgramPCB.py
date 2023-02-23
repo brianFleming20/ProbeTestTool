@@ -51,8 +51,15 @@ class ProgramPCB():
         cancel.place(relx=0.55, rely=0.8)
 
     def program_pcb(self):
+        
         if self.auth:
-            print("Program PCB")
+            if self.probe_present():
+                self.canvas_prog.itemconfig(self.error, text="", font=(K.FONT_NAME, 14, 'bold'))
+                serial_number = PM.ProgramProbe(self.probe_type, False)
+                self.canvas_prog.itemconfig(self.error, text=f"Complete \n{serial_number}", font=(K.FONT_NAME, 14, 'bold'))
+            else:
+                self.canvas_prog.itemconfig(self.error, text="Insert a PCB", font=(K.FONT_NAME, 14, 'bold'))
+
         else:
             self.canvas_prog.itemconfig(self.error, text="Not Authorised", font=(K.FONT_NAME, 14, 'bold'))
         self.canvas_prog.after(1000, self.end)
@@ -106,22 +113,18 @@ class ProgramPCB():
                 complete = BM.get_file_names("complete")
                 if data_batch in inprogress:
                     last_line_inprogress = BM.ReadLastLine(data_batch, False)
-                    print(last_line_inprogress)
                     if data_type in last_line_inprogress:
-                        print("got it")
+                        self.probe_type = data_type
                     else:
                         self.probe_type = last_line_inprogress[2]
                 else:
-                    print("In Progress Lost")
                     if data_batch in complete:
-                        print("Yes")
                         last_line_complete = BM.ReadLastLine(data_batch, True)
                         if data_type in last_line_complete:
-                            print("got it")
+                            self.probe_type = data_type
                         else:
                             self.probe_type = last_line_complete[2]
-                    else:
-                        print("Complete Lost")
+
                 print(f"batch {data_batch} : type {data_type}")
         else:
             KY.end_keyboard('+')
