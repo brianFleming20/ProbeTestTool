@@ -1,6 +1,7 @@
 """
 Created on 24 Apr 2017
 @author: Brian F
+Reads the ODM Deltex monitor RS232 data out.
 """
 
 import serial
@@ -8,7 +9,7 @@ import Datastore
 import serial.tools.list_ports
 import time
 
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 
 
 class ODMData(object):

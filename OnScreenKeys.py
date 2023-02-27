@@ -1,21 +1,10 @@
 """
 Created on 3 May 2017
-@author: jackw
-@amended by Brian F
-Naming convention
-- Variables = no spaces, capitals for every word except the first : thisIsAVariable
-- Local functions = prefixed with _, _ for spaces, no capitals : _a_local_function
-Dependencies
--NI VISA Backend
--Non standard python modules
-    pyvisa
-    pyserial
-to do:
--complete button on TPW doesn't work
--TPW freezes if a probe is inserted
--add SQ probe to list
-#         s = ttk.Separator(self.root, orient=VERTICAL)
-#         s.grid(row=0, column=1, sticky=(N,S))
+@author: Brian F
+Creates an onscreen keyboard that interacts with a system.
+Extra functions to convert letters to upper case.
+Copy characters are displayed so that the user can see the letter or number pressed.
+The data is recorded to the local cache.
 """
 import Datastore
 from tkinter import *
@@ -27,7 +16,7 @@ _TITLE = "This is the title"
 PTT_Version = 'self.canvasboard By Danish'  # title Name
 GREEN = "#9bdeac"
 FONT_NAME = "Courier"
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 
 
 # showing all data in display
@@ -161,7 +150,7 @@ class Keyboard:
         show = Label(self.canvas, text=upp, font=("Arial", 16, "bold"), background="#FCF9BE", borderwidth=1, relief="solid")
         show.place(width=width, height=height, relx=locx, rely=y, anchor=CENTER)
         Tk.update(self.canvas)
-        sleep(0.3)
+        sleep(0.2)
         show.destroy()
 
     #####################################

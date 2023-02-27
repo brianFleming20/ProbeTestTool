@@ -1,6 +1,7 @@
 """
 Created on 24 Apr 2017
 @author: Brian F
+Reads the Nano VNA analyser for data out.
 """
 
 import serial
@@ -13,7 +14,7 @@ from scipy.constants import speed_of_light
 import Ports
 from tkinter import messagebox as mb
 
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 P = Ports
 
 INDUCTANCE = 0.003526

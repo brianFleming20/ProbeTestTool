@@ -2,7 +2,7 @@ from Sessions import ContinueSessionWindow, NewSessionWindow
 import Sessions
 import BatchManager
 import tkinter as tk
-from Datastore import Data_Store
+from Datastore import DataStore
 
 BM = BatchManager.BatchManager()
 CSV = BatchManager.CSVManager()
@@ -46,7 +46,7 @@ class TestContinueSessions:
         parent = tk.Tk()
         controller = tk.Tk()
         CS = ContinueSessionWindow(parent, controller)
-        DS = Data_Store()
+        DS = DataStore()
         CS.refresh_window()
 
         CS.set_test()

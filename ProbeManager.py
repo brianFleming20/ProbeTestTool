@@ -1,6 +1,7 @@
 """
 Created on 28 Apr 2017
 @author: jackw
+@author: Brian F
 """
 import PI
 import InstrumentManager
@@ -9,7 +10,7 @@ import ProbeInterface
 import codecs
 
 PF = ProbeInterface.PRI()
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 IM = InstrumentManager
 
 

@@ -1,34 +1,18 @@
 """
 Created on 3 May 2017
 @author: jackw
-@amended by Brian F
+@author: Brian F
 Naming convention
 - Variables = no spaces, capitals for every word except the first : thisIsAVariable
 - Local functions = prefixed with _, _ for spaces, no capitals : _a_local_function
 Dependencies
--NI VISA Backend
--Non standard python modules
-    pyvisa
-    pyserial
-to do:
--complete button on TPW doesn't work
--TPW freezes if a probe is inserted
--add SQ probe to list
-#         s = ttk.Separator(self.root, orient=VERTICAL)
-#         s.grid(row=0, column=1, sticky=(N,S))
+
+User input via an onscreen keyboard
+System cache data stored locally
+Logged user / admin and status recorded
+
 -------------------------------------------------
-# For testing purposes comment out the following
-import BatchManager
-import Sessions as SE
-BM = BatchManager.BatchManager()
--- in Login button clicked --
-self.canvas_name.destroy()
-self.canvas_pass.destroy()
-self.direct_session_window()
-self.refresh_window()
-self.activate_login_button()
-self.refresh_window()
----------------------------------------------------
+
 """
 
 import tkinter as tk
@@ -47,7 +31,7 @@ from time import gmtime, strftime, sleep
 
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 KY = OnScreenKeys.Keyboard()
 K = OnScreenKeys
 P = Ports

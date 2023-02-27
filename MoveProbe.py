@@ -3,7 +3,6 @@ Created on 24 Apr 2017
 @author: Brian F
 '''
 
-
 import serial
 
 
@@ -25,11 +24,11 @@ class move_probe():
         port_control = "COM6"
         serial_port_control = self.AccessPortControl(port_control)
 
-        if self.setup == False:
+        if not self.setup:
             serial_port_control.write(g_code_setup)
             self.setup = True
 
-        if self.setup == True and self.probe_grip == True:
+        if self.setup and self.probe_grip:
             serial_port_control.write(g_code_move)
             step_acheved = True
 
@@ -46,11 +45,11 @@ class move_probe():
         port_control = "COM6"
         serial_port_control = self.AccessPortControl(port_control)
 
-        if self.setup == False:
-            serial_port_control.write(g_code_setup)
-            self.setup = True
+        # if not self.setup:
+        #     serial_port_control.write(g_code_setup)
+        #     self.setup = True
 
-        if self.setup == True and self.probe_grip == True:
+        if self.setup and self.probe_grip:
             serial_port_control.write(g_code_move)
             step_acheved = True
 
@@ -66,20 +65,19 @@ class move_probe():
         port_control = "COM6"
         serial_port_control = self.AccessPortControl(port_control)
 
-        if self.Probe_grip == False:
+        if not self.Probe_grip:
             serial_port_control.write(port_command)
             self.probe_in_place = True
 
-        return probe_in_place
+        # return probe_in_place
 
     def Release_tool(self):
         # check port access
         port_command = "M11"
         port_control = "COM6"
         serial_port_control = self.AccessPortControl(port_control)
-
-        if self.Probe_grip == True:
+        if self.Probe_grip:
             serial_port_control.write(port_command)
             self.probe_in_place = False
 
-        return probe_in_place
+        # return probe_in_place

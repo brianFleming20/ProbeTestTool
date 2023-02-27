@@ -3,7 +3,7 @@ import os
 import Ports
 import json
 
-DS = Datastore.Data_Store()
+DS = Datastore
 P = Ports
 file_data = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
 

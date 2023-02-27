@@ -9,7 +9,7 @@ import BatchManager
 
 PT = ProbeTest
 P = Ports
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 BM = BatchManager.CSVManager()
 
 

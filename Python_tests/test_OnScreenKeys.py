@@ -3,7 +3,7 @@ from tkinter import Canvas, messagebox
 import Datastore
 
 KEY = OnScreenKeys
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 FONT_NAME = "Courier"
 
 

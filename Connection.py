@@ -1,21 +1,11 @@
 """
 Created on 3 May 2017
 @author: jackw
-@amended by Brian F
+@author: Brian F
 Naming convention
 - Variables = no spaces, capitals for every word except the first : thisIsAVariable
 - Local functions = prefixed with _, _ for spaces, no capitals : _a_local_function
-Dependencies
--NI VISA Backend
--Non standard python modules
-    pyvisa
-    pyserial
-to do:
--complete button on TPW doesn't work
--TPW freezes if a probe is inserted
--add SQ probe to list
-#         s = ttk.Separator(self.root, orient=VERTICAL)
-#         s.grid(row=0, column=1, sticky=(N,S))
+Auto connection to the external devices and forward to the testing screen.
 """
 
 import tkinter as tk
@@ -35,7 +25,7 @@ BM = BatchManager.BatchManager()
 PM = ProbeManager.ProbeManager()
 ZND = NanoZND.NanoZND()
 ODM = ODMPlus.ODMData()
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 PT = ProbeTest
 PF = ProbeInterface.PRI()
 SE = Sessions

@@ -5,17 +5,7 @@ Created on 3 May 2017
 Naming convention
 - Variables = no spaces, capitals for every word except the first : thisIsAVariable
 - Local functions = prefixed with _, _ for spaces, no capitals : _a_local_function
-Dependencies
--NI VISA Backend
--Non standard python modules
-    pyvisa
-    pyserial
-to do:
--complete button on TPW doesn't work
--TPW freezes if a probe is inserted
--add SQ probe to list
-#         s = ttk.Separator(self.root, orient=VERTICAL)
-#         s.grid(row=0, column=1, sticky=(N,S))
+
 '''
 import tkinter as tk
 from tkinter import *

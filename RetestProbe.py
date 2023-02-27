@@ -1,5 +1,7 @@
 """
+@author: Brian F
 This screen is to retest a failed probe and either pass it or leave it as a failure.
+If the probe is retested and passes, the serial number is reconstructed.
 """
 
 import tkinter as tk
@@ -21,7 +23,7 @@ P = Ports
 BM = BatchManager.BatchManager()
 PI = ProbeInterface.PRI()
 PT = ProbeTest
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 CO = Connection
 SE = Sessions
 PM = ProbeManager.ProbeManager()

@@ -8,7 +8,7 @@ import UserLogin
 import Ports
 import SecurityManager
 
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 P = Ports
 SM = SecurityManager.SecurityManager()
 

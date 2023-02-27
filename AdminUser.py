@@ -1,21 +1,13 @@
 """
 Created on 3 May 2017
 @author: jackw
-@amended by Brian F
+@author: Brian F
 Naming convention
 - Variables = no spaces, capitals for every word except the first : thisIsAVariable
 - Local functions = prefixed with _, _ for spaces, no capitals : _a_local_function
-Dependencies
--NI VISA Backend
--Non standard python modules
-    pyvisa
-    pyserial
-to do:
--complete button on TPW doesn't work
--TPW freezes if a probe is inserted
--add SQ probe to list
-#         s = ttk.Separator(self.root, orient=VERTICAL)
-#         s.grid(row=0, column=1, sticky=(N,S))
+Creates seperate windows for a new batch number or amend one.
+Sets default flags for probe over writing, ODM monitor use or the programming of non-human probes.
+Can change the default probe batch quantity is saved to local cache.
 """
 import tkinter as tk
 from tkinter import *
@@ -37,7 +29,7 @@ import UserLogin
 
 SM = SecurityManager.SecurityManager()
 BM = BatchManager.BatchManager()
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 KY = OnScreenKeys.Keyboard()
 K = OnScreenKeys
 PM = ProbeManager

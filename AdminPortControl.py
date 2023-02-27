@@ -1,22 +1,12 @@
-'''
+"""
 Created on 3 May 2017
 @author: jackw
-@amended by Brian F
+@author: Brian F
 Naming convention
 - Variables = no spaces, capitals for every word except the first : thisIsAVariable
 - Local functions = prefixed with _, _ for spaces, no capitals : _a_local_function
-Dependencies
--NI VISA Backend
--Non standard python modules
-    pyvisa
-    pyserial
-to do:
--complete button on TPW doesn't work
--TPW freezes if a probe is inserted
--add SQ probe to list
-#         s = ttk.Separator(self.root, orient=VERTICAL)
-#         s.grid(row=0, column=1, sticky=(N,S))
-'''
+Not normally used as the external devices are detected automatically.
+"""
 
 import tkinter as tk
 from tkinter import *
@@ -27,7 +17,7 @@ import OnScreenKeys
 import Ports
 
 KY = OnScreenKeys.Keyboard()
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 AU = AdminUser
 
 
@@ -38,12 +28,26 @@ def ignore():
 class AdminPorts(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
+        self.current_user = None
+        self.move_text = None
+        self.monitor_text = None
+        self.probe_text = None
+        self.znd_text = None
+        self.btn_4 = None
+        self.btn_3 = None
+        self.btn_2 = None
+        self.btn_1 = None
+        self.canvas_4 = None
+        self.canvas_3 = None
+        self.canvas_2 = None
+        self.canvas_1 = None
         self.analyser_usb = "COM4"
         self.com_port = "COM3"
         self.monitor = "COM5"
         self.move_probe = "Not Set"
         self.control = controller
-        connection_data = Ports.Ports(odm=self.monitor,probe=self.com_port,analyer=self.analyser_usb,move=self.move_probe)
+        connection_data = Ports.Ports(odm=self.monitor, probe=self.com_port, analyer=self.analyser_usb,
+                                      move=self.move_probe)
         DS.write_device_to_file(connection_data)
         ttk.Label(self, text="Deltex", background="#FFDAB9", foreground="#003865",
                   font=('Helvetica', 28, 'bold'), width=12).place(relx=0.85, rely=0.1)
@@ -55,7 +59,7 @@ class AdminPorts(tk.Frame):
         self.cancelBtn = Button(
             self, text="Cancel", command=self.cancel, font=('Courier', 14))
         self.cancelBtn.place(relx=0.7, rely=0.82, anchor=CENTER)
-        self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
+        self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
 
     def cancel(self):
@@ -102,7 +106,8 @@ class AdminPorts(tk.Frame):
         self.text_area.config(state=DISABLED)
 
     def _connect_btn_clicked(self, controller):
-        connection_data = Ports.Ports(odm=self.monitor,probe=self.com_port,analyer=self.analyser_usb,move=self.move_probe)
+        connection_data = Ports.Ports(odm=self.monitor, probe=self.com_port, analyer=self.analyser_usb,
+                                      move=self.move_probe)
         DS.write_device_to_file(connection_data)
         controller.show_frame(AU.AdminWindow)
 

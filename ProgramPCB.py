@@ -1,4 +1,8 @@
-
+"""
+@Author: Brian F
+Creates separate screen for issuing a serial number to a black PCB or probe without testing.
+Checks to see if the batch number exists and that the probe type matches the batch number.
+"""
 from tkinter import Canvas, Label, Radiobutton, Button, IntVar
 import OnScreenKeys
 import ProbeManager
@@ -11,7 +15,7 @@ KY = OnScreenKeys.Keyboard()
 K = OnScreenKeys
 GA = GetAuth
 GAU = GA.GetAuth()
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 BM = BatchManager.CSVManager()
 
 

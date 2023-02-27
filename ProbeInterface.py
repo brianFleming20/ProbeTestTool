@@ -1,8 +1,10 @@
 """
 Created on 28 Apr 2017
 @author: jackw
+@author: Brian F
+Communicates with probe interface without VISA options
 """
-from locale import normalize
+
 
 import serial
 import codecs
@@ -13,7 +15,7 @@ import Datastore
 import PI
 import serial.tools.list_ports
 
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 PD = PI.ProbeData()
 
 

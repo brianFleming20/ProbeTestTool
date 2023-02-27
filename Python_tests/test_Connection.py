@@ -2,7 +2,7 @@ import Connection
 import tkinter as tk
 import Datastore
 
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 
 
 class TestConnection:

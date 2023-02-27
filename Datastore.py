@@ -1,4 +1,4 @@
-'''
+"""
 Created on 3 May 2017
 @author: jackw
 @amended by Brian F
@@ -16,7 +16,7 @@ to do:
 -add SQ probe to list
 #         s = ttk.Separator(self.root, orient=VERTICAL)
 #         s.grid(row=0, column=1, sticky=(N,S))
-'''
+"""
 
 import pickle
 import os
@@ -27,9 +27,78 @@ import Ports
 P = Ports
 
 
-class Data_Store():
+##################################################################################
+# Creates a JSON object for the location of the in-progress and complete batches #
+##################################################################################
+def file_location(file):
+    file_dict = {
+        "File": file.File,
+    }
+    return file_dict
+
+
+############################################################
+# Creates a JSON object for the connected external devices #
+############################################################
+def device_locations(data):
+    devices = {
+        "ODM": data.ODM,
+        "Analyser": data.Analyser,
+        "Probe": data.Probe,
+        "Move": data.Move,
+        "odm_active": data.ODM_Active,
+    }
+    return devices
+
+
+###################################################################
+# Creates a JSON object for the currently logged-in user settings #
+###################################################################
+def get_user_dict(user_data):
+    user_dict = {
+        "Username": user_data.Name,
+        "Admin": user_data.Admin,
+        "Plot": user_data.Plot,
+        "Over_rite": user_data.Over_rite,
+        "Change_password": user_data.Change_password,
+        "reset_password": user_data.reset_password,
+        "Non_Human": user_data.Non_Human,
+    }
+    return user_dict
+
+
+############################################################################
+# Creates a JSON object for users that are not used within the system, but #
+# have been used in the past.                                              #
+############################################################################
+def deleted_dict(name, date):
+    deleted_user = {
+        name: {
+            "Date_removed": date,
+        },
+    }
+    return deleted_user
+
+
+###############################################################
+# Creates a JSON object for the batch and probe type settings #
+###############################################################
+def get_probe_dict(probe_data):
+    probe_dict = {
+        "Probe_Type": probe_data.Probe_Type,
+        "Batch": probe_data.Current_Batch,
+        "Passed": probe_data.Passed,
+        "Left_to_test": probe_data.Left,
+        "Failures": probe_data.failed,
+        "Scrapped": probe_data.scrap,
+    }
+    return probe_dict
+
+
+class DataStore:
     def __init__(self):
         self.file_data = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
+
     ########################
     # Main data file read  #
     ########################
@@ -137,25 +206,12 @@ class Data_Store():
         else:
             return False
 
-    ############################################################
-    # Creates a JSON object for the connected external devices #
-    ############################################################
-    def device_locations(self, data):
-        devices = {
-            "ODM": data.ODM,
-            "Analyser": data.Analyser,
-            "Probe": data.Probe,
-            "Move": data.Move,
-            "odm_active": data.ODM_Active,
-        }
-        return devices
-
     ###########################################################
     # Updates the external connected devices settings to file #
     ###########################################################
     def write_device_to_file(self, ports):
         filepath = os.path.join(self.file_data, "ports.json")
-        port_data = self.device_locations(ports)
+        port_data = device_locations(ports)
         try:
             with open(filepath, 'r') as user_file:
                 data = json.load(user_file)
@@ -182,27 +238,12 @@ class Data_Store():
         else:
             return load_data
 
-    ###################################################################
-    # Creates a JSON object for the currently logged-in user settings #
-    ###################################################################
-    def user_dict(self, user_data):
-        user_dict = {
-            "Username": user_data.Name,
-            "Admin": user_data.Admin,
-            "Plot": user_data.Plot,
-            "Over_rite": user_data.Over_rite,
-            "Change_password": user_data.Change_password,
-            "reset_password": user_data.reset_password,
-            "Non_Human": user_data.Non_Human,
-        }
-        return user_dict
-
     #################################################
     # Updates the currently logged-in user settings #
     #################################################
     def write_user_data(self, user_data):
         filepath = os.path.join(self.file_data, "user.json")
-        user_dict = self.user_dict(user_data)
+        user_dict = get_user_dict(user_data)
         result = False
         try:
             with open(filepath, 'r') as user_file:
@@ -228,21 +269,9 @@ class Data_Store():
         except FileNotFoundError:
             user_data = Ports.Users("", False)
             self.write_user_data(user_data)
-            return self.user_dict(user_data)
+            return get_user_dict(user_data)
         else:
             return load_data
-
-    ############################################################################
-    # Creates a JSON object for users that are not used within the system, but #
-    # have been used in the past.                                              #
-    ############################################################################
-    def deleted_dict(self, name, date):
-        deleted_user = {
-            name: {
-                "Date_removed": date,
-            },
-        }
-        return deleted_user
 
     ##############################################################################
     # Updates the deleted users to file. When a user is removed from the system, #
@@ -252,7 +281,7 @@ class Data_Store():
         filepath = os.path.join(self.file_data, "deleted.json")
         date = strftime("%Y-%m-%d", gmtime())
         result = False
-        delete_dict = self.deleted_dict(user_data.name, date)
+        delete_dict = deleted_dict(user_data.name, date)
         try:
             with open(filepath, 'r') as deleted_users:
                 delete_data = json.load(deleted_users)
@@ -271,29 +300,13 @@ class Data_Store():
     #################################################################
     def get_deleted_users(self):
         filepath = os.path.join(self.file_data, "deleted.json")
-        load_deleted = None
         try:
             with open(filepath, 'r') as file:
                 load_deleted = json.load(file)
         except FileNotFoundError:
             date = strftime("%Y-%m-%d", gmtime())
-            load_deleted = self.deleted_dict("Error", date)
         else:
             return load_deleted
-
-    ###############################################################
-    # Creates a JSON object for the batch and probe type settings #
-    ###############################################################
-    def probe_dict(self, probe_data):
-        probe_dict = {
-            "Probe_Type": probe_data.Probe_Type,
-            "Batch": probe_data.Current_Batch,
-            "Passed": probe_data.Passed,
-            "Left_to_test": probe_data.Left,
-            "Failures": probe_data.failed,
-            "Scrapped": probe_data.scrap,
-        }
-        return probe_dict
 
     ################################################
     # Updates the batch and probe settings to file #
@@ -301,7 +314,7 @@ class Data_Store():
     def write_probe_data(self, probe_data):
         filepath = os.path.join(self.file_data, "probes.json")
         result = False
-        probe_dict = self.probe_dict(probe_data)
+        probe_dict = get_probe_dict(probe_data)
         try:
             with open(filepath, 'r') as user_file:
                 data = json.load(user_file)
@@ -326,25 +339,16 @@ class Data_Store():
         except FileNotFoundError:
             probe_data = Ports.Probes("", "", 0, 0)
             self.write_probe_data(probe_data)
-            return self.probe_dict(probe_data)
+            return get_probe_dict(probe_data)
         else:
             return load_data
-
-    ##################################################################################
-    # Creates a JSON object for the location of the in-progress and complete batches #
-    ##################################################################################
-    def file_location(self, file):
-        file_dict = {
-            "File": file.File,
-        }
-        return file_dict
 
     ###################################################################
     # Updates the file location for the in-progress and complete data #
     ###################################################################
     def write_file_location(self, file):
         filepath = os.path.join(self.file_data, "location.json")
-        location = self.file_location(file)
+        location = file_location(file)
         try:
             with open(filepath, 'r') as user_file:
                 data = json.load(user_file)
@@ -376,12 +380,12 @@ class Data_Store():
     # Returns the user object of either a username or user object #
     ###############################################################
     def getUser(self, user):
-        '''
+        """
         tick
         pass in a username looks for given user in file
         if found, create a user object, fill it with the users data and return the object
         if not found, return False
-        '''
+        """
         filepath = os.path.join(self.file_data, "userfile.pickle")
         thisUser = False
         if type(user) == str:
@@ -405,10 +409,10 @@ class Data_Store():
     # Returns a list of the currently registered user to the system #
     #################################################################
     def getUserList(self):
-        '''
+        """
         tick
         returns a list of all the user objects
-        '''
+        """
         filepath = os.path.join(self.file_data, "userfile.pickle")
         userList = []
         try:
@@ -428,10 +432,10 @@ class Data_Store():
     # Registers a user object to the system #
     #########################################
     def putUser(self, user):
-        '''
+        """
         tick
         Pass in a user object and update the CSV file with it
-        '''
+        """
         filepath = os.path.join(self.file_data, "userfile.pickle")
         added = True
         # create details array
@@ -456,10 +460,10 @@ class Data_Store():
     # the system is unable to see the user.                   #
     ###########################################################
     def removeUser(self, user):
-        '''
+        """
         pass in a user object
         removes a given user from the user list
-        '''
+        """
         filepath = os.path.join(self.file_data, "userfile.pickle")
         deleted = True
         try:
@@ -505,4 +509,3 @@ class Data_Store():
             pass
         with open(filepath, 'w') as file:
             json.dump(deleted_file, file, indent=4)
-

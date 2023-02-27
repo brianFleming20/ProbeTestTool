@@ -1,4 +1,7 @@
-"""Factory pattern for generating python beans"""
+"""
+@author: Brian F
+Factory pattern for generating python beans
+"""
 from tkinter import Canvas, Label, Button, Tk
 
 

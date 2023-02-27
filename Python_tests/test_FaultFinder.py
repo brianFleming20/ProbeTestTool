@@ -6,7 +6,7 @@ import Datastore
 
 FF = FaultFinder
 P = Ports
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 
 
 def setup():

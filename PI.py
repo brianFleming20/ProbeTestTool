@@ -1,6 +1,7 @@
 """
 Created on 28 Apr 2017
 @author: jackw
+@author: Brian F
 """
 
 from time import gmtime, strftime

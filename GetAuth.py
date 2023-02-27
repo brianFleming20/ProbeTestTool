@@ -1,4 +1,8 @@
-
+"""
+@author: Brian F
+Creates an authentication pop-up screen to authorise admin actions without
+leaving the testing area.
+"""
 from tkinter import Canvas, Label, Button
 import OnScreenKeys
 import SecurityManager

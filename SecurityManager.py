@@ -1,23 +1,18 @@
 """
 Created on 23 Apr 2017
 @author: jackw
+@author: Brian F
 This module contains the SecurityManager class and its associated classes.
 Securitymanager is responsible for managing all of the user profiles as well as hadling who is currently logged in
 User data is contained in a pickled dictionary with each key as a username and the item being a two item array containing
 the password and the users admin status
-SecurityManager can:
-Add a user
-Delete a User
-Change a users password
-set a user to be logged in or out
-For testing purposes comment out the following lines
-to avoid pickle file errors
+
 DS.write_to_user_file(user_data)
 """
 import Datastore
 import Ports
 
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 P = Ports
 
 

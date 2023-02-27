@@ -1,8 +1,8 @@
 """
 Created on 1 May 2017
 @author: jackw
-Amended: BrianF
-fix path variables
+@author: Brian F
+Creates .csv files and reads the entire file contents or the last line of the required file.
 """
 
 import csv
@@ -11,7 +11,7 @@ from time import gmtime, strftime, sleep
 import Datastore
 import Ports
 
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 P = Ports
 
 

@@ -2,21 +2,14 @@
 Created on 3 May 2017
 Updated on 22 Dec 2021
 @author: jackw
-@amended: by Brian F
+@amended: Brian F
 Naming convention
 - Variables = no spaces, capitals for every word except the first : thisIsAVariable
 - Local functions = prefixed with _, _ for spaces, no capitals : _a_local_function
-Dependencies
--NI VISA Backend not used
--Non standard python modules
-    pyvisa
-    pyserial
-to do:
--complete button on TPW doesn't work
--TPW freezes if a probe is inserted
--add SQ probe to list
-#         s = ttk.Separator(self.root, orient=VERTICAL)
-#         s.grid(row=0, column=1, sticky=(N,S))
+
+Tests and gives a probe a serial number.
+If the probe passes, the probe will be asked to be removed.
+If the probe fails, the text 'Fail' will be inserted into the serial number.
 """
 
 import tkinter as tk
@@ -43,7 +36,7 @@ BM = BatchManager.BatchManager()
 PM = ProbeManager()
 ZND = NanoZND.NanoZND()
 ODM = ODMPlus.ODMData()
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 P = Ports
 SE = Sessions
 FF = FaultFinder

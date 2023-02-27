@@ -9,7 +9,7 @@ from time import gmtime, strftime
 import ProbeManager
 
 RT = RetestProbe
-DS = Datastore.Data_Store()
+DS = Datastore.DataStore()
 BM = BatchManager.CSVManager()
 P = Ports
 PM = ProbeManager.ProbeManager()
