@@ -1,7 +1,7 @@
-'''
+"""
 Created on 24 Apr 2017
 @author: Brian F
-'''
+"""
 
 import serial
 import numpy as np
@@ -21,10 +21,10 @@ TEST_CABLE = 0.59
 BLANK_PROBE = 52140318.610617355
 
 
-class NanoZND():
-    '''
+class NanoZND:
+    """
     Handles VNA operations. Primarily: configuring, refreshing traces and retrieving trace values
-    '''
+    """
 
     def __init__(self):
         # self.file_location = "C:/Users/Brian/python-dev/data_from_NanoNVA.csv"
@@ -59,7 +59,6 @@ class NanoZND():
     def ReadAnalyserData(self):
         line = ""
         result = ""
-        c = ""
         self.ser_ana.readline()  # discard empty line
         time.sleep(0.05)  # allow time for the data to be received
         while True:
@@ -145,7 +144,6 @@ class NanoZND():
                 self.ser_ana.open()
             except IOError:
                 pass
-        t_axis = 1
         if not self.ser_ana.isOpen():
             mb.showinfo(title="Analyser", message="Ensure the analyser is turned on.")
         marker3 = int(self.get_marker3().split()[2])
@@ -199,4 +197,3 @@ class NanoZND():
 
     def read_data(self):
         return self.ser_ana.read().decode("utf-8")
-

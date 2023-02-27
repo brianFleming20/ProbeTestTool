@@ -1,7 +1,7 @@
-'''
+"""
 Created on 24 Apr 2017
 @author: Brian F
-'''
+"""
 
 import serial
 import Datastore
@@ -46,7 +46,6 @@ class ODMData(object):
         ignor_bit = 44
         odm_result = []
         temp = ""
-        parameters = ''
         # Set up port connection
         if not self.check_port_open():
             return False
@@ -69,9 +68,8 @@ class ODMData(object):
         return odm_result
 
     def get_monitor_port(self):
-        read = [0, 0, 0, "not_connected"]
         read = self.ReadSerialODM()
-        if read == []:
+        if not read:
             return False
         else:
             if type(read[-1]) == str:

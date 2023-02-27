@@ -1,4 +1,4 @@
-'''
+"""
 Created on 23 Apr 2017
 @author: jackw
 This module contains the SecurityManager class and its associated classes.
@@ -13,7 +13,7 @@ set a user to be logged in or out
 For testing purposes comment out the following lines
 to avoid pickle file errors
 DS.write_to_user_file(user_data)
-'''
+"""
 import Datastore
 import Ports
 
@@ -43,18 +43,18 @@ class SecurityManager(object):
             return False
 
     def logOut(self):
-        '''
+        """
         tick
         logs a current user out by setting the loggedInUser attribute to false
-        '''
+        """
         login_user = P.Users("", False)
         DS.write_user_data(login_user)
 
     def addUser(self, user):
-        '''
+        """
         tick
         checks if the user's name is already in the dict, if not it stores the user object to the users file
-        '''
+        """
         if not DS.getUser(user.name):
             DS.putUser(user)
             return True
@@ -62,11 +62,11 @@ class SecurityManager(object):
             return False
 
     def delete_user(self, puser):
-        '''
+        """
         tick
         pass in a user object
         Checks to see if the user exists in the user dict, if so deletes it
-        '''
+        """
         return DS.removeUser(puser)
 
     def updatePassword(self, password, admin):
@@ -90,5 +90,3 @@ class SecurityManager(object):
     def remind_password(self, user):
         user_obj = self.GetUserObject(user)
         return user_obj.password
-
-

@@ -1,7 +1,7 @@
-'''
+"""
 Created on 28 Apr 2017
 @author: jackw
-'''
+"""
 from locale import normalize
 
 import serial
@@ -50,9 +50,9 @@ class PRI(object):
         return self.read_data()
 
     def probe_present(self):
-        '''
+        """
         Returns True if a probe is present, False if not
-        '''
+        """
         self.get_serial_port()
         if self.ser.isOpen() is None:
             self.ser.open()
@@ -79,9 +79,9 @@ class PRI(object):
         return bit
 
     def read_first_bytes(self):
-        '''
+        """
         returns a single byte as a 2 character string
-        '''
+        """
         self.get_serial_port()
         if not self.ser.isOpen():
             self.ser.open()
@@ -105,9 +105,9 @@ class PRI(object):
             return False
 
     def read_serial_number(self):
-        '''
+        """
         returns a single byte as a 2 character string
-        '''
+        """
         self.get_serial_port()
         if not self.ser.isOpen():
             self.ser.open()
@@ -129,9 +129,9 @@ class PRI(object):
         return num
 
     def probe_write(self, data):
-        '''
+        """
         pass in a list of bytes, writes a byte at a time to the probe
-        '''
+        """
         result = False
         self.get_serial_port()
         if not self.ser.isOpen():
@@ -143,18 +143,17 @@ class PRI(object):
         return result
 
     def read_all_bytes(self):
-        '''
+        """
         Returns a 32 character string of the first 16 bytes of the probe's memory
 
 
         sends: I2c start, write address, number of bytes, data... , I2C start, read address, number of bytes, I2C stop
         sends:    53    ,        A0    ,       01       ,    00   ,    53    ,     A1      ,       10       ,    50
-        '''
+        """
 
         self.get_serial_port()
         if not self.ser.isOpen():
             self.ser.open()
-        serialData = None
         self.send_data(b'53A0010053A11e50')
         time.sleep(0.05)  # allow time for the data to be received
         serialData = self.read_data()
@@ -204,9 +203,9 @@ class PRI(object):
         return result
 
     def send_data(self, data):
-        '''
+        """
         pass in hex bytes, send the whole lot down the serial port.
-        '''
+        """
         if not self.ser.isOpen():
             self.ser.open()
         # flush the buffers
@@ -216,10 +215,10 @@ class PRI(object):
         return self.ser.write(codecs.decode(data, "hex_codec"))
 
     def read_data(self):
-        '''
+        """
         reads the contents of the serial buffer and returns it as a string
         of hex bytes
-        '''
+        """
         if not self.ser.isOpen():
             self.ser.open()
         serialData = ''
@@ -228,4 +227,3 @@ class PRI(object):
             b = binascii.hexlify(self.ser.readline())
             serialData += codecs.decode(b)
         return serialData
-

@@ -1,4 +1,4 @@
-'''
+"""
 Created on 3 May 2017
 @author: jackw
 @amended by Brian F
@@ -16,7 +16,7 @@ to do:
 -add SQ probe to list
 #         s = ttk.Separator(self.root, orient=VERTICAL)
 #         s.grid(row=0, column=1, sticky=(N,S))
-'''
+"""
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
@@ -61,6 +61,9 @@ test = False
 class AdminWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.btn1 = None
+        self.nhp_button = None
+        self.odm_button = None
         self.canvas = None
         self.probe = None
         self.checkbutton = None
@@ -244,8 +247,22 @@ class AdminWindow(tk.Frame):
         self.control.show_frame(EditUserWindow)
 
 
+def change_password(change, password, admin):
+    update = False
+    if change and not DS.get_current_use_user(DS.get_reset_password_name()):
+        if SM.updatePassword(password, admin):
+            tm.showinfo('Change Password', 'Password change successful')
+            update = True
+    else:
+        tm.showinfo("Change Password", "Unable to change user's password.")
+    return update
+
+
 class ChangePasswordWindow(tk.Frame):
     def __init__(self, parent, controller):
+        self.back_btn = None
+        self.confm_btn = None
+        self.btn = None
         self.not_to_login = True
         self.reset_pass = False
         self.CPWb1 = None
@@ -363,7 +380,7 @@ class ChangePasswordWindow(tk.Frame):
         name = DS.get_reset_password_name()
         user_admin = DS.getUser(name).admin
         if not user_admin and not check_user_admin(name):
-            get_admin = False
+            pass
         if len(self.newPassword) > 0 and len(self.confirmPassword) > 0:
             if self.newPassword == self.confirmPassword:
                 change = True
@@ -372,18 +389,7 @@ class ChangePasswordWindow(tk.Frame):
         else:
             if self.get_admin_status() is not user_admin:
                 change = True
-
-        return self.change_password(change, self.newPassword, self.get_admin_status())
-
-    def change_password(self, change, password, admin):
-        update = False
-        if change and not DS.get_current_use_user(DS.get_reset_password_name()):
-            if SM.updatePassword(password, admin):
-                tm.showinfo('Change Password', 'Password change successful')
-                update = True
-        else:
-            tm.showinfo("Change Password", "Unable to change user's password.")
-        return update
+        return change_password(change, self.newPassword, self.get_admin_status())
 
     def return_to_edit_user(self):
         if self.reset_pass:
@@ -391,6 +397,24 @@ class ChangePasswordWindow(tk.Frame):
         else:
             self.btn.destroy()
             self.control.show_frame(EditUserWindow)
+
+
+def delete_user(puser):
+    # puser is the selected user from the list menu
+    delete = False
+    sure = tm.askyesno(
+        'Delete confirm', 'Are you sure you want to Delete this user?')
+    if sure:
+        if puser.name != DS.get_username():
+            delete = SM.delete_user(puser)
+        else:
+            tm.showerror("Error", "This user can't be deleted")
+    return delete
+
+
+def set_test():
+    global test
+    test = True
 
 
 class EditUserWindow(tk.Frame):
@@ -463,7 +487,7 @@ class EditUserWindow(tk.Frame):
         else:
             username = lstUsr
 
-        self.result = self.delete_user(DS.getUser(username))
+        self.result = delete_user(DS.getUser(username))
 
         if self.result:
             self.refresh_window()
@@ -474,18 +498,6 @@ class EditUserWindow(tk.Frame):
             command=lambda: self.control.show_frame(AdminWindow))
         self.CngPWrd_btn.config(
             command=lambda: self._getSelectedUser())
-
-    def delete_user(self, puser):
-        # puser is the selected user from the list menu
-        delete = False
-        sure = tm.askyesno(
-            'Delete confirm', 'Are you sure you want to Delete this user?')
-        if sure:
-            if puser.name != DS.get_username():
-                delete = SM.delete_user(puser)
-            else:
-                tm.showerror("Error", "This user can't be deleted")
-        return delete
 
     def refresh_window(self):
         # create a list of the current users using the dictionary of users
@@ -513,10 +525,6 @@ class EditUserWindow(tk.Frame):
         # Getting the selected user
         self.userListBox.select_set(0)
 
-    def set_test(self):
-        global test
-        test = True
-
 
 def check_user_admin(name):
     global ADMIN_COUNT
@@ -538,6 +546,10 @@ class AddUserWindow(tk.Frame):
         # add User screen
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
 
+        self.pass2_text = None
+        self.pass1_text = None
+        self.name_text = None
+        self.admin = None
         self.confpassword = None
         self.newpassword = None
         self.newusername = None

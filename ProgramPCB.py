@@ -1,4 +1,5 @@
-from tkinter import *
+
+from tkinter import Canvas, Label, Radiobutton, Button, IntVar
 import OnScreenKeys
 import ProbeManager
 import BatchManager
@@ -8,13 +9,29 @@ import Datastore
 PM = ProbeManager.ProbeManager()
 KY = OnScreenKeys.Keyboard()
 K = OnScreenKeys
-GA = GetAuth.GetAuth()
+GA = GetAuth
+GAU = GA.GetAuth()
 DS = Datastore.Data_Store()
 BM = BatchManager.CSVManager()
 
 
-class ProgramPCB():
+def probe_present():
+    return PM.ProbePresent()
+
+
+def get_keyboard():
+    KY.display()
+    KY.shift()
+
+
+def set_admin_auth():
+    GA.set_auth(False)
+
+
+class ProgramPCB:
     def __init__(self):
+        self.lab1 = None
+        self.lab2 = None
         self.error = None
         self.mnt_btn2 = None
         self.mnt_btn1 = None
@@ -25,8 +42,11 @@ class ProgramPCB():
         self.probe_type = None
         self.batch_number = None
         self.clicked = False
+        self.present = False
         self.auth = None
+        self.back_to_test = False
         self.count = 0
+        self.paused = False
         self.back_colour = "#FCFFE7"
 
     def show_screen(self):
@@ -49,41 +69,33 @@ class ProgramPCB():
         btn1.place(relx=0.8, rely=0.8)
         cancel = Button(self.canvas_prog, text="Cancel", width=12, font=(K.FONT_NAME, 10, 'bold'), command=self.end)
         cancel.place(relx=0.55, rely=0.8)
+        self.paused = True
 
     def program_pcb(self):
-        
         if self.auth:
-            if self.probe_present():
-                self.canvas_prog.itemconfig(self.error, text="", font=(K.FONT_NAME, 14, 'bold'))
-                serial_number = PM.ProgramProbe(self.probe_type, False)
-                self.canvas_prog.itemconfig(self.error, text=f"Complete \n{serial_number}", font=(K.FONT_NAME, 14, 'bold'))
-            else:
-                self.canvas_prog.itemconfig(self.error, text="Insert a PCB", font=(K.FONT_NAME, 14, 'bold'))
-
+            serial_number = PM.ProgramProbe(self.probe_type, False)
+            self.canvas_prog.itemconfig(self.error, text=f"Complete \n{serial_number}",
+                                        font=(K.FONT_NAME, 14, 'bold'))
         else:
             self.canvas_prog.itemconfig(self.error, text="Not Authorised", font=(K.FONT_NAME, 14, 'bold'))
-        self.canvas_prog.after(1000, self.end)
+        self.canvas_prog.after(1500, self.end)
 
     def end(self):
+        self.paused = False
         self.canvas_prog.destroy()
-    
-    def probe_present(self):
-        return PM.ProbePresent()
-    
-    def get_serial_number(self):
-        if self.probe_present():
-            return PM.read_serial_number()
-    
-    def get_auth(self):
-        if DS.user_admin_status():
-            self.auth = True
-            self.program_pcb()
-        elif not GetAuth.get_authorise():
-            GA.show_screen()
-            self.check()
 
-    def get_keyboard(self):
-        KY.get_keyboard()
+    def get_auth(self):
+        self.count = 0
+        if probe_present():
+            self.canvas_prog.itemconfig(self.error, text="")
+            if DS.user_admin_status():
+                self.auth = True
+                self.program_pcb()
+            elif GA.authenticate_user():
+                GAU.show_screen()
+                self.check()
+        else:
+            self.canvas_prog.itemconfig(self.error, text="Insert a PCB \nand press 'OK'", font=(K.FONT_NAME, 14, 'bold'))
 
     def diff(self):
         y = 135
@@ -99,7 +111,7 @@ class ProgramPCB():
             self.lab2 = self.canvas_prog.create_text(300, 155)
             self.canvas_prog.itemconfig(self.lab2, text="Probe type", font=(K.FONT_NAME, 10, 'bold'))
 
-            self.get_keyboard()
+            get_keyboard()
             data_batch = K.wait_for_response(self.canvas_prog, self.batch_number, False, 0.35, 0.5)
 
             if data_batch == "":
@@ -107,11 +119,11 @@ class ProgramPCB():
                 self.remove_screen()
                 self.setup()
             else:
-                self.get_keyboard()
+                get_keyboard()
                 data_type = K.wait_for_response(self.canvas_prog, self.probe_type, False, 0.8, 0.5)
-                inprogress = BM.get_file_names("in_progress")
+                progress = BM.get_file_names("in_progress")
                 complete = BM.get_file_names("complete")
-                if data_batch in inprogress:
+                if data_batch in progress:
                     last_line_inprogress = BM.ReadLastLine(data_batch, False)
                     if data_type in last_line_inprogress:
                         self.probe_type = data_type
@@ -124,8 +136,7 @@ class ProgramPCB():
                             self.probe_type = data_type
                         else:
                             self.probe_type = last_line_complete[2]
-
-                print(f"batch {data_batch} : type {data_type}")
+                self.program_pcb()
         else:
             KY.end_keyboard('+')
             self.remove_screen()
@@ -133,23 +144,19 @@ class ProgramPCB():
 
     def check(self):
         if not self.clicked:
-            self.clicked = GA.get_clicked()
+            self.clicked = GAU.get_clicked()
             self.canvas_prog.after(300, self.check)
 
         if self.clicked and self.count < 1:
             self.count += 1
-            print("*********")
             self.auth = GA.authenticate_user()
             self.program_pcb()
 
-
-    def set_admin_auth(self):
-        GA.set_auth(False)
+    def get_pause(self):
+        return self.paused
 
     def remove_screen(self):
         self.canvas_prog.delete(self.mnt_btn1)
         self.canvas_prog.delete(self.mnt_btn2)
         self.canvas_prog.delete(self.lab1)
         self.canvas_prog.delete(self.lab2)
-
-

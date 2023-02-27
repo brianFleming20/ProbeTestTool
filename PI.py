@@ -1,19 +1,17 @@
-'''
+"""
 Created on 28 Apr 2017
 @author: jackw
-'''
+"""
 
 from time import gmtime, strftime
 
 
 class ProbeData(object):
-    '''
+    """
     Responsible for creating the full 256 bytes of EEPROM data.
-    '''
+    """
 
     def __init__(self):
-        '''
-        '''
         self.probeData = False
         self.timeStamp = ''
         self.DP240TypeBytes = ['32', '46', '30', '44']
@@ -36,17 +34,17 @@ class ProbeData(object):
         #                   '53A009e8303030303030303050', '53A009f0303030303030303050', '53A009f8303030303030303050']
 
     def GenerateDataString(self, probe_type, test):
-        '''
+        """
         Pass in a probe type, returns the full 255 byte probe data including time stamped serial number
 
         The first 8 and last 2 values of each list item are for SC18IM configuration, the bytes inbetween are that actual data that is written
-        '''
+        """
         probezeros = ['53A00900000000000000000050', '53A00908000000000000000050', '53A00910000000000000000050',
                       '53A00918000000000000000050', '53A00920000000000000000050', '53A00928000000000000000050',
                       '53A00930000000000000000050', '53A00938000000000000000050', '53A00940000000000000000050',
                       '53A00948000000000000000050', '53A00950000000000000000050', '53A00958000000000000000050',
                       '53A00960000000000000000050', '53A00968000000000000000050', '53A00970000000000000000050']
-        probeones =  ['53A00900111111111111111150', '53A00908111111111111111150', '53A00910111111111111111150',
+        probeones = ['53A00900111111111111111150', '53A00908111111111111111150', '53A00910111111111111111150',
                       '53A00918111111111111111150', '53A00920111111111111111150', '53A00928111111111111111150',
                       '53A00930111111111111111150', '53A00938111111111111111150', '53A00940111111111111111150',
                       '53A00948111111111111111150', '53A00950111111111111111150', '53A00958111111111111111150',

@@ -1,7 +1,7 @@
-'''
+"""
 Created on 28 Apr 2017
 @author: jackw
-'''
+"""
 import PI
 import InstrumentManager
 import Datastore
@@ -14,24 +14,21 @@ IM = InstrumentManager
 
 
 class ProbeManager(object):
-    '''
-    classdocs
-    '''
+    """
+    class docs
+    """
     def __init__(self):
-        '''
+        """
         Constructor
-        '''
+        """
         self.PD = PI.ProbeData()
 
-    def TestProbe(self):
-        return True
-
     def ProgramProbe(self, probe_type, test):
-        '''
+        """
         pass in a string containing the probe type
         program the probe as that type
         returns the probes serial number if programming was succesful, False if not
-        '''
+        """
         ################################################
         # The probe serial number memory is checked    #
         # for errors by writing '0' to the chip. If    #
@@ -75,19 +72,19 @@ class ProbeManager(object):
         return check
 
     def ProbePresent(self):
-        '''
+        """
         returns True of a probe is inserted into Probe Interface, false if not
-        '''
+        """
         if PF.probe_present():
             return True
         else:
             return False
 
     def ProbeIsProgrammed(self):
-        '''
+        """
         Checks to see if the first byte of the eeprom is programmed with the probe type byte,
         returns true if it is, false if not
-        '''
+        """
         return PF.read_first_bytes()
 
     def read_serial_number(self):
@@ -110,5 +107,3 @@ class ProbeManager(object):
     def blank_probe(self):
         data = self.PD.GenerateDataString("blank", True)
         PF.probe_write(data)
-
-

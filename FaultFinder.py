@@ -1,4 +1,4 @@
-'''
+"""
 Created on 3 May 2017
 @author: jackw
 @amended by Brian F
@@ -16,7 +16,7 @@ to do:
 -add SQ probe to list
 #         s = ttk.Separator(self.root, orient=VERTICAL)
 #         s.grid(row=0, column=1, sticky=(N,S))
-'''
+"""
 
 import tkinter as tk
 from tkinter import *
@@ -43,9 +43,17 @@ RT = RetestProbe
 BTN_WIDTH = 25
 
 
+def get_probe_serial_number():
+    return PM.read_serial_number()
+
+
 class FaultFindWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.info_canvas = None
+        self.text_area = None
+        self.cent_y = None
+        self.cent_x = None
         self.canvas_back = None
         self.control = controller
         self.current_batch = StringVar()
@@ -190,12 +198,9 @@ class FaultFindWindow(tk.Frame):
         self.display()
         self.plot_text.set("OFF")
         while PM.ProbePresent():
-            self.read_probe_number.set(self.get_probe_serial_number())
+            self.read_probe_number.set(get_probe_serial_number())
             self.fault_find_probe()
         self.break_out()
-
-    def get_probe_serial_number(self):
-        return PM.read_serial_number()
 
     def update_odm_data(self):
         serial_results = False
@@ -224,7 +229,6 @@ class FaultFindWindow(tk.Frame):
         self.update_odm_data()
 
     def test_probe(self):
-        result = None
         cable = self.get_cable_code()
         if not cable:
             result = 0.0

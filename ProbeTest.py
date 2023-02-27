@@ -1,4 +1,4 @@
-'''
+"""
 Created on 3 May 2017
 Updated on 22 Dec 2021
 @author: jackw
@@ -17,7 +17,7 @@ to do:
 -add SQ probe to list
 #         s = ttk.Separator(self.root, orient=VERTICAL)
 #         s.grid(row=0, column=1, sticky=(N,S))
-'''
+"""
 
 import tkinter as tk
 from tkinter import *
@@ -49,7 +49,8 @@ SE = Sessions
 FF = FaultFinder
 PR = PRI()
 RT = RetestProbe
-PCB = ProgramPCB.ProgramPCB()
+PCB = ProgramPCB
+PC = PCB.ProgramPCB()
 KY = OnScreenKeys.Keyboard()
 K = OnScreenKeys
 # define global variables
@@ -106,7 +107,6 @@ def probe_programmed():
 
 
 def detect_recorded_probe():
-    found = None
     fail = "Fail"
     not_found = "Not Found"
     filepath = DS.get_file_location()
@@ -129,6 +129,26 @@ def detect_recorded_probe():
     else:
         found = found_in_progress[0]
     return found, serial_number
+
+
+def new_serial_number():
+    PC.show_screen()
+
+
+def check_overwrite():
+    return DS.get_user_data()['Over_rite']
+
+    ##############################################
+    # Show if the external devices are connected #
+    ##############################################
+
+
+def non_human_probe():
+    return DS.get_user_data()['Non_Human']
+
+
+def do_reflection_test():
+    return True
 
 
 class TestProgramWindow(tk.Frame):
@@ -157,6 +177,7 @@ class TestProgramWindow(tk.Frame):
         self.test = False
         self.serial_number = None
         self.reset_ana = None
+        self.skip = False
         self.file_data = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents')
         ###############################################################
         # import and set up images for the screen                     #
@@ -199,7 +220,7 @@ class TestProgramWindow(tk.Frame):
         ttk.Label(self.canvas_back, textvariable=self.device_details, relief=SUNKEN,
                   width=30).place(relx=0.7, rely=0.25, anchor='w')
         self.reset_ana = Button(self.canvas_back, text="Reset Analyser", background="#FF731D", font=('Arial', 12),
-               command=self.reset_analyser)
+                                command=self.reset_analyser)
         self.reset_ana.place(relx=0.85, rely=0.23)
         ttk.Label(self.canvas_back, textvariable=self.odm_details, relief=SUNKEN,
                   width=30).place(relx=0.7, rely=0.30, anchor='w')
@@ -245,13 +266,13 @@ class TestProgramWindow(tk.Frame):
         #################################################################
         self.ssp_btn = Button(self.canvas_back, text='  Suspend Batch  ',
                               font=("Courier", 14, "bold"), background="#EF5B0C",
-                              highlightthickness=0, command=self.suspnd_btn_clicked)
+                              highlightthickness=0, command=self.suspend_btn_clicked)
         self.ssp_btn.place(relx=0.85, rely=0.9, anchor=CENTER)
         self.retest = Button(self.canvas_back, text=" Re-test Failed Probe", font=("Courier", 15, "bold"),
                              background="#A8E890", command=self.retest_probe)
         self.retest.place(relx=0.5, rely=0.8)
         self.new_sn = Button(self.canvas_back, text=" New PCB ",
-                             font=("Courier", 14, "bold"), background="#EF5B0C", command=self.new_serial_number)
+                             font=("Courier", 14, "bold"), background="#EF5B0C", command=new_serial_number)
         self.new_sn.place(relx=0.81, rely=0.8)
         self.session_on_going = True
         self.analyser_serial = None
@@ -275,7 +296,7 @@ class TestProgramWindow(tk.Frame):
         if ZND.reset_vna():
             self.reset_ana.config(background="#82CD47")
 
-    def suspnd_btn_clicked(self):
+    def suspend_btn_clicked(self):
         self.session_on_going = False
         if tm.askyesno(title="Batch Info", message="    Suspend Batch ?         "):
             probe_data = P.Probes(self.probe_type.get(), self.current_batch.get(), self.probes_passed.get(),
@@ -300,12 +321,6 @@ class TestProgramWindow(tk.Frame):
         ###########################################################
         # Set the number rof probes left to test to the display   #
         ###########################################################
-
-    def new_serial_number(self):
-        self.session_on_going = False
-        PCB.show_screen()
-        self.session_on_going = True
-        self.wait_for_probe()
 
     def set_probes_left(self, qty):
         self.left_to_test.set(qty)
@@ -344,8 +359,9 @@ class TestProgramWindow(tk.Frame):
         #############################################################
         # Display to screen the probe over-write status             #
         #############################################################
+
     def set_reprogram_status(self):
-        if self.user_admin and self.check_overwrite():
+        if self.user_admin and check_overwrite():
             self.display_message(warning_text["overrite on"])
         else:
             self.display_message(warning_text["overrite off"])
@@ -353,6 +369,7 @@ class TestProgramWindow(tk.Frame):
         ##############################################################
         # Check probe interface for a probe is inserted              #
         ##############################################################
+
     def check_probe_present(self):
         if not PM.ProbePresent():
             if self.session_on_going:
@@ -362,12 +379,6 @@ class TestProgramWindow(tk.Frame):
         else:
             return True
 
-    def check_overwrite(self):
-        return DS.get_user_data()['Over_rite']
-
-        ##############################################
-        # Show if the external devices are connected #
-        ##############################################
     def set_display(self):
         check = False
         odm = "ODM not running"
@@ -382,7 +393,7 @@ class TestProgramWindow(tk.Frame):
                 ODM.check_port_open()
                 port_data = ODM.ReadSerialODM()
             except IOError:
-                port_data = "000"
+                pass
             else:
                 if len(port_data) > 5:
                     odm = " ODM Monitor "
@@ -396,6 +407,7 @@ class TestProgramWindow(tk.Frame):
         ###############################################################
         # Start off mai testing sequence                              #
         ###############################################################
+
     def refresh_window(self):
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
@@ -410,13 +422,18 @@ class TestProgramWindow(tk.Frame):
         ################################################################
         #                     Main loop                                #
         ################################################################
+
     def wait_for_probe(self):
+        self.skip = False
         PCB.set_admin_auth()
         if self.get_probes_left():
             self.session_on_going = False
             self.session_complete = True
         while self.session_on_going:
-            if self.check_probe_present():
+            if PC.get_pause():
+                self.skip = True
+            if self.check_probe_present() and not PC.get_pause():
+                self.info_canvas = None
                 if not self.program_blank_probe():
                     #################################
                     # Check for programmed probe    #
@@ -441,13 +458,12 @@ class TestProgramWindow(tk.Frame):
                 self.complete_batch()
 
     def do_test_and_programme(self, current_batch, probe_type):
-        self.info_canvas = None
         found, sn = detect_recorded_probe()
-        if not found and not self.check_overwrite():
+        if not found and not check_overwrite():
             self.show_serial_number.set(sn)
             P.probe_canvas(self, f"Probe not recognised\nCurrent batch {current_batch}", True)
             return False
-        if current_batch != found and not self.check_overwrite():
+        if current_batch != found and not check_overwrite():
             P.probe_canvas(self, f"Batch number {found} - error\n\ndoes not match current {current_batch}", True)
             if not self.test:
                 return False
@@ -550,9 +566,6 @@ class TestProgramWindow(tk.Frame):
         P.text_destroy(self)
         self.show_serial_number.set("      ---")
 
-    def non_human_probe(self):
-        return DS.get_user_data()['Non_Human']
-
     def program_blank_probe(self):
         ###############################################################
         # Program a blank probe inserted into probe interface         #
@@ -606,20 +619,20 @@ class TestProgramWindow(tk.Frame):
         ##########################################################
 
     def over_write_probe(self, current_batch, probe_type):
-        self.info_canvas = None
         over_write = False
         found, serial_number = detect_recorded_probe()
         probe_type_ = RT.get_probe_type(serial_number[:3])
         self.show_serial_number.set(serial_number)
-        if found == "Not Found":
-            P.probe_canvas(self, f"Location of {probe_type_} not found.", False)
-            time.sleep(2)
-            P.text_destroy(self)
-        else:
-            P.probe_canvas(self, f"This probe is from {probe_type_}\n \nbatch number {found}", False)
-            time.sleep(2)
-            P.text_destroy(self)
-        if self.check_overwrite():
+        if not self.skip:
+            if found == "Not Found":
+                P.probe_canvas(self, f"Location of {probe_type_} not found.", False)
+                time.sleep(2)
+                P.text_destroy(self)
+            else:
+                P.probe_canvas(self, f"This probe is from {probe_type_}\n \nbatch number {found}", False)
+                time.sleep(2)
+                P.text_destroy(self)
+        if check_overwrite():
             ###############################################
             # ask for user input to reprogramme the probe #
             ###############################################
@@ -632,15 +645,17 @@ class TestProgramWindow(tk.Frame):
             reset_rewrite = P.Users(self.current_user.get(), self.user_admin, over_right=False)
             DS.write_user_data(reset_rewrite)
         else:
-            P.probe_canvas(self, warning_text["14"], True)
+            if not self.skip:
+                P.probe_canvas(self, warning_text["14"], True)
             if self.info_canvas:
                 self.session_on_going = False
                 P.text_destroy(self)
                 if not self.test:
                     self.ff_window()
             else:
+                if not self.skip:
+                    P.text_destroy(self)
                 self.session_on_going = True
-                P.text_destroy(self)
                 self.remove_probe()
         return over_write
 
@@ -719,16 +734,16 @@ class TestProgramWindow(tk.Frame):
         marker_data = perform_probe_test()
         if analyser:
             pass_analyser = True
-            self.action.set(warning_text["17"]) # Passed analyser message
+            self.action.set(warning_text["17"])  # Passed analyser message
             Tk.update(self)
-        if self.do_reflection_test():
+        if do_reflection_test():
             pass_reflection = True
-            self.action.set(warning_text["18"]) # Passed reflection message
+            self.action.set(warning_text["18"])  # Passed reflection message
             Tk.update(self)
         if pass_analyser and pass_reflection:
             pass_tests = True
         else:
-            self.action.set(warning_text["13"]) # Failed probe message
+            self.action.set(warning_text["13"])  # Failed probe message
             self.show_red_light()
             pass_tests = False
         Tk.update(self)
@@ -737,7 +752,6 @@ class TestProgramWindow(tk.Frame):
     ################################
     # Collect the ODM monitor data #
     ################################
-
     def update_odm_data(self):
         if DS.get_devices()['odm_active']:
             serial_results = ODM.ReadSerialODM()
@@ -784,9 +798,6 @@ class TestProgramWindow(tk.Frame):
     def no_answer(self):
         self.info_canvas = False
         P.text_destroy(self)
-
-    def do_reflection_test(self):
-        return True
 
     def to_sessions_window(self):
         if not self.test:

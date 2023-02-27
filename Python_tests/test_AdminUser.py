@@ -130,7 +130,7 @@ class TestAdmin:
     def test_change_password(self):
         patient = tk.Tk()
         controller = tk.Tk()
-        AU = AdminUser.ChangePasswordWindow(patient, controller)
+        AU = AdminUser
         AU.refresh_window()
         expected = False
         user = P.Users("brian", True, pw_user="Jon")
@@ -162,7 +162,7 @@ class TestAdmin:
     def test__get_selected_user(self):
         patient = tk.Tk()
         controller = tk.Tk()
-        AU = AdminUser.EditUserWindow(patient, controller)
+        AU = AdminUser
         AU.refresh_window()
         AU.set_test()
         AU.userListBox.focus_set()
@@ -175,7 +175,7 @@ class TestAdmin:
     def test_check_delete(self):
         patient = tk.Tk()
         controller = tk.Tk()
-        AU = AdminUser.EditUserWindow(patient, controller)
+        AU = AdminUser
         user8 = "User8"
         password = "password"
         # Create user object
@@ -206,7 +206,7 @@ class TestAdmin:
     def test__del_usr_btn_clicked(self):
         patient = tk.Tk()
         controller = tk.Tk()
-        AU = AdminUser.EditUserWindow(patient, controller)
+        AU = AdminUser
         AU.refresh_window()
         AU.set_test()
         user10 = "User10"

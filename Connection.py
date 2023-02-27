@@ -1,4 +1,4 @@
-'''
+"""
 Created on 3 May 2017
 @author: jackw
 @amended by Brian F
@@ -16,12 +16,11 @@ to do:
 -add SQ probe to list
 #         s = ttk.Separator(self.root, orient=VERTICAL)
 #         s.grid(row=0, column=1, sticky=(N,S))
-'''
+"""
 
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
-import tkinter.messagebox as tm
 import BatchManager
 import ProbeManager
 import NanoZND
@@ -31,7 +30,6 @@ import Sessions
 import Datastore
 import ProbeInterface
 import Ports
-from time import sleep
 
 BM = BatchManager.BatchManager()
 PM = ProbeManager.ProbeManager()
@@ -42,6 +40,7 @@ PT = ProbeTest
 PF = ProbeInterface.PRI()
 SE = Sessions
 P = Ports
+
 
 def ignore():
     return 'break'
@@ -66,6 +65,7 @@ def check_analyser():
 class Connection(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#B1D0E0')
+        self.info_canvas = None
         self.znd_working = False
         self.probe_working = False
         self.monitor_working = False
@@ -74,7 +74,7 @@ class Connection(tk.Frame):
         self.odm = StringVar()
         self.probe = StringVar()
         self.test = False
-        self.text_area = tk.Text(self, font=("Courier",14),height=5, width=38)
+        self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
         self.text_area.place(x=40, y=70)
         ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
                   font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
@@ -84,18 +84,19 @@ class Connection(tk.Frame):
         self.label_9 = ttk.Label(self, text=" Press 'Continue' and wait to connect sensors... ", background="#B1D0E0")
         self.label_9.config(font=("Courier", 16))
         self.label_9.place(relx=0.5, rely=0.4, anchor=CENTER)
-        ttk.Label(self, text="NanoZND", background="#B1D0E0", font=("Courier",14)).place(relx=0.25, rely=0.6)
-        ttk.Label(self, textvariable=self.znd, relief=SUNKEN, font=("Courier",14)).place(relx=0.33, rely=0.6)
-        ttk.Label(self, text=" Probe ", background="#B1D0E0", font=("Courier",14)).place(relx=0.38, rely=0.6)
-        ttk.Label(self, textvariable=self.probe, relief=SUNKEN, font=("Courier",14)).place(relx=0.45, rely=0.6)
-        ttk.Label(self, text=" Monitor ", background="#B1D0E0", font=("Courier",14)).place(relx=0.57, rely=0.6)
-        ttk.Label(self, textvariable=self.odm, relief=SUNKEN, font=("Courier",14)).place(relx=0.65, rely=0.6)
+        ttk.Label(self, text="NanoZND", background="#B1D0E0", font=("Courier", 14)).place(relx=0.25, rely=0.6)
+        ttk.Label(self, textvariable=self.znd, relief=SUNKEN, font=("Courier", 14)).place(relx=0.33, rely=0.6)
+        ttk.Label(self, text=" Probe ", background="#B1D0E0", font=("Courier", 14)).place(relx=0.38, rely=0.6)
+        ttk.Label(self, textvariable=self.probe, relief=SUNKEN, font=("Courier", 14)).place(relx=0.45, rely=0.6)
+        ttk.Label(self, text=" Monitor ", background="#B1D0E0", font=("Courier", 14)).place(relx=0.57, rely=0.6)
+        ttk.Label(self, textvariable=self.odm, relief=SUNKEN, font=("Courier", 14)).place(relx=0.65, rely=0.6)
         self.confm_btn = tk.Button(self, text='Continue', font=("Courier", 18),
-                                   width=25, command= self.test_connections)
+                                   width=25, command=self.test_connections)
         self.confm_btn.place(relx=0.7, rely=0.8, anchor=CENTER)
         self.confm_btn.config(state=NORMAL)
-        tk.Button(self, text='Cancel', font=("Courier", 12), width=20,command=self.to_sessions).place(relx=0.3,
-                                                                                         rely=0.8, anchor=CENTER)
+        tk.Button(self, text='Cancel', font=("Courier", 12), width=20, command=self.to_sessions).place(relx=0.3,
+                                                                                                       rely=0.8,
+                                                                                                       anchor=CENTER)
         self.bind('<Return>', self.test_connections)
         self.text_area.insert('1.0', "\nPlease continue to the next screen..")
 

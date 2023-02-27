@@ -1,4 +1,4 @@
-'''
+"""
 Created on 3 May 2017
 @author: jackw
 @amended by Brian F
@@ -29,7 +29,7 @@ self.refresh_window()
 self.activate_login_button()
 self.refresh_window()
 ---------------------------------------------------
-'''
+"""
 
 import tkinter as tk
 from tkinter import *
@@ -59,6 +59,12 @@ AU = AdminUser
 class LogInWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#B1D0E0')
+        self.btn_2 = None
+        self.logbtn = None
+        self.label_6 = None
+        self.label_5 = None
+        self.label_4 = None
+        self.btn_1 = None
         self.show_bip = None
         self.pass_text = None
         self.name_text = None
@@ -119,9 +125,9 @@ class LogInWindow(tk.Frame):
         probe_data = P.Probes("", "", 0, 0, failed=0, scrap=0)
         DS.write_probe_data(probe_data)
         self.entry()
-        self.btn_1 = Button(self.canvas_name, text='Username ',font=("Courier", 14), command=self.name_entry, width=20)
+        self.btn_1 = Button(self.canvas_name, text='Username ', font=("Courier", 14), command=self.name_entry, width=20)
         Label(self.canvas_name, text="-->", font=("Courier", 14)).place(x=248, y=14)
-        self.btn_2 = Button(self.canvas_pass, text='Password',font=("Courier", 14), command=self.password_entry, width=20)
+        self.btn_2 = Button(self.canvas_pass, text='Password', font=("Courier", 14), command=self.password_entry, width=20)
         Label(self.canvas_pass, text="-->", font=("Courier", 14)).place(x=248, y=14)
         self.btn_1.place(x=18, y=14)
         self.btn_2.place(x=18, y=14)

@@ -1,9 +1,9 @@
-'''
+"""
 Created on 1 May 2017
 @author: jackw
 Amended: BrianF
 fix path variables
-'''
+"""
 
 import csv
 import os
@@ -116,7 +116,6 @@ class BatchManager(object):
             P.probe_canvas(self, f"Complete file contains {batch}", False)
             sleep(2)
             P.text_destroy(self)
-
 
     def GetAvailableBatches(self):
         return self.CSVM.GetFileNamesInProgress()

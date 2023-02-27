@@ -1,6 +1,6 @@
-'''
+"""
 This screen is to retest a failed probe and either pass it or leave it as a failure.
-'''
+"""
 
 import tkinter as tk
 from tkinter import *
@@ -103,6 +103,9 @@ def check_data(folder, probe_date):
 class RetestProbe(tk.Frame):
     def __init__(self, Parent, Controller):
         tk.Frame.__init__(self, Parent)
+        self.odm = None
+        self.probe = None
+        self.znd = None
         self.results = StringVar()
         self.scrapped = None
         self.control = Controller
@@ -140,9 +143,9 @@ class RetestProbe(tk.Frame):
         self.canvas_back = Canvas(bg=self.back_colour, width=self.ws - 10, height=self.hs - 10)
         self.canvas_back.place(x=5, y=5)
         Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
-                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
+              font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
         Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
-                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
+              font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
         Label(self.canvas_back, text="Probe Re-test", background=self.back_colour,
               font=("Courier", 24, "bold")).place(relx=0.4, rely=0.05)
         Label(self.canvas_back, text='Serial Number: ', background=self.back_colour, font=("Courier", 14)).place(
@@ -182,8 +185,10 @@ class RetestProbe(tk.Frame):
         self.probe.place(relx=0.26, rely=0.5)
         self.odm = Label(self.canvas_back, text="      ", background="#F7A76C")
         self.odm.place(relx=0.36, rely=0.5)
-        Label(self.canvas_back, text="Time to end", background=self.back_colour, font=('Courier', 12)).place(relx=0.1, rely=0.2)
-        Label(self.canvas_back, textvariable=self.timeout, background=self.back_colour, font=('Courier', 14)).place(relx=0.3, rely=0.2)
+        Label(self.canvas_back, text="Time to end", background=self.back_colour, font=('Courier', 12)).place(relx=0.1,
+                                                                                                             rely=0.2)
+        Label(self.canvas_back, textvariable=self.timeout, background=self.back_colour, font=('Courier', 14)).place(
+            relx=0.3, rely=0.2)
 
     def reset_display(self):
         blank = "---"
@@ -335,7 +340,6 @@ class RetestProbe(tk.Frame):
                 P.text_destroy(self)
                 P.probe_canvas(self, f" ({self.batch_from_file}) \nRe-testing - {self.probe_type} - probe", False)
                 self.results.set("  Testing probe")
-                marker = PT.perform_probe_test()
                 P.text_destroy(self)
 
                 if PT.analyser:
@@ -348,7 +352,8 @@ class RetestProbe(tk.Frame):
                     time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                     Stime_now = str(time_now)
                     batch_makeup = [self.batch_from_file, serial_number, self.probe_type, DS.get_probes_left_to_test(),
-                                    DS.get_probe_data()['Passed'], DS.get_username(), "<-Scrapped", " ", f"On {Stime_now}"]
+                                    DS.get_probe_data()['Passed'], DS.get_username(), "<-Scrapped", " ",
+                                    f"On {Stime_now}"]
                     BM.CSVM.WriteListOfListsCSV(batch_makeup, self.batch_from_file)
         self.remove_probe()
 

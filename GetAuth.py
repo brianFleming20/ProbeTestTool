@@ -1,4 +1,5 @@
-from tkinter import *
+
+from tkinter import Canvas, Label, Button
 import OnScreenKeys
 import SecurityManager
 
@@ -9,11 +10,17 @@ SM = SecurityManager.SecurityManager()
 Authorise = False
 
 
-def get_authorise():
+def authenticate_user():
+    global Authorise
     return Authorise
 
 
-class GetAuth():
+def set_auth(val):
+    global Authorise
+    Authorise = val
+
+
+class GetAuth:
     def __init__(self):
         self.lab2 = None
         self.lab1 = None
@@ -55,40 +62,29 @@ class GetAuth():
         self.username = data_username
         self.password = data_password
         # self.username = "brian"
-        # self.password = "pass"
+        # self.password = "password"
         cancel = Button(self.auth_canvas, text="Cancel", width=12, font=(K.FONT_NAME, 10, 'bold'), command=self.end)
         cancel.place(relx=0.4, rely=0.8)
         btn1 = Button(self.auth_canvas, text="Authenticate", width=14, background="#A6D1E6", font=(K.FONT_NAME, 10, 'bold'),
-                      command=self.end)
-        btn1.focus
+                      command=self.task)
         btn1.place(relx=0.65, rely=0.8)
-        btn1.bind('<Button-1>', self.task)
 
     def end(self):
         self.auth_canvas.destroy()
 
-    def authenticate_user(self):
-        global Authorise
-        return Authorise
-
-    def task(self, event):
+    def task(self):
         self.auth_canvas.itemconfig(self.error, text="Authenticating", font=(K.FONT_NAME, 14, 'bold'))
         users = [(item.name, item.password) for item in self.all_users]
         for name, password in users:
             if self.username == name:
                 if self.password == password:
-                    self.set_auth(True)
+                    set_auth(True)
         self.clicked = True
         self.auth_canvas.delete(self.auth_squ1)
         self.auth_canvas.delete(self.auth_squ2)
         self.auth_canvas.delete(self.lab1)
         self.auth_canvas.delete(self.lab2)
+        self.end()
 
     def get_clicked(self):
         return self.clicked
-
-    def set_auth(self, val):
-        global Authorise
-        Authorise = val
-
-

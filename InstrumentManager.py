@@ -1,12 +1,7 @@
-'''
+"""
 Created on 24 Apr 2017
 @author: jackw
-'''
-
-# import pyvisa as visa
-import serial
-import time
-# import ProbeManager as PM
+"""
 
 
 class InstrumentationManager(object):
@@ -257,9 +252,9 @@ class ZND(object):
         return rlist
 
     def get_marker_values(self):
-        '''
+        """
         Returns a 2 item list of the 4.02MHz return loss values of the format [<Tx>,<Rx>]
-        '''
+        """
         if len(self.TxRL) < 3 or len(self.RxRL) < 3:
             return 999, 999
         return float(self.TxRL[:-2]), float((self.RxRL[:-2]))

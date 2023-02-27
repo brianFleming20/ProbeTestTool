@@ -1,4 +1,4 @@
-'''
+"""
 Created on 3 May 2017
 @author: jackw
 @amended by Brian F
@@ -16,7 +16,7 @@ to do:
 -add SQ probe to list
 #         s = ttk.Separator(self.root, orient=VERTICAL)
 #         s.grid(row=0, column=1, sticky=(N,S))
-'''
+"""
 
 import tkinter as tk
 from tkinter import *
@@ -38,6 +38,7 @@ CO = Connection
 DS = Datastore.Data_Store()
 SE = Sessions
 P = Ports
+
 
 def ignore():
     return 'break'
@@ -68,6 +69,7 @@ class ConnectionWindow(tk.Frame):
         except:
             self.text_area.delete('3.0', 'end')
             self.text_area.insert('3.0', "\nError in getting Admin data...")
+
         self.text_area.config(state=NORMAL)
         self.text_area.insert('2.0', DS.user_admin_status())
         self.text_area.insert('2.0', '\n\nPlease connect the external devices\nand progress to the testing screen.')
@@ -83,8 +85,10 @@ class ConnectionWindow(tk.Frame):
         self.text_area.insert('1.0', 'Continue to check device connections...')
         self.text_area.config(state=DISABLED)
 
+
 class ConnectionAdmin(tk.Frame):
     def __init__(self, parent, controller):
+        self.is_admin = None
         self.monitor = StringVar()
         self.com_port = StringVar()
         self.analyser_usb = StringVar()
@@ -125,8 +129,7 @@ class ConnectionAdmin(tk.Frame):
         self.text_area.place(relx=0.25, rely=0.15, anchor=CENTER)
 
     def refresh_window(self):
-        user_data = []
-        user_data.append(DS.get_username())
+        user_data = [DS.get_username()]
         self.is_admin = user_data[1]
         self.text_area.config(state=NORMAL)
         self.text_area.insert('2.0', DS.user_admin_status())

@@ -1,4 +1,4 @@
-'''
+"""
 Created on 3 May 2017
 @author: jackw
 @amended by Brian F
@@ -16,7 +16,7 @@ to do:
 -add SQ probe to list
 #         s = ttk.Separator(self.root, orient=VERTICAL)
 #         s.grid(row=0, column=1, sticky=(N,S))
-'''
+"""
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
@@ -77,6 +77,16 @@ class SessionSelectWindow(tk.Frame):
         # create a choose session window #
         ##################################
         tk.Frame.__init__(self, parent, bg="#B1D0E0")
+        self.cancel_btn = None
+        self.label1 = None
+        self.SSW_b3 = None
+        self.SSW_b4 = None
+        self.failed = None
+        self.SSW_b2 = None
+        self.NSWL1 = None
+        self.text_area = None
+        self.cent_y = None
+        self.cent_x = None
         self.probe_date = False
         self.probe_type = False
         self.complete_canvas = None
@@ -113,13 +123,14 @@ class SessionSelectWindow(tk.Frame):
         ################################
         # Start a new batch session    #
         ################################
-        btn1 = tk.Button(self, text='Start a new session', background="#5FD068", command=lambda: self.control.show_frame(NewSessionWindow))
+        btn1 = tk.Button(self, text='Start a new session', background="#5FD068",
+                         command=lambda: self.control.show_frame(NewSessionWindow))
         btn1.place(height=50, width=250, relx=0.2, rely=0.35)
         ################################
         # Continue a suspended batch   #
         ################################
         self.SSW_b2 = tk.Button(self, text='Continue a previous session', background="#FFCB42",
-                             command=lambda: self.control.show_frame(ContinueSessionWindow), width=BTN_WIDTH)
+                                command=lambda: self.control.show_frame(ContinueSessionWindow), width=BTN_WIDTH)
         self.SSW_b2.place(height=50, width=250, relx=0.5, rely=0.35)
         ################################
         # Retest failed probe          #
@@ -135,7 +146,7 @@ class SessionSelectWindow(tk.Frame):
         # Access admin window          #
         ################################
         self.SSW_b4 = tk.Button(self, text='Admin area', background="#FFDAB9",
-                             command=lambda: self.control.show_frame(AU.AdminWindow), width=BTN_WIDTH)
+                                command=lambda: self.control.show_frame(AU.AdminWindow), width=BTN_WIDTH)
         self.SSW_b4.place(height=50, width=250, relx=0.5, rely=0.65)
         self.text_area.config(state=NORMAL)
         self.text_area.delete('1.0', 'end')
@@ -173,7 +184,7 @@ class SessionSelectWindow(tk.Frame):
         scrollbar.pack(side=RIGHT, fill=Y)
         complete_list.config(font=("Arial", 14))
         for probe in BM.get_completed_batches():
-            complete_list.insert(END, ' '+probe)
+            complete_list.insert(END, ' ' + probe)
         scrollbar.config(command=complete_list.yview)
         complete_list.config(yscrollcommand=scrollbar.set)
         complete_list.pack(side=LEFT)
@@ -194,7 +205,7 @@ class SessionSelectWindow(tk.Frame):
     def blank(self):
         probe = P.Ports(probe="COM4")
         DS.write_device_to_file(probe)
-        tm.showinfo("test","Insert a probe to blank")
+        tm.showinfo("test", "Insert a probe to blank")
         PM.blank_probe()
 
     def failed_probe(self):
@@ -212,6 +223,8 @@ class SessionSelectWindow(tk.Frame):
 class NewSessionWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.type_text = None
+        self.cancel = None
         self.btn_2 = None
         self.btn_1 = None
         self.text_area = None
@@ -385,6 +398,8 @@ def get_available_batches():
 class ContinueSessionWindow(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg='#B1D0E0')
+        self.suspend_dict = None
+        self.text_area = None
         self.control = controller
         self.index = 0
         self.batch_selected = ""
@@ -407,7 +422,7 @@ class ContinueSessionWindow(tk.Frame):
         self.sessionListBox.focus_set()
         self.continue_btn = tk.Button(
             self, text='Continue Session', height=2, font=("Courier", 14), command=self.continue_btn_clicked)
-        self.continue_btn.place( relx=0.88, rely=0.82, anchor=E)
+        self.continue_btn.place(relx=0.88, rely=0.82, anchor=E)
         self.cancel_btn = ttk.Button(
             self, text='Cancel', command=lambda: self.control.show_frame(SessionSelectWindow))
         self.cancel_btn.place(height=35, width=90, relx=0.62, rely=0.82, anchor=E)

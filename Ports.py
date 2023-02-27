@@ -1,4 +1,4 @@
-'''Factory pattern for generating python beans'''
+"""Factory pattern for generating python beans"""
 from tkinter import Canvas, Label, Button, Tk
 
 
@@ -14,6 +14,7 @@ def probe_canvas(self, message, btn):
         btn1.place(x=90, y=120)
         btn2.place(x=190, y=120)
         Tk.update(self)
+
 
 def text_destroy(self):
     self.canvas_text.destroy()

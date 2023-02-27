@@ -73,7 +73,7 @@ class TestProbeTesting:
         test.probes_passed.set(50)
         test.left_to_test.set(45)
         test.display_layout()
-        test.suspnd_btn_clicked()
+        test.suspend_btn_clicked()
 
         result = BM.ReadLastLine(batch, False)[1]
         assert expected == result
