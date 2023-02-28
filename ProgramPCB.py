@@ -91,11 +91,12 @@ class ProgramPCB:
     def get_auth(self):
         self.count = 0
         if probe_present():
-            self.canvas_prog.itemconfig(self.error, text="")
+            self.canvas_prog.itemconfig(self.error, text=" ", font=(K.FONT_NAME, 14, 'bold'))
             if DS.user_admin_status():
                 self.auth = True
+                self.prog_message()
                 self.program_pcb()
-            elif GA.authenticate_user():
+            elif not GA.authenticate_user():
                 GAU.show_screen()
                 self.check()
         else:
@@ -140,6 +141,7 @@ class ProgramPCB:
                             self.probe_type = data_type
                         else:
                             self.probe_type = last_line_complete[2]
+                self.prog_message()
                 self.program_pcb()
         else:
             KY.end_keyboard('+')
@@ -154,6 +156,7 @@ class ProgramPCB:
         if self.clicked and self.count < 1:
             self.count += 1
             self.auth = GA.authenticate_user()
+            self.prog_message()
             self.program_pcb()
 
     def get_pause(self):
@@ -164,3 +167,6 @@ class ProgramPCB:
         self.canvas_prog.delete(self.mnt_btn2)
         self.canvas_prog.delete(self.lab1)
         self.canvas_prog.delete(self.lab2)
+
+    def prog_message(self):
+        self.canvas_prog.itemconfig(self.error, text="Programming...", font=(K.FONT_NAME, 14, 'bold'))

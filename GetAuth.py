@@ -65,8 +65,6 @@ class GetAuth:
 
         self.username = data_username
         self.password = data_password
-        # self.username = "brian"
-        # self.password = "password"
         cancel = Button(self.auth_canvas, text="Cancel", width=12, font=(K.FONT_NAME, 10, 'bold'), command=self.end)
         cancel.place(relx=0.4, rely=0.8)
         btn1 = Button(self.auth_canvas, text="Authenticate", width=14, background="#A6D1E6", font=(K.FONT_NAME, 10, 'bold'),
@@ -84,10 +82,7 @@ class GetAuth:
                 if self.password == password:
                     set_auth(True)
         self.clicked = True
-        self.auth_canvas.delete(self.auth_squ1)
-        self.auth_canvas.delete(self.auth_squ2)
-        self.auth_canvas.delete(self.lab1)
-        self.auth_canvas.delete(self.lab2)
+        self.auth_canvas.delete("all")
         self.end()
 
     def get_clicked(self):

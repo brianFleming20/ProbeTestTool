@@ -70,10 +70,16 @@ class SecurityManager(object):
         pass in a new user object
         checks to see if the user is in the user dict and the logged in user has admin privelages. if so, changes the password accordingly
         """
-        name = DS.get_user_data()['Change_password']
+        raw_name = DS.get_reset_password_name()
+        if "-->" in raw_name:
+            name = raw_name[:-9]
+        else:
+            name = raw_name
         user = self.GetUserObject(name)
+        print(f"name {user.name} : admin before {user.admin} - admin after {admin}")
         user.password = password
         user.admin = admin
+
         return DS.putUser(user)
 
     def GetUserObject(self, userName):

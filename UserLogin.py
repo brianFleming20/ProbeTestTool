@@ -17,7 +17,7 @@ Logged user / admin and status recorded
 
 import tkinter as tk
 from tkinter import *
-from tkinter import ttk
+# from tkinter import ttk
 import tkinter.messagebox as tm
 import SecurityManager
 import BatchManager
@@ -47,13 +47,13 @@ class LogInWindow(tk.Frame):
         self.logbtn = None
         self.label_6 = None
         self.label_5 = None
-        self.label_4 = None
         self.btn_1 = None
         self.show_bip = None
         self.pass_text = None
         self.name_text = None
         self.canvas_pass = None
         self.canvas_name = None
+        self.check_name = None
         self.control = controller
         DS.write_to_from_keys("  ")
         self.current_user = None
@@ -76,22 +76,21 @@ class LogInWindow(tk.Frame):
         self.canvas_pass.place(relx=0.35, rely=0.40)
 
     def refresh_window(self):
-        ttk.Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
-                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
-        ttk.Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
-                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
+        Label(self, text="Deltex", background="#B1D0E0", foreground="#003865",
+              font=('Helvetica', 30, 'bold'), width=12).place(relx=0.79, rely=0.1)
+        Label(self, text="medical", background="#B1D0E0", foreground="#A2B5BB",
+              font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
         time_now = strftime("%H:%M:%p", gmtime())
         self.setup()
-        self.label_4 = ttk.Label(self, text="           Probe Test Tool", background="#3AB4F2", width=25,
-                                 font=('Helvetica', 24))
-        self.label_4.place(relx=0.5, rely=0.1, anchor=CENTER)
-        self.label_5 = ttk.Label(self, text="Good morning.", font=("bold", 20), background="#B1D0E0")
-        self.label_6 = ttk.Label(self, text="Good afternoon.", font=("bold", 20), background="#B1D0E0")
+        Label(self, text="Probe Test Tool", background="#3AB4F2", width=25,
+              font=('Helvetica', 24)).place(relx=0.5, rely=0.1, anchor=CENTER)
+        self.label_5 = Label(self, text="Good morning.", font=("bold", 20), background="#B1D0E0")
+        self.label_6 = Label(self, text="Good afternoon.", font=("bold", 20), background="#B1D0E0")
         self.setup()
         self.logbtn = Button(self, text="Log In", font=("Courier", 18), width=18, background="#3AB4F2",
                              highlightthickness=0, command=self._login_btn_clicked)
         self.logbtn.place(relx=0.65, rely=0.64)
-        ttk.Button(self, text="Exit", width=20, command=self.quit_).place(relx=0.88, rely=0.8, anchor=CENTER)
+        Button(self, text="Exit", width=20, command=self.quit_).place(relx=0.88, rely=0.8, anchor=CENTER)
         self.bind('<Return>', lambda event: self._login_btn_clicked)
         if "AM" in time_now:
             self.label_5.place(relx=0.5, rely=0.25, anchor=CENTER)
@@ -102,8 +101,8 @@ class LogInWindow(tk.Frame):
         # Testing data only               #
         # comment out when PTT is in use  #
         ###################################
-        self.set_username("brian")
-        self.set_password("password")
+        self.set_username("Jon")
+        self.set_password("Batman")
         reset_user = P.Users("", "", over_right=False, non_human=False)
         DS.write_user_data(reset_user)
         probe_data = P.Probes("", "", 0, 0, failed=0, scrap=0)
@@ -111,43 +110,41 @@ class LogInWindow(tk.Frame):
         self.entry()
         self.btn_1 = Button(self.canvas_name, text='Username ', font=("Courier", 14), command=self.name_entry, width=20)
         Label(self.canvas_name, text="-->", font=("Courier", 14)).place(x=248, y=14)
-        self.btn_2 = Button(self.canvas_pass, text='Password', font=("Courier", 14), command=self.password_entry, width=20)
+        self.btn_2 = Button(self.canvas_pass, text='Password', font=("Courier", 14), command=self.password_entry,
+                            width=20)
         Label(self.canvas_pass, text="-->", font=("Courier", 14)).place(x=248, y=14)
         self.btn_1.place(x=18, y=14)
         self.btn_2.place(x=18, y=14)
         self.control.attributes('-topmost', True)
 
     def name_entry(self):
-        self.logbtn.config(state=DISABLED)
+        self.btn_1.config(state=DISABLED)
+        self.btn_2.config(state=DISABLED)
         self.set_username("")
         self.get_keys()
         data = K.wait_for_response(self.canvas_name, self.name_text)
-        self.current_user = data
         self.set_username(data)
+        self.check_name = DS.get_current_use_user(data)
         self.btn_1.config(state=NORMAL)
         self.btn_2.config(state=NORMAL)
-        self.logbtn.config(state=NORMAL)
 
     def password_entry(self):
-        self.logbtn.config(state=DISABLED)
+        self.btn_1.config(state=DISABLED)
+        self.btn_2.config(state=DISABLED)
         self.set_password("")
         self.get_keys()
         data = K.wait_for_response(self.canvas_pass, self.pass_text, block=True)
-        self.password = data
         self.set_password(data)
         self.btn_1.config(state=NORMAL)
         self.btn_2.config(state=NORMAL)
-        self.logbtn.config(state=NORMAL)
 
     def _login_btn_clicked(self):
-        self.canvas_name.destroy()
-        self.canvas_pass.destroy()
         ########################################
         # Get user inputs from the keyboard    #
         ########################################
-        username = self.current_user
-        password = self.password
-        if len(username) > 0 and len(password) > 0 and not DS.get_current_use_user(username):
+        username = self.get_username()
+        password = self.get_password()
+        if len(username) > 0 and len(password) > 0 and not self.check_name:
             #######################################
             # Create user object with admin false #
             #######################################
@@ -199,8 +196,6 @@ class LogInWindow(tk.Frame):
 
     def get_keys(self):
         KY.display()
-        self.btn_1.config(state=DISABLED)
-        self.btn_2.config(state=DISABLED)
 
     def set_username(self, name):
         self.current_user = name
@@ -219,6 +214,8 @@ class LogInWindow(tk.Frame):
         self.canvas_pass.destroy()
 
     def sessions(self):
+        self.canvas_name.destroy()
+        self.canvas_pass.destroy()
         if not self.test:
             self.control.show_frame(SE.SessionSelectWindow)
 
@@ -227,6 +224,6 @@ class LogInWindow(tk.Frame):
 
     def no_answer(self):
         pass
-    
+
     def set_test(self):
         self.test = True

@@ -9,7 +9,6 @@ The data is recorded to the local cache.
 import Datastore
 from tkinter import *
 from tkinter import Tk
-import tkinter as ttk
 from time import sleep
 
 _TITLE = "This is the title"
@@ -28,7 +27,7 @@ def convert_key(key):
     return upp
 
 
-def wait_for_response(master, label, block=False, x=0.75, y=0.3):
+def wait_for_response(master, label, block=False, x=0.7, y=0.25):
     DS.write_to_from_keys(" ")
     password_blank = "*********************"
     while 1:
@@ -39,11 +38,11 @@ def wait_for_response(master, label, block=False, x=0.75, y=0.3):
             break
         if block:
             master.itemconfig(label, text=password_blank[:pw_len])
-            ttk.Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=x, rely=y, width=120,
-                                                                                     anchor=N)
+            Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=x, rely=y, width=120,
+                                                                                 anchor=N)
         else:
             master.itemconfig(label, text=pw_data)
-            ttk.Label(master, text=pw_data, font=("bold", 15)).place(relx=x, rely=y, width=100, anchor=N)
+            Label(master, text=pw_data, font=("bold", 15)).place(relx=x, rely=y, width=120, anchor=N)
         Tk.update(master)
     return pw_data
 
@@ -147,7 +146,8 @@ class Keyboard:
         if key == " ":
             width = 300
         upp = convert_key(key)
-        show = Label(self.canvas, text=upp, font=("Arial", 16, "bold"), background="#FCF9BE", borderwidth=1, relief="solid")
+        show = Label(self.canvas, text=upp, font=("Arial", 16, "bold"), background="#FCF9BE", borderwidth=1,
+                     relief="solid")
         show.place(width=width, height=height, relx=locx, rely=y, anchor=CENTER)
         Tk.update(self.canvas)
         sleep(0.2)
@@ -164,4 +164,3 @@ class Keyboard:
 
     def remove_keyboard(self):
         self.canvas.destroy()
-

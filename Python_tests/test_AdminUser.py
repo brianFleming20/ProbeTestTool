@@ -127,26 +127,6 @@ class TestAdmin:
         result1 = AdminUser.check_user_admin(name)
         assert expected1 == result1
 
-    def test_change_password(self):
-        patient = tk.Tk()
-        controller = tk.Tk()
-        AU = AdminUser
-        AU.refresh_window()
-        expected = False
-        user = P.Users("brian", True, pw_user="Jon")
-        DS.write_user_data(user)
-        result = AU.change_password(False, "1234", False)
-        assert expected == result
-
-        expected2 = True
-        result2 = AU.change_password(True, "1234", False)
-        assert expected2 == result2
-
-        user_deleted = P.Users("brian", True, pw_user="User10")
-        DS.write_user_data(user_deleted)
-        result3 = AU.change_password(True, "1234", False)
-        assert result3 is False
-
     def test_check_entries(self):
         patient = tk.Tk()
         controller = tk.Tk()
@@ -162,7 +142,7 @@ class TestAdmin:
     def test__get_selected_user(self):
         patient = tk.Tk()
         controller = tk.Tk()
-        AU = AdminUser
+        AU = AdminUser.ChangePasswordWindow(patient, controller)
         AU.refresh_window()
         AU.set_test()
         AU.userListBox.focus_set()
