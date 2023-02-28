@@ -101,8 +101,8 @@ class LogInWindow(tk.Frame):
         # Testing data only               #
         # comment out when PTT is in use  #
         ###################################
-        self.set_username("Jon")
-        self.set_password("Batman")
+        # self.set_username("Jon")
+        # self.set_password("Batman")
         reset_user = P.Users("", "", over_right=False, non_human=False)
         DS.write_user_data(reset_user)
         probe_data = P.Probes("", "", 0, 0, failed=0, scrap=0)
@@ -151,7 +151,7 @@ class LogInWindow(tk.Frame):
             user = P.User(username, password)
             event = SM.logIn(user)
             if event:
-                self.canvas_go()
+                # self.canvas_go()
                 self.sessions()
             else:
                 tm.showerror("Login error", "Incorrect username or password")
