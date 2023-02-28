@@ -36,7 +36,7 @@ class GetAuth:
         self.username = None
         self.password = None
         self.all_users = None
-        self.back_colour = "#FCFFE7"
+        self.back_colour = "#A7727D"
 
     def show_screen(self):
         self.auth_canvas = Canvas(bg=self.back_colour, width=500, height=280)
@@ -49,7 +49,7 @@ class GetAuth:
         width = 300
         height = 40
         self.clicked = False
-        Label(self.auth_canvas, text="Admin Authentication", font=(K.FONT_NAME, 18, 'bold')).place(relx=0.2, rely=0.05)
+        Label(self.auth_canvas, text="Admin Authentication", background=self.back_colour, font=(K.FONT_NAME, 18, 'bold')).place(relx=0.2, rely=0.05)
         self.error = self.auth_canvas.create_text(150, 120)
         self.auth_squ1 = self.auth_canvas.create_rectangle(50, y, 50 + width, y + height, fill="#C2B6BF")
         self.lab1 = self.auth_canvas.create_text(90, 85)
@@ -75,7 +75,7 @@ class GetAuth:
         self.auth_canvas.destroy()
 
     def task(self):
-        self.auth_canvas.itemconfig(self.error, text="Authenticating", font=(K.FONT_NAME, 14, 'bold'))
+        self.auth_canvas.itemconfig(self.error, text="Authenticating", background=self.back_colour, font=(K.FONT_NAME, 14, 'bold'))
         users = [(item.name, item.password) for item in self.all_users]
         for name, password in users:
             if self.username == name:
