@@ -54,6 +54,8 @@ class ProgramPCB:
         self.back_colour = "#F5FFC9"
 
     def show_screen(self):
+        self.paused = False
+        self.clicked = False
         self.canvas_prog = Canvas(bg=self.back_colour, width=500, height=280)
         self.canvas_prog.place(x=350, y=300)
         self.batch_number = DS.get_current_batch()
@@ -61,14 +63,16 @@ class ProgramPCB:
         self.setup()
 
     def setup(self):
-        Label(self.canvas_prog, text="New Serial Number", background=self.back_colour, font=(K.FONT_NAME, 18, 'bold')).place(relx=0.2, rely=0.05)
+        Label(self.canvas_prog, text="New Serial Number", background=self.back_colour,
+              font=(K.FONT_NAME, 18, 'bold')).place(relx=0.2, rely=0.05)
         self.var = IntVar()
         Radiobutton(self.canvas_prog, text=f"Same batch ({self.batch_number} , {self.probe_type})", variable=self.var,
                     background=self.back_colour, value=0, command=self.diff).place(relx=0.2, rely=0.2)
-        Radiobutton(self.canvas_prog, text="Different batch", background=self.back_colour, variable=self.var, value=1, command=self.diff).place(
-            relx=0.2, rely=0.3)
+        Radiobutton(self.canvas_prog, text="Different batch", background=self.back_colour,
+                    variable=self.var, value=1, command=self.diff).place(relx=0.2, rely=0.3)
         self.error = self.canvas_prog.create_text(150, 240)
-        btn1 = Button(self.canvas_prog, text="OK", width=10, background="#A6D1E6", font=(K.FONT_NAME, 10, 'bold'),
+
+        btn1 = Button(self.canvas_prog, text="OK", width=10, height=2, background="#A6D1E6", font=(K.FONT_NAME, 10, 'bold'),
                       command=self.get_auth)
         btn1.place(relx=0.8, rely=0.8)
         cancel = Button(self.canvas_prog, text="Cancel", width=12, font=(K.FONT_NAME, 10, 'bold'), command=self.end)
@@ -78,14 +82,15 @@ class ProgramPCB:
     def program_pcb(self):
         if self.auth:
             serial_number = PM.ProgramProbe(self.probe_type, False)
-            self.canvas_prog.itemconfig(self.error, text=f"Complete \n{serial_number}", background=self.back_colour,
+            self.canvas_prog.itemconfig(self.error, text=f"Complete \n{serial_number}",
                                         font=(K.FONT_NAME, 14, 'bold'))
         else:
-            self.canvas_prog.itemconfig(self.error, text="Not Authorised", background=self.back_colour, font=(K.FONT_NAME, 14, 'bold'))
-        self.canvas_prog.after(1500, self.end)
+            self.canvas_prog.itemconfig(self.error, text="Not Authorised", font=(K.FONT_NAME, 14, 'bold'))
+        self.canvas_prog.after(2000, self.end)
 
     def end(self):
         self.paused = False
+        self.clicked = False
         self.canvas_prog.destroy()
 
     def get_auth(self):
@@ -94,27 +99,26 @@ class ProgramPCB:
             self.canvas_prog.itemconfig(self.error, text=" ", font=(K.FONT_NAME, 14, 'bold'))
             if DS.user_admin_status():
                 self.auth = True
-                self.prog_message()
                 self.program_pcb()
             elif not GA.authenticate_user():
                 GAU.show_screen()
                 self.check()
         else:
-            self.canvas_prog.itemconfig(self.error, text="Insert a PCB \nand press 'OK'", background=self.back_colour, font=(K.FONT_NAME, 14, 'bold'))
+            self.canvas_prog.itemconfig(self.error, text="Insert a PCB \nand press 'OK'", font=(K.FONT_NAME, 14, 'bold'))
 
     def diff(self):
         y = 135
         width = 205
         height = 40
-        self.canvas_prog.itemconfig(self.error, text="")
+        self.canvas_prog.itemconfig(self.error, text=" ", font=(K.FONT_NAME, 10, 'bold'))
         if self.var.get() == 1:
-            self.mnt_btn1 = self.canvas_prog.create_rectangle(30, y, 30 + width, y + height, fill="#C2B6BF")
+            self.mnt_btn1 = self.canvas_prog.create_rectangle(28, y, 28 + width, y + height, fill="#C2B6BF")
             self.lab1 = self.canvas_prog.create_text(80, 155)
-            self.canvas_prog.itemconfig(self.lab1, text="Batch No.", background=self.back_colour, font=(K.FONT_NAME, 10, 'bold'))
+            self.canvas_prog.itemconfig(self.lab1, text="Batch No.", font=(K.FONT_NAME, 10, 'bold'))
 
             self.mnt_btn2 = self.canvas_prog.create_rectangle(250, y, 250 + width + 30, y + height, fill="#C2B6BF")
             self.lab2 = self.canvas_prog.create_text(300, 155)
-            self.canvas_prog.itemconfig(self.lab2, text="Probe type", background=self.back_colour, font=(K.FONT_NAME, 10, 'bold'))
+            self.canvas_prog.itemconfig(self.lab2, text="Probe type", font=(K.FONT_NAME, 10, 'bold'))
 
             get_keyboard()
             data_batch = K.wait_for_response(self.canvas_prog, self.batch_number, False, 0.35, 0.5)
@@ -128,12 +132,14 @@ class ProgramPCB:
                 data_type = K.wait_for_response(self.canvas_prog, self.probe_type, False, 0.8, 0.5)
                 progress = BM.get_file_names("in_progress")
                 complete = BM.get_file_names("complete")
+                changed = False
                 if data_batch in progress:
                     last_line_inprogress = BM.ReadLastLine(data_batch, False)
                     if data_type in last_line_inprogress:
                         self.probe_type = data_type
                     else:
                         self.probe_type = last_line_inprogress[2]
+                    changed = True
                 else:
                     if data_batch in complete:
                         last_line_complete = BM.ReadLastLine(data_batch, True)
@@ -141,8 +147,10 @@ class ProgramPCB:
                             self.probe_type = data_type
                         else:
                             self.probe_type = last_line_complete[2]
-                self.prog_message()
-                self.program_pcb()
+                        changed = True
+                if not changed:
+                    self.probe_type = data_type
+                self.get_auth()
         else:
             KY.end_keyboard('+')
             self.remove_screen()
@@ -151,12 +159,11 @@ class ProgramPCB:
     def check(self):
         if not self.clicked:
             self.clicked = GAU.get_clicked()
-            self.canvas_prog.after(300, self.check)
+            self.canvas_prog.after(100, self.check)
 
         if self.clicked and self.count < 1:
             self.count += 1
             self.auth = GA.authenticate_user()
-            self.prog_message()
             self.program_pcb()
 
     def get_pause(self):
@@ -168,5 +175,4 @@ class ProgramPCB:
         self.canvas_prog.delete(self.lab1)
         self.canvas_prog.delete(self.lab2)
 
-    def prog_message(self):
-        self.canvas_prog.itemconfig(self.error, text="Programming...", font=(K.FONT_NAME, 14, 'bold'))
+

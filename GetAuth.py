@@ -26,6 +26,7 @@ def set_auth(val):
 
 class GetAuth:
     def __init__(self):
+        self.btn1 = None
         self.lab2 = None
         self.lab1 = None
         self.error = None
@@ -40,7 +41,7 @@ class GetAuth:
 
     def show_screen(self):
         self.auth_canvas = Canvas(bg=self.back_colour, width=500, height=280)
-        self.auth_canvas.place(x=420, y=350)
+        self.auth_canvas.place(x=480, y=350)
         self.all_users = SM.GetUserList()
         self.setup()
 
@@ -49,8 +50,8 @@ class GetAuth:
         width = 300
         height = 40
         self.clicked = False
-        Label(self.auth_canvas, text="Admin Authentication", background=self.back_colour, font=(K.FONT_NAME, 18, 'bold')).place(relx=0.2, rely=0.05)
-        self.error = self.auth_canvas.create_text(150, 120)
+        Label(self.auth_canvas, text="Admin Authentication", background=self.back_colour,
+              font=(K.FONT_NAME, 18, 'bold')).place(relx=0.2, rely=0.05)
         self.auth_squ1 = self.auth_canvas.create_rectangle(50, y, 50 + width, y + height, fill="#C2B6BF")
         self.lab1 = self.auth_canvas.create_text(90, 85)
         self.auth_canvas.itemconfig(self.lab1, text="Username", font=(K.FONT_NAME, 10, 'bold'))
@@ -67,23 +68,29 @@ class GetAuth:
         self.password = data_password
         cancel = Button(self.auth_canvas, text="Cancel", width=12, font=(K.FONT_NAME, 10, 'bold'), command=self.end)
         cancel.place(relx=0.4, rely=0.8)
-        btn1 = Button(self.auth_canvas, text="Authenticate", width=14, background="#A6D1E6", font=(K.FONT_NAME, 10, 'bold'),
-                      command=self.task)
-        btn1.place(relx=0.65, rely=0.8)
+        self.btn1 = Button(self.auth_canvas, text="Authenticate", width=14, height=2, background="#A6D1E6",
+                           font=(K.FONT_NAME, 10, 'bold'),
+                           command=self.task)
+        self.btn1.place(relx=0.65, rely=0.78)
+        self.auth_canvas.after(100, self.update())
 
     def end(self):
+        self.auth_canvas.delete('all')
         self.auth_canvas.destroy()
+        del self.auth_canvas
+        self.auth_canvas.after(100, self.update())
 
     def task(self):
-        self.auth_canvas.itemconfig(self.error, text="Authenticating", background=self.back_colour, font=(K.FONT_NAME, 14, 'bold'))
         users = [(item.name, item.password) for item in self.all_users]
         for name, password in users:
             if self.username == name:
                 if self.password == password:
                     set_auth(True)
         self.clicked = True
-        self.auth_canvas.delete("all")
-        self.end()
+        self.auth_canvas.after(100, self.end())
 
     def get_clicked(self):
         return self.clicked
+
+    def update(self):
+        pass

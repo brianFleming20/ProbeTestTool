@@ -101,8 +101,8 @@ class LogInWindow(tk.Frame):
         # Testing data only               #
         # comment out when PTT is in use  #
         ###################################
-        # self.set_username("Jon")
-        # self.set_password("Batman")
+        self.set_username("Jon")
+        self.set_password("Batman")
         reset_user = P.Users("", "", over_right=False, non_human=False)
         DS.write_user_data(reset_user)
         probe_data = P.Probes("", "", 0, 0, failed=0, scrap=0)
@@ -142,8 +142,8 @@ class LogInWindow(tk.Frame):
         ########################################
         # Get user inputs from the keyboard    #
         ########################################
-        username = self.get_username()
-        password = self.get_password()
+        username = self.current_user
+        password = self.password
         if len(username) > 0 and len(password) > 0 and not self.check_name:
             #######################################
             # Create user object with admin false #
@@ -151,7 +151,7 @@ class LogInWindow(tk.Frame):
             user = P.User(username, password)
             event = SM.logIn(user)
             if event:
-                # self.canvas_go()
+                self.canvas_go()
                 self.sessions()
             else:
                 tm.showerror("Login error", "Incorrect username or password")
@@ -169,8 +169,7 @@ class LogInWindow(tk.Frame):
         #################################
         if shut:
             self.timer()
-            self.canvas_name.destroy()
-            self.canvas_pass.destroy()
+            self.canvas_go()
             self.control.destroy()
 
     def direct_session_window(self):
@@ -214,8 +213,6 @@ class LogInWindow(tk.Frame):
         self.canvas_pass.destroy()
 
     def sessions(self):
-        self.canvas_name.destroy()
-        self.canvas_pass.destroy()
         if not self.test:
             self.control.show_frame(SE.SessionSelectWindow)
 

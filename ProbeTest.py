@@ -185,12 +185,6 @@ class TestProgramWindow(tk.Frame):
         #################################################################
         # Display main screen layout                                    #
         #################################################################
-        # ws = self.winfo_screenwidth()
-        # hs = self.winfo_screenheight()
-        # self.canvas_back = Canvas(bg=self.back_colour, width=ws - 10, height=hs - 10)
-        # self.canvas_back.place(x=5, y=5)
-        # self.cent_x = ws / 2
-        # self.cent_y = hs / 2
         self.text_area = tk.Text(self.canvas_back, font=("Courier", 14), height=5, width=40)
         self.text_area.place(relx=0.07, rely=0.1)
         ttk.Label(self.canvas_back, text="Deltex", background=self.back_colour, foreground="#003865",
@@ -382,16 +376,14 @@ class TestProgramWindow(tk.Frame):
             check = True
         self.device_details.set(device)
         if DS.get_devices()['odm_active']:
-            try:
-                ODM.check_port_open()
-                port_data = ODM.ReadSerialODM()
-            except IOError:
-                pass
+            ODM.check_port_open()
+            port_data = ODM.ReadSerialODM()
+            if not port_data:
+                odm = "Not used"
             else:
-                if len(port_data) > 5:
-                    odm = " ODM Monitor "
-                    check = True
-                    ODM.close_port()
+                odm = " ODM Monitor "
+                check = True
+            ODM.close_port()
         self.odm_details.set(odm)
         ZND.flush_analyser_port()
         ZND.set_vna_controls()

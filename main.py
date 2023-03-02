@@ -31,7 +31,7 @@ AP = AdminPortControl
 RT = RetestProbe
 
 # define global variables
-PTT_Version = 'Deltex Medical : P0035 Probe Test Tool V2.5'
+PTT_Version = 'Deltex Medical : Probe Test Tool V2.6'
 w = 1000  # window width
 h = 650  # window height
 LARGE_FONT = ("Verdana", 14)
