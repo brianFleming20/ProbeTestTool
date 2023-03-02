@@ -75,10 +75,10 @@ class GetAuth:
         self.auth_canvas.after(100, self.update())
 
     def end(self):
+        self.auth_canvas.place_forget()
         self.auth_canvas.delete('all')
         self.auth_canvas.destroy()
         del self.auth_canvas
-        self.auth_canvas.after(100, self.update())
 
     def task(self):
         users = [(item.name, item.password) for item in self.all_users]
@@ -87,7 +87,7 @@ class GetAuth:
                 if self.password == password:
                     set_auth(True)
         self.clicked = True
-        self.auth_canvas.after(100, self.end())
+        self.end()
 
     def get_clicked(self):
         return self.clicked
