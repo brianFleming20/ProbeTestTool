@@ -101,8 +101,8 @@ class LogInWindow(tk.Frame):
         # Testing data only               #
         # comment out when PTT is in use  #
         ###################################
-        # self.set_username("brian")
-        # self.set_password("password")
+        self.set_username("brian")
+        self.set_password("password")
         reset_user = P.Users("", "", over_right=False, non_human=False)
         DS.write_user_data(reset_user)
         probe_data = P.Probes("", "", 0, 0, failed=0, scrap=0)
@@ -121,7 +121,7 @@ class LogInWindow(tk.Frame):
         self.btn_1.config(state=DISABLED)
         self.btn_2.config(state=DISABLED)
         self.set_username("")
-        self.get_keys()
+        KY.display()
         data = K.wait_for_response(self.canvas_name, self.name_text)
         self.set_username(data)
         self.check_name = DS.get_current_use_user(data)
@@ -132,7 +132,7 @@ class LogInWindow(tk.Frame):
         self.btn_1.config(state=DISABLED)
         self.btn_2.config(state=DISABLED)
         self.set_password("")
-        self.get_keys()
+        KY.display()
         data = K.wait_for_response(self.canvas_pass, self.pass_text, block=True)
         self.set_password(data)
         self.btn_1.config(state=NORMAL)
@@ -193,8 +193,8 @@ class LogInWindow(tk.Frame):
         if not self.test:
             self.logbtn.config(command=lambda: self.control.show_frame(SE.SessionSelectWindow))
 
-    def get_keys(self):
-        KY.display()
+    # def get_keys(self):
+        # KY.display()
 
     def set_username(self, name):
         self.current_user = name
@@ -211,6 +211,8 @@ class LogInWindow(tk.Frame):
     def canvas_go(self):
         self.canvas_name.destroy()
         self.canvas_pass.destroy()
+        del self.canvas_name
+        del self.canvas_pass
 
     def sessions(self):
         if not self.test:
