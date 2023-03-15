@@ -27,8 +27,8 @@ def convert_key(key):
     return upp
 
 
-def wait_for_response(master, label, block=False, x=0.7, y=0.25):
-    DS.write_to_from_keys(" ")
+def wait_for_response(master, label, block=False, width=110, x=0.7, y=0.25):
+    DS.write_to_from_keys("")
     password_blank = "*********************"
     while 1:
         pw_data = DS.get_keyboard_data()
@@ -38,11 +38,11 @@ def wait_for_response(master, label, block=False, x=0.7, y=0.25):
             break
         if block:
             master.itemconfig(label, text=password_blank[:pw_len])
-            Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=x, rely=y, width=110,
+            Label(master, text=password_blank[:pw_len], font=("bold", 15)).place(relx=x, rely=y, width=width,
                                                                                  anchor=N)
         else:
             master.itemconfig(label, text=pw_data)
-            Label(master, text=pw_data, font=("bold", 15)).place(relx=x, rely=y, width=110, anchor=N)
+            Label(master, text=pw_data, font=("bold", 15)).place(relx=x, rely=y, width=width, anchor=N)
         Tk.update(master)
     return pw_data
 

@@ -506,6 +506,6 @@ class DataStore:
         try:
             del deleted_file[username]
         except FileNotFoundError:
-            pass
+            return False
         with open(filepath, 'w') as file:
             json.dump(deleted_file, file, indent=4)

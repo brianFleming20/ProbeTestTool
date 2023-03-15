@@ -66,7 +66,7 @@ class AdminWindow(tk.Frame):
         self.admin_state = BooleanVar()
         self.non_human = BooleanVar()
         self.control = controller
-        self.location = StringVar()
+        self.file_loc = StringVar()
         #########################
         # Display admin window  #
         #########################
@@ -157,10 +157,10 @@ class AdminWindow(tk.Frame):
                                                                                         anchor=E)
         ttk.Button(self.canvas_back, text="Browse", command=lambda: self.get_browse_file()).place(relx=0.52, rely=0.74,
                                                                                                   height=50, width=110)
-        self.location.set(DS.get_file_location()['File'])
+        self.file_loc.set(DS.get_file_location()['File'])
         title = ttk.Label(self.canvas_back, text="File storage location", font=("Courier", 14), background='#FFDAB9')
         title.place(relx=0.1, rely=0.7)
-        ttk.Label(self.canvas_back, textvariable=self.location, font=("Courier", 14)).place(relx=0.1, rely=0.75,
+        ttk.Label(self.canvas_back, textvariable=self.file_loc, font=("Courier", 14)).place(relx=0.1, rely=0.75,
                                                                                             width=520)
         Tk.update(self)
 
@@ -171,7 +171,7 @@ class AdminWindow(tk.Frame):
             filename = f"{filename}{default_loc}"
         file = P.Location(file=filename)
         DS.write_file_location(file)
-        self.location.set(filename)
+        self.file_loc.set(filename)
         BM.CSVM.check_directories()
         Tk.update(self)
 
@@ -274,12 +274,6 @@ class ChangePasswordWindow(tk.Frame):
         self.confirmPassword = ""
         self.control = controller
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
-        ttk.Label(self, text="Deltex", background="#FFDAB9", foreground="#003865",
-                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
-        ttk.Label(self, text="medical", background="#FFDAB9", foreground="#A2B5BB",
-                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
-        self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
-        self.text_area.place(x=40, y=70)
 
     def confirm(self):
         self.canvas_1.destroy()
@@ -302,6 +296,12 @@ class ChangePasswordWindow(tk.Frame):
         self.canvas_1.place(relx=0.3, rely=0.4)
         self.canvas_2 = Canvas(bg="#eae9e9", width=550, height=48)
         self.canvas_2.place(relx=0.3, rely=0.54)
+        ttk.Label(self, text="Deltex", background="#FFDAB9", foreground="#003865",
+                  font=('Helvetica', 30, 'bold'), width=12).place(relx=0.85, rely=0.1)
+        ttk.Label(self, text="medical", background="#FFDAB9", foreground="#A2B5BB",
+                  font=('Helvetica', 16)).place(relx=0.88, rely=0.15)
+        self.text_area = tk.Text(self, font=("Courier", 14), height=5, width=38)
+        self.text_area.place(x=40, y=70)
         Label(self, text="Change password", background="#FFDAB9", font=("Courier", 18)).place(relx=0.55, rely=0.07,
                                                                                               anchor=CENTER)
         self.pass1_text = self.canvas_1.create_text(380, 22, text=" ", fill="black",
@@ -569,7 +569,7 @@ class AddUserWindow(tk.Frame):
     def __init__(self, parent, controller):
         # add User screen
         tk.Frame.__init__(self, parent, bg='#FFDAB9')
-
+        self.count = 0
         self.cancl_btn = None
         self.confm_btn = None
         self.text_area = None
@@ -608,48 +608,56 @@ class AddUserWindow(tk.Frame):
         self.remove_canvas()
         self.confm_btn.config(command=ignore)
         self.cancl_btn.config(command=ignore)
-        test_added = False
-        if not self.check_details():
+        added_user = False
+        self.count += 1
+        newUser = P.User(self.newusername, self.newpassword, self.is_admin.get())
+        print(newUser.name)
+        print([user.name for user in SM.GetUserList()])
+        print([user.admin for user in SM.GetUserList()])
+        if not self.check_details(newUser):
             self.enable_buttons_and_return()
         else:
             # Check adding a new user to the system
-            if self.add_user(self.is_admin.get()):
+            if self.add_user(newUser):
                 # User added
                 tm.showinfo('New User', 'New user added.')
-                test_added = True
+                added_user = True
             else:
                 tm.showinfo('Add user', 'Unable to add the user.')
             if not test:
                 self.remove_canvas()
                 self.control.show_frame(AdminWindow)
-        return test_added
+        return added_user
 
-    def add_user(self, admin):
+    def add_user(self, new_user):
         # Create a new user object
+        print("Add user")
         user_added = False
-        if not check_user_admin(self.newusername):
-            admin = False
-        newUser = P.User(self.newusername, self.newpassword, admin)
-        if SM.addUser(newUser):
+        if not check_user_admin(new_user.name):
+            new_user.admin = False
+        if SM.addUser(new_user):
             user_added = True
-            if self.newusername in DS.get_deleted_users().keys():
-                DS.remove_from_delete_file(self.newusername)
+            if new_user.name in DS.get_deleted_users().keys():
+                DS.remove_from_delete_file(new_user.name)
+        print(f"user_added {user_added}")
         return user_added
 
-    def check_details(self):
+    def check_details(self, new_user):
+        print("Check")
         confirm = True
-        if len(self.newusername) == 0:
+        if len(new_user.name) == 0:
             tm.showerror("User Error", "Please enter a name.")
             confirm = False
-        if len(self.newpassword) == 0:
+        if len(new_user.password) == 0:
             tm.showerror("Password Error", "Please enter a password.")
             confirm = False
         elif len(self.confpassword) == 0:
             tm.showerror("Password Error", "Please enter a confirm password.")
             confirm = False
-        elif self.newpassword != self.confpassword:
+        elif new_user.password != self.confpassword:
             tm.showerror("Password Error", "Please check password spelling\nthey are not the same")
             confirm = False
+        print(f"confirm {confirm}")
         return confirm
 
     def enable_buttons_and_return(self):
@@ -677,11 +685,11 @@ class AddUserWindow(tk.Frame):
         self.canvas_3.place(relx=0.15, rely=0.6)
         Label(self, text="Add new user", background="#FFDAB9", font=("Courier", 18)).place(relx=0.55, rely=0.07,
                                                                                            anchor=CENTER)
-        self.name_text = self.canvas_1.create_text(240, 20, text=" ", fill="black",
+        self.name_text = self.canvas_1.create_text(350, 20, text=" ", fill="black",
                                                    font=(OnScreenKeys.FONT_NAME, 16, "bold"))
-        self.pass1_text = self.canvas_2.create_text(240, 20, text=" ", fill="black",
+        self.pass1_text = self.canvas_2.create_text(350, 20, text=" ", fill="black",
                                                     font=(OnScreenKeys.FONT_NAME, 14, "bold"))
-        self.pass2_text = self.canvas_3.create_text(240, 20, text=" ", fill="black",
+        self.pass2_text = self.canvas_3.create_text(350, 20, text=" ", fill="black",
                                                     font=(OnScreenKeys.FONT_NAME, 14, "bold"))
         self.AUWl1 = Button(self.canvas_1, text='New user name:   ', font=('Courier', 12), command=self.name_entry)
         Label(self.canvas_1, text="-->", font=('Courier', 12)).place(x=200, y=12)
@@ -715,21 +723,21 @@ class AddUserWindow(tk.Frame):
 
     def name_entry(self):
         self.disable_buttons()
-        data = K.wait_for_response(self.canvas_1, self.name_text)
+        data = K.wait_for_response(self.canvas_1, self.name_text, width=200)
         self.newusername = data
         self.set_buttons_norm()
 
     def password_entry(self):
         self.disable_buttons()
         block = True
-        pw_data = K.wait_for_response(self.canvas_2, block, self.pass1_text)
+        pw_data = K.wait_for_response(self.canvas_2, block, self.pass1_text, width=200)
         self.newpassword = pw_data
         self.set_buttons_norm()
 
     def conform_pwd(self):
         self.disable_buttons()
         block = True
-        pw_data = K.wait_for_response(self.canvas_3, block, self.pass2_text)
+        pw_data = K.wait_for_response(self.canvas_3, block, self.pass2_text, width=200)
         self.confpassword = pw_data
         self.set_buttons_norm()
 
